@@ -1,7 +1,0 @@
-﻿1. Handleiding bijwerken
-2. SETUP testen en afmaken
-3. Licentie uitleg
-4. Website nieropwebconsult.nl aanpassen
-4. Licentie.rft bijwerken
-5. Create button verschijnt bij setup, terwij lsite er al was
-6. Tool-Tips!

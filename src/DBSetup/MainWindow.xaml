@@ -1,0 +1,23 @@
+﻿<Window x:Class="ispsession.io.setup.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ISP Session Control panel" Icon="Resources/App-session-manager.ico"
+        Height="699" Width="577" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"  
+        xmlns:my="clr-namespace:ispsession.io.setup.Forms">
+    <Grid Margin="0,0,0,0">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="310"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <my:ServerConfig Grid.Row="0" VerticalAlignment="Top" Width="Auto"   />        
+
+        <my:ConfigDemo Grid.Row="2" VerticalAlignment="Top" Width="Auto"  Margin="0,4,4,0"/>
+    </Grid>
+    
+        
+    
+    
+</Window>
+
+    

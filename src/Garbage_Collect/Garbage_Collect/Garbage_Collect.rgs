@@ -1,0 +1,34 @@
+HKCR
+{
+	NoRemove AppID
+	{
+		'%APPID%' = s 'Garbage_Collect'
+		'AspSession.EXE'
+		{
+			val AppID = s '%APPID%'
+		}
+	}
+}
+HKLM
+{
+	NoRemove SYSTEM
+	{
+		NoRemove CurrentControlSet
+		{
+			NoRemove Services
+			{
+				NoRemove EventLog
+				{
+					NoRemove Application
+					{
+						'ASPSession Service'
+						{
+							val 'EventMessageFile' = s '%MODULE_RAW%'
+							val 'TypesSupported' = d 7
+						}
+					}
+				}
+			}
+		}
+	}
+}

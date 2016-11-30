@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration xmlns:xdt="http://schemas.microsoft.com/XML-Document-Transform">
+  <appSettings>
+    <add key="ispsession_io:APP_KEY"  xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:AD_PATH"  xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:AD_DOMAIN"  xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:SnifQueryStringFirst" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:CookieNoSSL" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:Liquid" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:CookieExpires" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:ReEntrance" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:SessionTimeout" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:HASH_SESSIONID" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:Compress" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:Csession.LIC" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:License" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:DataSource" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+  </appSettings>
+  <system.webServer>
+    <modules>
+      <remove name="Session" xdt:Transform="Remove" xdt:Locator="Match(name)" />
+      <add name="ISPSession" xdt:Transform="Remove" xdt:Locator="Match(name)" />
+    </modules>
+  </system.webServer>
+</configuration>

@@ -1,0 +1,23 @@
+HKLM
+{	
+	NoRemove SYSTEM
+	{
+		NoRemove CurrentControlSet
+		{
+			NoRemove Services
+			{
+				NoRemove EventLog
+				{
+					NoRemove Application
+					{
+						'ISPSession'
+						{
+							val 'EventMessageFile' = s '%MODULE_RAW%'
+							val 'TypesSupported' = d 7
+						}
+					}
+				}
+			}
+		}
+	}
+}

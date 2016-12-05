@@ -12,17 +12,17 @@ namespace ispsession.io
     internal static class CSessionDL
     {
         private static readonly object lockker = new object();
-        private static string EndPoint;
+        private static string[] EndPoint;
         private static void setEndPoint(string endP)
         {
             lock(lockker)
             {                
-                EndPoint = endP;
+                EndPoint = endP.Split(',');
             }
         }
         private static readonly Lazy<ConfigurationOptions> configOptions = new Lazy<ConfigurationOptions>(() =>
         {
-            var appSettings = EndPoint ?? "localhost:6379";//TODO
+            var appSettings = EndPoint == null ? new[] { "localhost:6379" } : EndPoint;//TODO
 
             var configOptions = new ConfigurationOptions()
             {
@@ -31,7 +31,9 @@ namespace ispsession.io
                 SyncTimeout = 100000,
                 AbortOnConnectFail = false
             };
-            configOptions.EndPoints.Add(appSettings);
+            foreach(var e in appSettings)
+                configOptions.EndPoints.Add(e);
+
             return configOptions;
         });
 

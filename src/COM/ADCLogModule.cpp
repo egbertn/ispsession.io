@@ -236,18 +236,25 @@ void LoggingModule::Write(PCWSTR pszFormat, ...) throw()
 				linev.push_back(buffer);
 			}
 			file.close();
-			//recreate file
-			std::wofstream file2(m_logFileName, ios_base::out);
-
-			file2.imbue(utf8_locale);
-
-			std::vector<std::wstring>::size_type sz = linev.size();
-			sz--;
-			for (std::vector<std::wstring>::size_type i = sz / 2; i <= sz; i++)
+			try
 			{
-				file2 << linev[i];
+				//recreate file
+				std::wofstream file2(m_logFileName, ios_base::out);
+
+				file2.imbue(utf8_locale);
+
+				std::vector<std::wstring>::size_type sz = linev.size();
+				sz--;
+				for (std::vector<std::wstring>::size_type i = sz / 2; i <= sz; i++)
+				{
+					file2 << linev[i];
+				}
+				file2.close();
 			}
-			file2.close();	
+			catch(std::exception ex)
+			{ 
+				//ignore, maybe next log it will succeed
+			}
 			OpenFile();	
 		}
 		

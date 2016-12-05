@@ -13,19 +13,19 @@ import "ocidl.idl";
 ] 
 
 interface INWCVariantDictionary : IDispatch 
-{	[propget,helpstring("indexer"),id(0)] HRESULT  Item([in] VARIANT varKey, [out,retval] VARIANT *pVal);
-	[propput,helpstring("indexer"),id(0)] HRESULT  Item([in] VARIANT varKey, [in] VARIANT newVal);
-	[propputref,helpstring("indexer"),id(0),defaultcollelem] HRESULT  Item([in] VARIANT varKey, [in] VARIANT newVal);
-	[propget,helpstring("Returns the keyname at specified index")] HRESULT  Key([in] VARIANT KeyIndex, [out,retval] VARIANT *pVal);
-	[propget,helpstring("returns the number of key/value combinations.")] HRESULT  Count([out,retval] int *pVal);
+{	[propget,id(0)] HRESULT  Item([in] VARIANT varKey, [out,retval] VARIANT *pVal);
+	[propput,id(0)] HRESULT  Item([in] VARIANT varKey, [in] VARIANT newVal);
+	[propputref,id(0),defaultcollelem] HRESULT  Item([in] VARIANT varKey, [in] VARIANT newVal);
+	[propget] HRESULT  Key([in] VARIANT KeyIndex, [out,retval] VARIANT *pVal);
+	[propget] HRESULT  Count([out,retval] int *pVal);
 	[id(-4),restricted] HRESULT  _NewEnum([out,retval] IUnknown **pVal);
-	[helpstring("removes the specified key from the collection")] HRESULT  Remove([in] VARIANT varKey);
-	[helpstring("removes all key value combinations")] HRESULT  RemoveAll();
-	[propget,helpstring("returns true if the key specified, exists")] HRESULT  Exists([in] VARIANT vKey, [out,retval] VARIANT_BOOL *pVal);
-	[propget,helpstring("gets the variant data type of this item")] HRESULT  VarType([in] VARIANT vKey, [out,retval] SHORT *pVal);
-	[propget] HRESULT  CaseSensitive([out,retval] VARIANT_BOOL *pVal);
-	[propput] HRESULT  CaseSensitive([in] VARIANT_BOOL newVal);
-	[helpstring("Forces a persistable object to persist. Especially for ADO")] HRESULT Persist(VARIANT varKey);
+	HRESULT  Remove([in] VARIANT varKey);
+	HRESULT  RemoveAll();
+	[propget] HRESULT  Exists([in] VARIANT vKey, [out,retval] VARIANT_BOOL *pVal);
+	[propget] HRESULT  VarType([in] VARIANT vKey, [out,retval] SHORT *pVal);
+	[propget, hidden, restricted] HRESULT  CaseSensitive([out,retval] VARIANT_BOOL *pVal);
+	[propput, hidden, restricted] HRESULT  CaseSensitive([in] VARIANT_BOOL newVal);
+	HRESULT Persist(VARIANT varKey);
 };
 
 
@@ -92,40 +92,37 @@ interface INWCSession : IDispatch
 	HRESULT OnEndPage();
 	// end IIS
 
-	[propget,helpstring("Retrieves the session key")] HRESULT  SessionID([out,retval] BSTR *pbstrRet);
-	[propget,id(0),helpstring("indexer")] HRESULT  Value([in] BSTR vkey, [out,retval] VARIANT *pVal);
-	[propput,id(0),helpstring("indexer")] HRESULT  Value([in] BSTR vkey, [in] VARIANT newVal);
-	[propputref,id(0),helpstring("indexer")] HRESULT  Value([in] BSTR vkey, [in] VARIANT newVal);
-	[propget,helpstring("Retrieves or sets the timeout value for this session")] HRESULT  TimeOut([out,retval] LONG *pVal);
-	[propput,helpstring("Retrieves or sets the timeout value for this session")] HRESULT  TimeOut([in] LONG pVal);
-	[helpstring("Ends this user session at end of page execution")] HRESULT  Abandon();
-	[propget, hidden, helpstring("not supported")] HRESULT  CodePage([out, retval] LONG *pVal);
-	[propput, hidden, helpstring("not supported")] HRESULT  CodePage([in] LONG newVal);
-	[propget, hidden, helpstring("not supported")] HRESULT  LCID([out, retval] LONG *pVal);
-	[propput, hidden, helpstring("not supported")] HRESULT  LCID([in] LONG newVal);
-	[propget,hidden,helpstring("not supported")] HRESULT  StaticObjects([out,retval] INWCVariantDictionary **ppProperties);
-	[propget,helpstring("Retrieves a reference to the internal VariantDictionary")] HRESULT  Contents([out,retval] INWCVariantDictionary **pVal);
+	[propget] HRESULT  SessionID([out,retval] BSTR *pbstrRet);
+	[propget,id(0)] HRESULT  Value([in] BSTR vkey, [out,retval] VARIANT *pVal);
+	[propput,id(0)] HRESULT  Value([in] BSTR vkey, [in] VARIANT newVal);
+	[propputref,id(0)] HRESULT  Value([in] BSTR vkey, [in] VARIANT newVal);
+	[propget] HRESULT  TimeOut([out,retval] LONG *pVal);
+	[propput] HRESULT  TimeOut([in] LONG pVal);
+	HRESULT  Abandon();
+	[propget, hidden] HRESULT  CodePage([out, retval] LONG *pVal);
+	[propput, hidden] HRESULT  CodePage([in] LONG newVal);
+	[propget, hidden] HRESULT  LCID([out, retval] LONG *pVal);
+	[propput, hidden] HRESULT  LCID([in] LONG newVal);
+	[propget,hidden] HRESULT  StaticObjects([out,retval] INWCVariantDictionary **ppProperties);
+	[propget] HRESULT  Contents([out,retval] INWCVariantDictionary **pVal);
 
-	[propget,helpstring("Returns true if this session is continued while it has expired according to the TimeOut setting")] HRESULT  IsExpired([out,retval] VARIANT_BOOL *pVal);
-	[propget,helpstring("Returns true if the session is new")] HRESULT  IsNew([out,retval] VARIANT_BOOL *pVal);
-	[propget,helpstring("Retrieves or sets the LiquidCookie setting. Enable this for improved security")] HRESULT  LiquidCookie([out,retval] VARIANT_BOOL *pVal);
-	[propput,helpstring("Retrieves or sets the LiquidCookie setting. Enable this for improved security")] HRESULT  LiquidCookie([in] VARIANT_BOOL newVal);
-	[propget,helpstring("Retrieves or sets the ReEntrance setting. Enable to have a browser resume a session at another location, using a URL or email for instance")] HRESULT  ReEntrance([out,retval] VARIANT_BOOL *pVal);
-	[propput,helpstring("Retrieves or sets the ReEntrance setting. Enable to have a browser resume a session at another location, using a URL or email for instance")] HRESULT  ReEntrance([in] VARIANT_BOOL newVal);
-	[propget,helpstring("Returns a wrapped URL which always must include a Session key if you avoid cookies with your web application")] HRESULT  URL([in] VARIANT strCheckA, [out,retval] VARIANT *pVal);
+	[propget] HRESULT  IsExpired([out,retval] VARIANT_BOOL *pVal);
+	[propget] HRESULT  IsNew([out,retval] VARIANT_BOOL *pVal);
+	[propget] HRESULT  LiquidCookie([out,retval] VARIANT_BOOL *pVal);
+	[propput] HRESULT  LiquidCookie([in] VARIANT_BOOL newVal);
+	[propget)] HRESULT  ReEntrance([out,retval] VARIANT_BOOL *pVal);
+	[propput] HRESULT  ReEntrance([in] VARIANT_BOOL newVal);
+	[propget] HRESULT  URL([in] VARIANT strCheckA, [out,retval] VARIANT *pVal);
 
-	[helpstring("Replacement for Server.Execute")] HRESULT  Execute([in] BSTR ToPage);
-	[helpstring("Replacement for Server.Transfer")] HRESULT  Transfer([in] BSTR ToPage);
-	[propget,helpstring("Compatible with Visual 6 persistable COM components")] HRESULT  CreateInstance([in] BSTR progid, [out,retval] IDispatch **pVal);
-	[propput,helpstring("Optimizes performance behaviour by reading only the state")] HRESULT  Readonly([in] VARIANT_BOOL newVal);
+	HRESULT  Execute([in] BSTR ToPage);
+	HRESULT  Transfer([in] BSTR ToPage);
+	[propget] HRESULT  CreateInstance([in] BSTR progid, [out,retval] IDispatch **pVal);
+	[propput] HRESULT  Readonly([in] VARIANT_BOOL newVal);
 	
 	
-	[helpstring("returns dictionary containing Session statistics")] 
-	HRESULT Statistics([in, optional] VARIANT vAppKey, [in,optional] VARIANT vSessionID, [out, retval] INWCVariantDictionary** retVal);
-	[helpstring("ensures that current page, has a GUID variable in the QueryString")]
-	HRESULT EnsureURLCookie();
-	
-	[propget, helpstring("returns the old SessionID after a liquid cookie refresh has ocurred")] 
+	HRESULT Statistics([in, optional] VARIANT vAppKey, [in,optional] VARIANT vSessionID, [out, retval] INWCVariantDictionary** retVal);	
+	HRESULT EnsureURLCookie();	
+	[propget] 
 	HRESULT OldSessionID ([out, retval] BSTR *pVal);	
 
 

@@ -272,7 +272,7 @@ public:
 					hr = E_FAIL;
 				}
 			}			
-		}
+		}		
 		pool->put(c);
         return hr;
     }

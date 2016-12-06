@@ -121,7 +121,7 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 				
 				//hr = pReader->GetDepth(&dept);
 				hr = _xmlReader->GetLocalName(&pwzValue, NULL);
-				if (startCollecting && lstrcmpW(pwzValue, L"appSettings") == 0)
+				if (startCollecting && _wcsicmp(pwzValue, L"appSettings") == 0)
 				{
 					//break loop
 					hr = S_FALSE;
@@ -135,7 +135,7 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 					if (FAILED(hr)) break;
 					
 					//iOrdinalCount++;
-					if (startCollecting == false && lstrcmpW(pwzValue, L"appSettings") == 0)
+					if (startCollecting == false && _wcsicmp(pwzValue, L"appSettings") == 0)
 					{
 						startCollecting = true;
 
@@ -162,7 +162,7 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 						}
 						hr = S_OK;//reset otherwise loop stops
 					}					
-					else if (startCollecting && lstrcmpW(pwzValue, L"add") == 0)
+					else if (startCollecting && _wcsicmp(pwzValue, L"add") == 0)
 					{
 						
 						hr = _xmlReader->MoveToAttributeByName(L"key", NULL);

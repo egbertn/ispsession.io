@@ -8,7 +8,9 @@ namespace ispsession.io
     public class ISPSession : IISPSession
     {
         private readonly SessionAppSettings _settings;
-        private readonly ISPSessionStateItemCollection2 _sessionItems;
+        private const string CannotInitiateSession = "Cannot Initiate Session now";
+        private ISPSessionStateItemCollection2 _sessionItems;
+        private readonly Func<ISPSession, bool> _tryEstablish;
         private readonly string _sessionId;
         //TODO: parse this flag
         private readonly bool _isReadonly;
@@ -18,43 +20,62 @@ namespace ispsession.io
         private bool _isAbandoned;
         //minutes
         private int _timeOut;
-        internal ISPSession(string sessionKey, bool isNewSessionKey, SessionAppSettings settings)
+        internal ISPSession(string sessionKey, Func<ISPSession, bool> tryEstablish,bool isNewSessionKey, SessionAppSettings settings)
         {
-            ISPSessionStateItemCollection items;
+            if(settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings),"SessionAppSettings must be provided");
+            }
+            if (string.IsNullOrEmpty(settings.DatabaseConnection))
+            {
+                throw new InvalidOperationException("SessionAppSettings.DataBaseConnection not given");
+
+            }
+            if ((settings.EnableLogging & 3)== 3)
+            {
+                Helpers.TraceInfo.TraceInfo = true;
+                Helpers.TraceInfo.TraceError = true;
+            }
+            if (tryEstablish == null)
+            {
+                throw new ArgumentNullException(nameof(tryEstablish));
+            }
+            _tryEstablish = tryEstablish;
             _settings = settings;
             _sessionId = sessionKey;
             _isNew = isNewSessionKey;
             _timeOut = _settings.SessionTimeout;
             _liquid = _settings.Liquid;
             _reEntrance = _settings.ReEntrance;
-            if (!isNewSessionKey)
-            {
-                items = CSessionDL.SessionGet(_settings, sessionKey);             
-            }
-            else
-            {
-                items = new ISPSessionStateItemCollection();
-                CSessionDL.SessionInsert(_settings, sessionKey, new PersistMetaData()
-                {
-                    Expires = _settings.CookieExpires,
-                    LastUpdated = new DBTIMESTAMP(),
-                    Liquid = _liquid ? (short)-1: (short)0,
-                        ReEntrance = _reEntrance ? (short)-1: (short)0
-                }
-                );
-                items.Items = new ISPSessionStateItemCollection2();
-            }
-            _sessionItems = items.Items;
+         
         }
+
+        internal void InitItems(ISPSessionStateItemCollection items)
+        {
+            this._sessionItems = items.Items;
+            this._sessionItems.IsNew = _isNew;
+            this._sessionItems.SessionID = _sessionId;
+            this._sessionItems.Timeout = _timeOut;
+            this._sessionItems.IsReadOnly = _isReadonly;            
+        }
+
         public object this[string name]
         {
             get
             {
+                if (!_tryEstablish(this))
+                {
+                    throw new InvalidOperationException(CannotInitiateSession);
+                }
                 return _sessionItems[name];
             }
 
             set
             {
+                if (!_tryEstablish(this))
+                {
+                    throw new InvalidOperationException(CannotInitiateSession);
+                }
                 _sessionItems[name] = value;
             }
         }
@@ -63,11 +84,19 @@ namespace ispsession.io
         {
             get
             {
+                if (!_tryEstablish(this))
+                {
+                    throw new InvalidOperationException(CannotInitiateSession);
+                }
                 return _sessionItems[index];
             }
 
             set
             {
+                if (!_tryEstablish(this))
+                {
+                    throw new InvalidOperationException(CannotInitiateSession);
+                }
                 _sessionItems[index] = value;
             }
         }
@@ -156,6 +185,10 @@ namespace ispsession.io
 
         public void Abandon()
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
             _isAbandoned = true;
             _sessionItems.Clear();
             CSessionDL.SessionRemove(_settings, _sessionId);            
@@ -163,11 +196,19 @@ namespace ispsession.io
 
         public void Add(string name, object value)
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
             _sessionItems[name] = value;
         }
 
         public void Clear()
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
             _sessionItems.Clear();
         }
 
@@ -175,15 +216,20 @@ namespace ispsession.io
         {
             return Task.Run(() =>
             {
+                if (_sessionItems == null)
+                {
+                    return;
+                }
                 if (_isAbandoned)
                 {
                     _sessionItems.Clear();//make sure
+                    //TODO: Expire?
                    return;
                 }
 
-
+                
                 CSessionDL.SessionSave(_settings, _sessionItems,
-                    new PersistMetaData()
+                    new PersistMetaData(false)
                     {
                         Expires = _timeOut,
                         Liquid = _liquid ? (short)-1 : (short)0,
@@ -226,6 +272,7 @@ namespace ispsession.io
 
         public bool TryGetValue(string key, out byte[] value)
         {
+
             value = null;            
             if (_sessionItems[key]!= null && _sessionItems[key].GetType() == typeof(byte[]))
             {

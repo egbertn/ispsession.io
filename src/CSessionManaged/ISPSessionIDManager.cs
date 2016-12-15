@@ -59,11 +59,7 @@ namespace ispsession.io
                     Helpers.TraceInformation("GetSessionID found cookie guid {0}", cookieValue);
                 }
             }
-            if (cookieValue == null)
-            {
-                return null;
-            }
-
+            
             var db = CSessionDL.SafeConn.GetDatabase(_settings.DataBase);
             bool foundSession = false;
             if (foundGuidinURL)
@@ -81,6 +77,11 @@ namespace ispsession.io
                 }             
                 return null;
             }
+            if (cookieValue == null)
+            {
+                return null;
+            }
+
             foundSession = db.RedundantExists(cookieValue, _settings);
             if (foundSession)
             {

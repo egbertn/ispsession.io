@@ -1,0 +1,39 @@
+machine used as web server IIS 6.0 running on a virtual PC 2004 (P IV 2.8 GHz) with 400MB virtual ram
+
+Machine used as SQL server  (SQL 2000 running on a PIII 0.8 GHz with 512MB ram)
+
+
+without compression Session size = 27KB 
+	ASP 
+	Average waittime 12ms
+	page requests /s 26
+	Av execution time  567ms
+	CPU utilization % 37.5
+
+	DBMS
+	average 8KB pages/s	0,116
+	CPU%	70
+	writes /s 	161
+	locks	2275
+
+With compression 27KB compressed to compressed to 7KB (using default zlib settings)
+	ASP 
+	Average waittime 0 ms
+	page requests /s 46 <--- twice better!
+	Av execution time 110ms <--- 5 times better!
+ 	CPU utilization % 85 <--- 10% overhead by zlib, see comments
+
+	DBMS
+	average 8KB pages/s	0,094 <--- 23% better
+	CPU%	18 <--- 4x better
+	writes /s 	23 <--- 7x better
+	locks	1470 <--- 35% better
+
+Conclusion: 
+Using compression for big session sizes, it makes sense to use zlib.
+The compression factor is near 80%, where -more- 2x ASP pages per second  can be processed. Processing more pages, needs of course, more CPU which explains why the CPU is 2x 37,5% = 75% where the 10% extra stress can be relatated to the zlib algorithms.
+
+However, small sessions sizes (< 8Kb will be compressed) which gives us identical performance to ISP Session 5.0.
+
+For windows 2000 can be expected a lower ASP performance rate since Windows 2000 uses an older code base (that was derived from ASP 1.0 on Windows NT 4.0 while ASP 3.0 was rewritten from scratch).
+

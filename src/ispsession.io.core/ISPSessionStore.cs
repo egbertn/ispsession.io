@@ -18,14 +18,21 @@ namespace ispsession.io.Store
             //this._loggerFactory = loggerFactory;
         }
 
-        public IISPSession Create(string sessionKey,  bool isNewSessionKey, SessionAppSettings settings)
+        public IISPSession Create(string sessionKey, Func<ISPSession, bool> tryEstablish,  bool isNewSessionKey, SessionAppSettings settings)
         {
             if (string.IsNullOrEmpty(sessionKey))
             {
                 throw new ArgumentException("sessionKey cannot be null", nameof(sessionKey));
             }
-           
-            return new ISPSession(sessionKey,  isNewSessionKey, settings);
+            if (settings == null)
+            {
+                throw new ArgumentNullException(nameof(settings), "settings cannot be null");
+            }
+            if (settings.SessionTimeout <=0 )
+            {
+                throw new ArgumentOutOfRangeException(nameof(settings.SessionTimeout), "SessionTimeout is zero or negative, which is not supported");
+            }
+            return new ISPSession(sessionKey, tryEstablish,  isNewSessionKey, settings);
         }
     }
 }

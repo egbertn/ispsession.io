@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
-using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ispsession.io
 {
@@ -11,24 +11,84 @@ namespace ispsession.io
     /// </summary>
     public sealed class ISPSessionIDManager
     {
-        internal class HttpCookie: CookieOptions
-        {
-            internal HttpCookie(string cookieName, string value)
-            {
-                this.Value = value;
-                this.Name = cookieName;
-            }
-            internal string Value { get; set; }
-            internal string Name { get; set; }
-        }
 
+        private readonly HttpContext _context;
+        private readonly string _id;
+        
         private readonly SessionAppSettings _settings;
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         public ISPSessionIDManager(SessionAppSettings settings)
         {
             _settings = settings;
         }
+        private bool _shouldEstablishSession;
+        /// <summary>
+        /// some magic, required to lazy initialize a session from Redis
+        /// the problem exists that MVC has no page extensions
+        /// So we don't know when or not to Session. The only reliable detection would be at Session set/get item/delete/clear etc
+        /// which means, somebody needs us now. Other IIS requests, such as .js files or css thus will ignore the state.
+        /// </summary>
+        internal bool TryEstablishSession(ISPSession i)
+        {
+            var ret = this._shouldEstablishSession |= !this._context.Response.HasStarted;
+            if (ret)
+            {
+                var items = default(ISPSessionStateItemCollection);
+                if (!i.IsNewSession)
+                {
+                    items = CSessionDL.SessionGet(_settings, i.SessionID);
+                }
+                else
+                {
+                    items = new ISPSessionStateItemCollection() { Items = new ISPSessionStateItemCollection2() };
+                    //do not insert, wait as much as possible, otherwise, we'll get too much 
+                    //CSessionDL.SessionInsert(_settings, i.SessionID, new PersistMetaData()
+                    //{
+                    //    Expires = _settings.CookieExpires,
+                    //    LastUpdated = new DBTIMESTAMP(),
+                    //    Liquid = i.Liquid? (short)-1 : (short)0,
+                    //    ReEntrance = i.Liquid? (short)-1 : (short)0
+                    //}
+                    //);
+                }
+                i.InitItems(items);
+            }
+            return ret;
+        }
+        public ISPSessionIDManager(HttpContext context, string id, SessionAppSettings settings)
+        {
+            _settings = settings;
+            _context = context;
+            _id = id;
+            context.Response.OnStarting(OnStartingCallback, this);
+        }
+        private static Task OnStartingCallback(object state)
+        {
+            var sessionEstablisher = (ISPSessionIDManager)state;
+            if (sessionEstablisher._shouldEstablishSession)
+            {
+                sessionEstablisher.SetCookie();
+            }
+            return Task.FromResult(0);
+        }
+        private void SetCookie()
+        {           
 
+            var opts = new CookieOptions();
+            opts.Domain = this._settings.Domain;
+            opts.HttpOnly = !this._settings.HttpOnly;
+            opts.Path = this._settings.Path ?? "/";
+            var cookieOptions = opts;
+            var isHttps = _context.Request.IsHttps;
+            var resp = this._context.Response;
+
+            cookieOptions.Secure = isHttps && _settings.CookieNoSSL == false ? true : false;
+            resp.Cookies.Append(this._settings.CookieName, this._id, cookieOptions);
+            var headers = resp.Headers;
+            headers["Cache-Control"] = "no-cache";
+            headers["Pragma"] = "no-cache";
+            headers["Expires"] = "-1";
+        }
         public string GetSessionID(HttpContext context)
         {
             string cookieText = null;
@@ -40,13 +100,17 @@ namespace ispsession.io
                 if (cookie.Count > 0)
                 {
                     cookieText = cookie[0];
-                    foundGuidinURL = true;
+                    if (Validate(cookieText))
+                    {
+                        foundGuidinURL = true;
+                    }
+                    
                 }
             }
             string cookieValue = null;
             var httpCookie = context.Request.Cookies[_settings.CookieName];
 
-            if (httpCookie != null )
+            if (httpCookie != null  && !foundGuidinURL)
             {
                 cookieValue = httpCookie;
                 if (!Validate(cookieValue))
@@ -69,11 +133,6 @@ namespace ispsession.io
                     Helpers.TraceInformation("GetSessionID found cookie guid {0}", cookieValue);
                 }
             }
-            if (cookieValue == null)
-            {
-                return null;
-            }
-
             var db = CSessionDL.GetDatabase(_settings);
             bool foundSession = false;
             if (foundGuidinURL)
@@ -91,6 +150,11 @@ namespace ispsession.io
                 }
                 return null;
             }
+            if (cookieValue == null)
+            {
+                return null;
+            }
+
             foundSession = db.RedundantExists(cookieValue, _settings);
             if (foundSession)
             {
@@ -114,6 +178,7 @@ namespace ispsession.io
         private static string GuidToHex(byte[] bytes)
         {
             var sb = new StringBuilder(32);
+            
             for (int x = 0; x <= 15; x++)
             {
                 sb.Append(bytes[x].ToString("X2"));
@@ -136,45 +201,7 @@ namespace ispsession.io
                 }
             }
             return true;
-        }
-
-        internal static HttpCookie CreateSessionCookie(string id, bool isHttps, SessionAppSettings settings)
-        {
-            //TODO: config domain etc...
-            return new HttpCookie(settings.CookieName, id)
-            {
-                Path = !string.IsNullOrEmpty(settings.Path) ? settings.Path : "/",
-                HttpOnly = true,
-                Expires = settings.CookieExpires > 0 ? DateTime.Now.AddMinutes(settings.CookieExpires) : DateTime.MinValue,
-                Domain = !string.IsNullOrEmpty(settings.Domain) ? settings.Domain : null,
-                Secure = isHttps ? (settings.CookieNoSSL == false ? true : false) : false
-            };
-        }
-
-        public void SaveSessionID(HttpContext context, string id, out bool redirected, out bool cookieAdded)
-        {
-            redirected = false; //because we do not do HttpCookieMode.UseUri            
-            cookieAdded = true;//always added because HttpCookieMode.UseCookies 
-            Helpers.TraceInformation("SaveSessionID {0}", id);
-            if (context.Response.HasStarted)
-            {
-                throw new Exception("Response was Flushed, cannot save Session Cookie");
-            }
-            if (!Validate(id))
-            {
-                throw new Exception("Invalid SessionID");
-            }
-
-            var isHttps = context.Request.IsHttps;
-            var cookies = context.Response.Cookies;            
-            //TODO: cannot see the cookies
-            //if (Array.FindIndex(cookies.AllKeys, x => x == _settings.CookieName) >= 0)
-            //{
-            //    cookies.Delete(_settings.CookieName);
-            //}
-            var newCookie = CreateSessionCookie(id, isHttps, _settings);
-            cookies.Append(newCookie.Name, newCookie.Value, newCookie);
-        }
+        }       
 
         public void RemoveSessionID(HttpContext context)
         {

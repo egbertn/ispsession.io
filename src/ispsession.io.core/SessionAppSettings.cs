@@ -23,6 +23,7 @@
         /// </summary>
         //  [Description("CookieNoSSL")]
         public bool CookieNoSSL { get; set; }
+        public bool HttpOnly { get; set; }
         //  [Description("CookieExpires")]
         public int CookieExpires { get; set; }
 

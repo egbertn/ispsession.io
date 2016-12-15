@@ -64,16 +64,20 @@ namespace ispsession.io
             if (TraceInfo.TraceError)
             {
                 //TraceLevel.Info=3
-                var fmt = string.Format(message, args);
-                NativeMethods.OutputDebugStringW(fmt);
+                //var fmt = string.Format(message, args);
+                //NativeMethods.OutputDebugStringW(fmt);                
+                var fmt = $"Error {DateTime.UtcNow} {System.Threading.Thread.CurrentThread.ManagedThreadId} {string.Format(message, args)}";
+                Debug.WriteLine(fmt);
             }
         }
         internal static void TraceInformation(string message, params object[] args)
         {
             if (TraceInfo.TraceInfo)
             {
-                var fmt = string.Format(message, args);
-                NativeMethods.OutputDebugStringW(fmt);
+                //var fmt = string.Format(message, args);
+                //NativeMethods.OutputDebugStringW(fmt);
+                var fmt = $"Information {DateTime.UtcNow} {System.Threading.Thread.CurrentThread.ManagedThreadId} {string.Format(message, args)}";
+                Debug.WriteLine(fmt);
             }
         }
         //internal static void TraceInformation(StreamWriter log, string message)
@@ -97,8 +101,7 @@ namespace ispsession.io
         }
         internal short ReadInt16()
         {
-            Str.Read(_memoryBuff, 0, sizeof(short));
-            return BitConverter.ToInt16(_memoryBuff, 0);
+            return  (short) (Str.ReadByte() << 8 | Str.ReadByte());
         }
         internal void WriteInt16(short value)
         {
@@ -106,8 +109,7 @@ namespace ispsession.io
         }
         internal int ReadInt32()
         {
-            Str.Read(_memoryBuff, 0, sizeof(int));
-            return BitConverter.ToInt32(_memoryBuff, 0);
+            return Str.ReadByte() << 24 | Str.ReadByte() << 16 | Str.ReadByte() << 8 | Str.ReadByte();            
         }
         internal uint ReadUInt32()
         {
@@ -116,7 +118,10 @@ namespace ispsession.io
         }
         internal void WriteInt32(int value)
         {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(int));
+            Str.WriteByte((byte)(value >> 24));
+            Str.WriteByte((byte)(255 & value >> 16));
+            Str.WriteByte((byte)(255 & value >> 8));
+            Str.WriteByte((byte)(255 & value));
         }
         internal void WriteUInt32(uint value)
         {
@@ -1314,14 +1319,10 @@ namespace ispsession.io
             this.name = name;
             this.description = description;
         }
-        public bool TraceInfo
-        {
-            get { return false; }
-        }
-        public bool TraceError
-        {
-            get { return false; }
-        }
+        public bool TraceInfo { get; set; }
+        
+        public bool TraceError { get; set; }
+        
     }
     public sealed class DBNull
     {

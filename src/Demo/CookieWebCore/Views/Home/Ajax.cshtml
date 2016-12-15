@@ -1,0 +1,17 @@
+﻿@model  ispsession.io.HomeModel
+<p>
+    This demonstrates that ajax calls ALSO can have a Session state!<br />
+    @Model.CountRefresh<br />
+    This panel ran at (GMT): @DateTime.UtcNow
+</p>
+<p>
+    @if (Model.Refresh == "1")
+    {
+        <span>Thanks.As you can see when install the demo, and look at the source code, there is no magic or unusual classic ASP code inside the page itself, it just works!</span>
+    }
+    else
+    {
+        <span>Hit the Ajax panel refresh button!</span>
+    }
+</p>
+

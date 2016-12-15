@@ -160,9 +160,12 @@ namespace ispsession.io
             //todo, if readonly, only set expiration
             try
             {
-                if (state.IsReadOnly)
+                if (state.IsReadOnly || !state.Dirty)
                 {
-                    db.KeyExpire(key, ts, CommandFlags.FireAndForget);
+                    if (!state.IsNew)
+                    {
+                        db.KeyExpire(key, ts, CommandFlags.FireAndForget);
+                    }
                 }
                 else
                 {

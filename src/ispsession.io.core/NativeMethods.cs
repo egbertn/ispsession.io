@@ -64,15 +64,15 @@ namespace ispsession.io
             out IntPtr pDOMAIN_CONTROLLER_INFO
         );
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern int NetGetJoinInformation(string server, out IntPtr domain, out NetJoinStatus status);
+        internal static extern int NetGetJoinInformation([MarshalAs(UnmanagedType.LPWStr)] string server, out IntPtr domain, out NetJoinStatus status);
 
-        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true)]
-        internal static extern void OutputDebugStringW([MarshalAs(UnmanagedType.LPWStr)] string fmt);
+        //[DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        //internal static extern void OutputDebugStringW([MarshalAs(UnmanagedType.LPWStr)] string fmt);
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern bool GetComputerNameExW([MarshalAs(UnmanagedType.U4)] COMPUTER_NAME_FORMAT NameType,
 
-           [In] string lpBuffer, ref int lpnSize);
+           [MarshalAs(UnmanagedType.LPWStr), In] string lpBuffer, ref int lpnSize);
 
         //[DllImport("kernel32.dll", ExactSpelling = true)]
         //internal static extern IntPtr GlobalLock(IntPtr hMem);

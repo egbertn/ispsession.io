@@ -6,7 +6,7 @@ namespace ispsession.io
 {
     public class ISPSessionStateItemCollection2
     {
-        private bool _isDirty;
+
         private readonly SortedSet<string> _entriesTable;
         private readonly Dictionary<int, object> _entries;
 
@@ -37,9 +37,13 @@ namespace ispsession.io
                 {
                     throw new ArgumentNullException(nameof(name));
                 }
+                
+                if (!_entriesTable.Contains(name))
+                {
+                    return null;
+                }
                 int idx = name.GetHashCode();
-
-                return _entries.ContainsKey(idx) ?  _entries[idx] : null;
+                return _entries[idx] ;
             }
             set
             {
@@ -48,7 +52,11 @@ namespace ispsession.io
                     throw new ArgumentNullException(nameof(name));
                 }
                 int idx = name.GetHashCode();
-                _isDirty = true;
+                if (!_entriesTable.Contains(name))
+                {
+                    _entriesTable.Add(name);
+                }
+                Dirty = true;
                 _entries[idx] = value;
             }
         }
@@ -85,37 +93,33 @@ namespace ispsession.io
                     {
                         var idx = i.GetHashCode();
                         _entries[idx] = value;
-                        _isDirty = true;
+                        Dirty = true;
                         break;
                     }
                 }
             }
         }
 
-        //
-        // Summary:
-        //     Gets or sets a value indicating whether the collection has been marked as changed.
-        //
-        // Returns:
-        //     true if the System.Web.SessionState.SessionStateItemCollection contents have
-        //     been changed; otherwise, false.
-        public bool Dirty {
+        private bool _dirty;
+        public bool Dirty
+        {
             get
             {
-                return _isDirty;
+                return _dirty;
             }
             private set
             {
-                _isDirty = true;
+                if (_dirty == false && value)
+                {
+                    Helpers.TraceInformation("SEtting Session ID {0} dirty", this.SessionID);
+                }
+                _dirty = value;
+                
             }
         }
-        //
-        // Summary:
-        //     Gets a collection of the variable names for all values stored in the collection.
-        //
-        // Returns:
-        //     The System.Collections.Specialized.NameObjectCollectionBase.KeysCollection collection
-        //     that contains all the collection keys.
+
+            
+     
         public IEnumerable<string> Keys
         {
             get
@@ -131,9 +135,10 @@ namespace ispsession.io
         /// </summary>
         public void Clear()
         {
+            var doSetDirty = _entriesTable.Count > 0;
             _entriesTable.Clear();
             _entries.Clear();
-            _isDirty = true;
+            Dirty |= doSetDirty;
         }
         
         /// <summary>
@@ -155,9 +160,12 @@ namespace ispsession.io
         {
             if (_entriesTable.Contains(name))
             {
-                _entries.Remove(name.GetHashCode());
-                _entriesTable.Remove(name);
-                _isDirty = true;
+                bool isRemoved = _entriesTable.Remove(name);
+                if (isRemoved)
+                {
+                    _entries.Remove(name.GetHashCode());
+                    Dirty |= isRemoved;
+                }                
             }
         }
         //
@@ -185,13 +193,14 @@ namespace ispsession.io
                     var idx = i.GetHashCode();
                     _entriesTable.Remove(i);
                     _entries.Remove(idx);
-                    _isDirty = true;
+                    Dirty = true;
                     break;
                 }
             }
 
         }
         public bool IsReadOnly { get; set; }
+        public bool IsNew { get; set; }
         public int Timeout { get; set; }
         public string SessionID { get; set; }
         

@@ -79,7 +79,7 @@ namespace ispsession.io
     //}
    
     public class ISPSessionMiddleWare
-    {
+    {    
 
         //private static readonly Func<bool> ReturnTrue = new Func<bool>(SessionMiddleware.<> c.<> 9.<.cctor > b__11_0);
 
@@ -88,7 +88,9 @@ namespace ispsession.io
         private readonly SessionAppSettings _options;
         private bool Checked;
         private readonly IISPSessionStore _sessionStore;
-      //  private readonly IDataProtector _dataProtector;
+        private static readonly Func<ISPSession, bool> ReturnTrue = (i) => true;
+
+        //  private readonly IDataProtector _dataProtector;
         public ISPSessionMiddleWare(RequestDelegate next, IISPSessionStore sessionStore, IOptions<SessionAppSettings> options)
         {
             _next = next;
@@ -98,13 +100,19 @@ namespace ispsession.io
         }
         public async Task Invoke(HttpContext context)
         {
-            bool isNewSessionKey = false;
+
+            var isNewSessionKey = false;
+            var tryEstablishSession = ReturnTrue;
 
             var text2 = _manager.GetSessionID(context);
             if (text2 == null || _options.Liquid)
             {
                 text2 = _manager.CreateSessionID(context);
                 isNewSessionKey = true;
+             
+                tryEstablishSession = (i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
+                
+              
             }
 #if !Demo
             string license = _appSettings.Lic;
@@ -133,7 +141,7 @@ namespace ispsession.io
 #endif
             var sessionFeature = new ISPSessionFeature();
             
-            sessionFeature.Session = this._sessionStore.Create(text2, isNewSessionKey, _options);
+            sessionFeature.Session = this._sessionStore.Create(text2, tryEstablishSession, isNewSessionKey, _options);
             context.Features.Set<IISPSEssionFeature>(sessionFeature);
             context.Features.Set<Microsoft.AspNetCore.Http.Features.ISessionFeature>(sessionFeature);//make HttpContext.Session happy
             await _next(context);

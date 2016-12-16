@@ -36,23 +36,23 @@
             Session("a2") = @Model.Session["a2"]<br />
             Session("CountRefresh") = @Model.Session["CountRefresh"]
         
-        <br /><%*@
-
-        @*dim a()
-        redim driedim(1,1,1)
-        driedim(0,0,0) = "aap"
-        driedim(0,0,1) = "noot"
-        driedim(0,1,0) = "mies"
-        Session("driedim") = driedim
-        session("aaa") = a
-        redim a(1,1)
-        a(0,0) = "start"
-        a(0,1) = Now()
-        a(1,1) = "Bye"
-        Session("a3") = a
-        Session("a0") = "Smith"
-        Session("a2") = Now()
-        %>*@
+        <br />
+        @{
+            var driedim = new object[2, 2, 2];
+            object[,,] aaa= null;
+            driedim[0, 0, 0] = "aap";
+            driedim[0, 0, 1] = "noot";
+            driedim[0, 1, 0] = "mies";
+            Model.Session["driedim"] = driedim;
+            Model.Session["aaa"] = aaa;
+            var a = new object[2, 2];
+            a[0, 0] = "start";
+            a[0, 1] = DateTime.Now;
+            a[1, 1] = "Bye";
+            Model.Session["a3"] = a;
+            Model.Session["a0"] = "Smith";
+            Model.Session["a2"] = DateTime.Now;
+        }
     </p>
 </div>
 
@@ -66,7 +66,7 @@
 </div>
 
 <p>
-    <button class="btn btn-lg ajax btn-primary" data-path='@Url.Action("Home", "Ajax", new  {Guid = Model.Session.SessionID})'>Ajaxpanel refresh</button>
+    <button class="btn btn-lg ajax btn-primary" data-path='@Url.Action("Ajax", "Home", new  {Guid = Model.Session.SessionID})'>Ajaxpanel refresh</button>
 </p>
 <div class="well">
     We invite you to login at our website to see the secret section by clicking login.<br />

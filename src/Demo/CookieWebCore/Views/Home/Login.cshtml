@@ -1,0 +1,32 @@
+﻿@model CookieWebCore.Models.LoginModel
+<div class="well">
+    Please login before you get to the secret section for this site...<br />
+    user: demo <br />
+    password demo<br />
+    <form action="?page=login" method="post">
+        <table>
+            <tr>
+                <td colspan="2">
+                 <span asp-validation-for="ErrMsg"/>
+                </td>
+            </tr>
+            <tr>
+                <td>UserID:</td>
+                <td>
+                    <input type="text" asp-for="UserId"  />
+                </td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td><input type="password" asp-for="Password"/></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>
+                    <input type="submit" class="btn btn-lg btn-default" value="OK" name="ACTION" />
+                </td>
+            </tr>
+        </table>
+    </form>
+
+</div>

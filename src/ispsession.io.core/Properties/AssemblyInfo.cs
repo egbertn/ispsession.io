@@ -6,8 +6,8 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyCompany("ADC Cure, Egbert Nierop")]
 [assembly: AssemblyProduct("ISPSession Asp.Net Core")]
-[assembly: AssemblyVersion("9.0.1")]
-[assembly: AssemblyFileVersion("9.0.0.1")]
+[assembly: AssemblyVersion("9.0.3")]
+[assembly: AssemblyFileVersion("9.0.0.3")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyTitle("ASP.NET Session Broker Replacement Middleware")]
 [assembly: AssemblyDescription("ASP.NET Session Broker Replacement Middleware for AspNetCore")]

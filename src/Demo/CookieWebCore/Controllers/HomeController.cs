@@ -3,6 +3,11 @@ using CookieWebCore.Models;
 
 namespace CookieWebCore.Controllers
 {
+    /// <summary>
+    /// December 2016, to demonstrate ISP Session
+    /// For real security you should use the Authenticate attribute
+    /// Reason I use this nineties style security, to demonstrate compatibility with classic ASP
+    /// </summary>
     public class HomeController : BaseController
     {
         public IActionResult Default([FromQuery] string page)
@@ -15,6 +20,7 @@ namespace CookieWebCore.Controllers
             // consistent!
             model.Session = this.Session;
             Session["CountRefresh"] = model.CountRefresh;
+            ViewData["LoggedIn"] = Session["LoggedIn"];
             if (model.CountRefresh > 10)
             {
                 Session.Abandon();
@@ -24,57 +30,43 @@ namespace CookieWebCore.Controllers
         [HttpGet]
         public IActionResult Logout()
         {
-            Session.Remove("Loggedin");
+            Session.Remove("LoggedIn");
+            ViewData.Remove("LoggedIn");
             return RedirectToAction("Default");
+        }
+        [HttpPost]
+        public IActionResult Login(LoginModel login)
+        {
+
+            if (!ModelState.IsValid)
+            {
+                Session["LoggedIn"] = false;
+                return BadRequest(ModelState);
+            }
+         
+            Session["LoggedIn"] = true;            
+            return RedirectToAction("Secure");
         }
         [HttpGet]
         public IActionResult Login()
         {
-            /*
-             * Dim RF
-Set RF = Request.Form
-'Stop
-If RF("ACTION") = "OK" Then
-	If RF("UserID") = "demo" And RF("Password") = "demo" Then
-		Session("LoggedIn") = True
 
-		Response.Redirect "?page=securepage"
-	End If
-	Session("ErrMsg") = "Please try again, your user id / password  was wrong"
-
-End If
-             * */
             var login = new LoginModel();
 
             return View(login);
         }
         public IActionResult Secure()
         {
+            var loggedin = Session["LoggedIn"] ?? false;
+            if ((bool)loggedin != true)
+            {
+                return RedirectToAction("Login");
+            }
+            ViewData["LoggedIn"] = true;
+            ViewData["SessionID"] = Session.SessionID;
             return View();
         }
-        [HttpPost]
-        public IActionResult Login(LoginModel login)
-        {
-            /*
-             * Dim RF
-Set RF = Request.Form
-'Stop
-If RF("ACTION") = "OK" Then
-	If RF("UserID") = "demo" And RF("Password") = "demo" Then
-		Session("LoggedIn") = True
-
-		Response.Redirect "?page=securepage"
-	End If
-	Session("ErrMsg") = "Please try again, your user id / password  was wrong"
-
-End If
-             * */
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-            return RedirectToAction("Secure");
-        }
+      
         public IActionResult Ajax()
         {
             var model = new HomeModel();

@@ -276,6 +276,11 @@ namespace ispsession.io
 
         public IEnumerator GetEnumerator()
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
+            CheckLoad();
             return _sessionItems.GetEnumerator();
         }
 
@@ -287,26 +292,51 @@ namespace ispsession.io
 
         public void Remove(string key)
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
+            CheckLoad();
             _sessionItems.Remove(key);
         }
 
         public void RemoveAll()
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
+            CheckLoad();
             _sessionItems.Clear();
         }
 
         public void RemoveAt(int index)
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
+            CheckLoad();
             _sessionItems.RemoveAt(index);
         }
 
         public void Set(string key, byte[] value)
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
+            CheckLoad();
             _sessionItems[key] = value;
         }
 
         public bool TryGetValue(string key, out byte[] value)
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
+            CheckLoad();
 
             value = null;            
             if (_sessionItems[key]!= null && _sessionItems[key].GetType() == typeof(byte[]))
@@ -319,6 +349,11 @@ namespace ispsession.io
 
         IEnumerator IISPSession.GetEnumerator()
         {
+            if (!_tryEstablish(this))
+            {
+                throw new InvalidOperationException(CannotInitiateSession);
+            }
+            CheckLoad();
             return _sessionItems.GetEnumerator();
         }
         public bool Liquid

@@ -33,25 +33,11 @@ namespace ispsession.io
             var ret = this._shouldEstablishSession |= !this._context.Response.HasStarted;
             if (ret)
             {
-                var items = default(ISPSessionStateItemCollection);
                 if (!i.IsNewSession)
                 {
-                    items = CSessionDL.SessionGet(_settings, i.SessionID);
-                }
-                else
-                {
-                    items = new ISPSessionStateItemCollection() { Items = new ISPSessionStateItemCollection2() };
-                    //do not insert, wait as much as possible, otherwise, we'll get too much 
-                    //CSessionDL.SessionInsert(_settings, i.SessionID, new PersistMetaData()
-                    //{
-                    //    Expires = _settings.CookieExpires,
-                    //    LastUpdated = new DBTIMESTAMP(),
-                    //    Liquid = i.Liquid? (short)-1 : (short)0,
-                    //    ReEntrance = i.Liquid? (short)-1 : (short)0
-                    //}
-                    //);
-                }
-                i.InitItems(items);
+                    i.LoadAsync();
+                }              
+               
             }
             return ret;
         }
@@ -72,18 +58,24 @@ namespace ispsession.io
             return Task.FromResult(0);
         }
         private void SetCookie()
-        {           
+        {
+            _shouldEstablishSession = false;
+            var request = _context.Request;
+            
 
-            var opts = new CookieOptions();
-            opts.Domain = this._settings.Domain;
-            opts.HttpOnly = !this._settings.HttpOnly;
-            opts.Path = this._settings.Path ?? "/";
-            var cookieOptions = opts;
-            var isHttps = _context.Request.IsHttps;
+            Helpers.TraceInformation("SetCookie {0}, {1}", _id, request.Path);
+            var isHttps = request.IsHttps;
             var resp = this._context.Response;
-
-            cookieOptions.Secure = isHttps && _settings.CookieNoSSL == false ? true : false;
-            resp.Cookies.Append(this._settings.CookieName, this._id, cookieOptions);
+            var opts = new CookieOptions()
+            {
+                Domain = string.IsNullOrEmpty(this._settings.Domain) ? null : this._settings.Domain,
+                HttpOnly = true,
+                Path = this._settings.Path ?? request.Path,
+                Secure = isHttps && _settings.CookieNoSSL == false ? true : false
+            };
+           // resp.Cookies.Delete(this._settings.CookieName, opts);
+           
+            resp.Cookies.Append(this._settings.CookieName, this._id, opts);
             var headers = resp.Headers;
             headers["Cache-Control"] = "no-cache";
             headers["Pragma"] = "no-cache";
@@ -93,9 +85,10 @@ namespace ispsession.io
         {
             string cookieText = null;
             bool foundGuidinURL = false;
+            var request = context.Request;
             if (_settings.SnifQueryStringFirst)
             {
-                var cookie = context.Request.Query[_settings.CookieName];
+                var cookie = request.Query[_settings.CookieName];
                
                 if (cookie.Count > 0)
                 {
@@ -108,7 +101,7 @@ namespace ispsession.io
                 }
             }
             string cookieValue = null;
-            var httpCookie = context.Request.Cookies[_settings.CookieName];
+            var httpCookie =request.Cookies[_settings.CookieName];
 
             if (httpCookie != null  && !foundGuidinURL)
             {
@@ -118,11 +111,11 @@ namespace ispsession.io
                     cookieValue = null;
                     if (_settings.SnifQueryStringFirst == false)
                     {
-                        var urlCookie = context.Request.Query[_settings.CookieName];
+                        var urlCookie = request.Query[_settings.CookieName];
                         
                         if (urlCookie.Count>0 && Validate(urlCookie[0]))
                         {
-                            Helpers.TraceInformation("GetSessionID found url guid {0}", urlCookie);
+                            Helpers.TraceInformation("GetSessionID found url guid {0}, {1}", urlCookie, request.Path);
                             cookieText = urlCookie;
                             foundGuidinURL = true;
                         }
@@ -130,7 +123,7 @@ namespace ispsession.io
                 }
                 else
                 {
-                    Helpers.TraceInformation("GetSessionID found cookie guid {0}", cookieValue);
+                    Helpers.TraceInformation("GetSessionID found cookie guid {0}, {1}", cookieValue, request.Path);
                 }
             }
             var db = CSessionDL.GetDatabase(_settings);
@@ -145,7 +138,7 @@ namespace ispsession.io
                 }
                 else if (_settings.ReEntrance == true && !string.IsNullOrEmpty(cookieText)) //allow to ressurrect a session id, however, the data is gone
                 {
-                    Helpers.TraceInformation("GetSessionID revived session url guid {0}", cookieText);
+                    Helpers.TraceInformation("GetSessionID revived session url guid {0}, {1}", cookieText, request.Path);
                     return cookieText;
                 }
                 return null;

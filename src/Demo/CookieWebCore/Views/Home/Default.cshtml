@@ -10,27 +10,32 @@
     <p>
         Your sesssion ID = @Model.Session.SessionID<br />
 
-        <button class="btn btn-lg refresh btn-primary">Refresh this page</button>
+        <button class="btn btn-lg refresh btn-primary">Refresh this page</button>        
         
-        Session("CountRefresh") = @Model.Session["CountRefresh"]
-        @*@{
-        if (!Model.Session.Contents.Exists("a3")) 
-        Dim b,driedimg
-        b = Session("a3")
-        driedimg = Session("driedim")
-        %><br />
-        Dimensional Array (0,0) =<%=b(0,0)%><br />
-        Dimensional Array (0,1) =	<%=b(0,1)%><br />
-        Dimensional Array (1,1) =	<%=b(1,1)%><br />
-        <%if not isempty(driedimg) Then%>
-        Driedim Array(0,1,0) = <%=driedimg(0,1,0) %>
-        <%
-        End If
-        End If%>
-        Session("a0") =<%=Session("a0")%><br />
-        Session("a2") = <%=Session("a2")%><br />
-        Session("CountRefresh") = <%=Session("CountRefresh")%>
+        @if (Model.Session["a3"] != null)
+        {
+            object[,] b;
+            object[,,]  driedimg;
+            b = (object[,])Model.Session["a3"];
+            driedimg = (object[,,])Model.Session["driedim"];
+            <br/>
+            <span>Dimensional Array(0, 0) = @b[0, 0];</span>            
+           <br/>
+        <span>Dimensional Array(0, 1) =  @b[0, 1]  </span> 
+            <br/>
+            <span>Dimensional Array(1, 1) =  @b[1, 1]</span>
+                <br/>
 
+            if (driedimg != null)
+            {
+                <span>Driedim Array(0, 1, 0) = @driedimg[0, 1, 0]</span>
+
+            }            
+            }
+            Session("a0") = @Model.Session["a0"]<br />
+            Session("a2") = @Model.Session["a2"]<br />
+            Session("CountRefresh") = @Model.Session["CountRefresh"]
+        
         <br /><%*@
 
         @*dim a()

@@ -10,14 +10,16 @@ namespace ispsession.io
         private readonly SessionAppSettings _settings;
         private const string CannotInitiateSession = "Cannot Initiate Session now";
         private ISPSessionStateItemCollection2 _sessionItems;
-        private readonly Func<ISPSession, bool> _tryEstablish;
-        private readonly string _sessionId;
+        private readonly Func<ISPSession, bool> _tryEstablish;        
         //TODO: parse this flag
         private readonly bool _isReadonly;
-        private readonly bool _isNew;
+        private readonly object locker = new object();
+        private bool _isNew;
         private bool _liquid;
         private bool _reEntrance;
         private bool _isAbandoned;
+        //becomes true if session is not new but requested, loaded as late as possible!
+        private bool _wasLoaded;
         //minutes
         private int _timeOut;
         internal ISPSession(string sessionKey, Func<ISPSession, bool> tryEstablish,bool isNewSessionKey, SessionAppSettings settings)
@@ -41,24 +43,46 @@ namespace ispsession.io
                 throw new ArgumentNullException(nameof(tryEstablish));
             }
             _tryEstablish = tryEstablish;
-            _settings = settings;
-            _sessionId = sessionKey;
+            _settings = settings;           
             _isNew = isNewSessionKey;
             _timeOut = _settings.SessionTimeout;
             _liquid = _settings.Liquid;
             _reEntrance = _settings.ReEntrance;
-         
+            _sessionItems =  new ISPSessionStateItemCollection2() { SessionID = sessionKey };            
         }
 
-        internal void InitItems(ISPSessionStateItemCollection items)
+        private void InitItems(ISPSessionStateItemCollection items)
         {
-            this._sessionItems = items.Items;
-            this._sessionItems.IsNew = _isNew;
-            this._sessionItems.SessionID = _sessionId;
-            this._sessionItems.Timeout = _timeOut;
-            this._sessionItems.IsReadOnly = _isReadonly;            
-        }
+            lock (locker)
+            {
+                //we must avoid a second initialisation, which occurs outside our MVC View (e.g.) or API controlller
+                // when e.g. a javascript is loaded. ASP.NET core runs all middleware thus, the session as well
+                
+                // when the session is abandoned, we must deal with it as if new
+                if (items == null)
+                {
+                    _isNew = true;
 
+                    return;
+                }
+                this._sessionItems = items.Items;
+                this._sessionItems.IsNew = _isNew;                
+                this._sessionItems.Timeout = _timeOut;
+                this._sessionItems.IsReadOnly = _isReadonly;
+                
+            }
+        }
+        private void CheckLoad()
+        {
+            if (!_wasLoaded && IsNewSession == false)
+            {
+                lock (locker)
+                {
+                    _wasLoaded = true;
+                    LoadAsync().Wait();
+                }
+            }
+        }
         public object this[string name]
         {
             get
@@ -67,6 +91,7 @@ namespace ispsession.io
                 {
                     throw new InvalidOperationException(CannotInitiateSession);
                 }
+                CheckLoad();
                 return _sessionItems[name];
             }
 
@@ -76,6 +101,7 @@ namespace ispsession.io
                 {
                     throw new InvalidOperationException(CannotInitiateSession);
                 }
+                CheckLoad();
                 _sessionItems[name] = value;
             }
         }
@@ -88,6 +114,7 @@ namespace ispsession.io
                 {
                     throw new InvalidOperationException(CannotInitiateSession);
                 }
+                CheckLoad();
                 return _sessionItems[index];
             }
 
@@ -97,6 +124,7 @@ namespace ispsession.io
                 {
                     throw new InvalidOperationException(CannotInitiateSession);
                 }
+                CheckLoad();
                 _sessionItems[index] = value;
             }
         }
@@ -105,6 +133,7 @@ namespace ispsession.io
         {
             get
             {
+                CheckLoad();
                 return _sessionItems.Count;
             }
         }
@@ -113,7 +142,7 @@ namespace ispsession.io
         {
             get
             {
-                return _sessionId;
+                return _sessionItems.SessionID;
             }
         }
 
@@ -145,6 +174,7 @@ namespace ispsession.io
         {
             get
             {
+                CheckLoad();
                 return _sessionItems.Keys;                
             }
         }
@@ -166,7 +196,7 @@ namespace ispsession.io
         {
             get
             {
-                return _sessionId;
+                return _sessionItems.SessionID;
             }
         }
 
@@ -188,10 +218,11 @@ namespace ispsession.io
             if (!_tryEstablish(this))
             {
                 throw new InvalidOperationException(CannotInitiateSession);
-            }
+            }            
             _isAbandoned = true;
             _sessionItems.Clear();
-            CSessionDL.SessionRemove(_settings, _sessionId);            
+            
+            CSessionDL.SessionRemove(_settings, SessionID);            
         }
 
         public void Add(string name, object value)
@@ -200,6 +231,7 @@ namespace ispsession.io
             {
                 throw new InvalidOperationException(CannotInitiateSession);
             }
+            CheckLoad();
             _sessionItems[name] = value;
         }
 
@@ -209,34 +241,36 @@ namespace ispsession.io
             {
                 throw new InvalidOperationException(CannotInitiateSession);
             }
+            CheckLoad();
             _sessionItems.Clear();
         }
 
         public Task CommitAsync()
         {
-            return Task.Run(() =>
+            //return Task.Run(() =>
+            //{
+            if (_sessionItems == null)
             {
-                if (_sessionItems == null)
-                {
-                    return;
-                }
-                if (_isAbandoned)
-                {
-                    _sessionItems.Clear();//make sure
-                    //TODO: Expire?
-                   return;
-                }
+                return Task.FromResult(0);
+            }
+            if (_isAbandoned)
+            {
+                _sessionItems.Clear();//make sure
+                                      //TODO: Expire?
+                return Task.FromResult(0);
+            }
 
-                
-                CSessionDL.SessionSave(_settings, _sessionItems,
-                    new PersistMetaData(false)
-                    {
-                        Expires = _timeOut,
-                        Liquid = _liquid ? (short)-1 : (short)0,
-                        ReEntrance = _reEntrance ? (short)-1 : (short)0,
-                        LastUpdated = new DBTIMESTAMP()
-                    });
-            });
+
+            CSessionDL.SessionSave(_settings, _sessionItems,
+                new PersistMetaData(false)
+                {
+                    Expires = _timeOut,
+                    Liquid = _liquid ? (short)-1 : (short)0,
+                    ReEntrance = _reEntrance ? (short)-1 : (short)0,
+                    LastUpdated = new DBTIMESTAMP()
+                });
+            return Task.FromResult(0);
+            //});
 
         }
 
@@ -247,7 +281,8 @@ namespace ispsession.io
 
         public Task LoadAsync()
         {
-            throw new NotImplementedException();
+            this.InitItems( CSessionDL.SessionGet(_settings, this.SessionID));
+            return Task.FromResult(0);
         }
 
         public void Remove(string key)

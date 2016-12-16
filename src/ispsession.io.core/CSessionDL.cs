@@ -112,8 +112,9 @@ namespace ispsession.io
                 var retVal = new ISPSessionStateItemCollection()
                 {
                     Meta = meta,
-                    Items = PersistUtil.LocalLoad(ms)
+                    Items = PersistUtil.LocalLoad(ms),
                 };
+                retVal.Items.SessionID = SessionId;
                 return retVal;
 
             }

@@ -153,13 +153,14 @@ namespace ispsession.io
             {
                 try
                 {
-                    await sessionFeature.Session.CommitAsync();
+                   await sessionFeature.Session.CommitAsync();
                 }
                 catch (Exception ex)
                 {
                     //this._logger.ErrorClosingTheSession(var_9_257);
                 }
             }
+                    
         }
 
     }

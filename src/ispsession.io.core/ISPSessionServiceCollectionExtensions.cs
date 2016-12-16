@@ -5,16 +5,8 @@ using System;
 //unfortunate, but necessary for shortcutting and being similar to the MS Syntax
 namespace Microsoft.Extensions.DependencyInjection
 {
-    /// <summary>
-    /// Extension methods for adding session services to the DI container.
-    /// </summary>
     public static class ISPSessionServiceCollectionExtensions
     {
-        /// <summary>
-        /// Adds services required for application session state.
-        /// </summary>
-        /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> to add the services to.</param>
-        /// <returns>The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> so that additional calls can be chained.</returns>
         public static IServiceCollection AddISPSession(this IServiceCollection services)
         {
             if (services == null)
@@ -26,12 +18,6 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
-        /// <summary>
-        /// Adds services required for application session state.
-        /// </summary>
-        /// <param name="services">The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> to add the services to.</param>
-        /// <param name="configure">The session options to configure the middleware with.</param>
-        /// <returns>The <see cref="T:Microsoft.Extensions.DependencyInjection.IServiceCollection" /> so that additional calls can be chained.</returns>
         public static IServiceCollection AddISPSession(this IServiceCollection services, Action<SessionAppSettings> configure)
         {
             if (services == null)

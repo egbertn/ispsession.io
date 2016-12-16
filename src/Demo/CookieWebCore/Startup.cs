@@ -46,7 +46,6 @@ namespace CookieWebCore
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
             //other code omitted for simplicity
-            app.UseISPSession();
 
             if (env.IsDevelopment())
             {
@@ -60,6 +59,7 @@ namespace CookieWebCore
 
 
             app.UseStaticFiles();
+            app.UseISPSession();
 
             app.UseMvc(routes =>
             {

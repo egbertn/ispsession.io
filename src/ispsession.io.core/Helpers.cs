@@ -101,15 +101,17 @@ namespace ispsession.io
         }
         internal short ReadInt16()
         {
-            return  (short) (Str.ReadByte() << 8 | Str.ReadByte());
+            Str.Read(_memoryBuff, 0, sizeof(short));
+            return BitConverter.ToInt16(_memoryBuff, 0);
         }
         internal void WriteInt16(short value)
         {
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(short));
         }
         internal int ReadInt32()
-        {
-            return Str.ReadByte() << 24 | Str.ReadByte() << 16 | Str.ReadByte() << 8 | Str.ReadByte();            
+        {            
+            Str.Read(_memoryBuff, 0, sizeof(int));
+            return BitConverter.ToInt32(_memoryBuff, 0);
         }
         internal uint ReadUInt32()
         {
@@ -118,10 +120,11 @@ namespace ispsession.io
         }
         internal void WriteInt32(int value)
         {
-            Str.WriteByte((byte)(value >> 24));
-            Str.WriteByte((byte)(255 & value >> 16));
-            Str.WriteByte((byte)(255 & value >> 8));
-            Str.WriteByte((byte)(255 & value));
+            Str.Write(BitConverter.GetBytes(value), 0, sizeof(int));
+            //Str.WriteByte((byte)(value >> 24));
+            //Str.WriteByte((byte)(255 & value >> 16));
+            //Str.WriteByte((byte)(255 & value >> 8));
+            //Str.WriteByte((byte)(255 & value));
         }
         internal void WriteUInt32(uint value)
         {

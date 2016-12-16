@@ -80,9 +80,6 @@ namespace ispsession.io
    
     public class ISPSessionMiddleWare
     {    
-
-        //private static readonly Func<bool> ReturnTrue = new Func<bool>(SessionMiddleware.<> c.<> 9.<.cctor > b__11_0);
-
         private readonly ISPSessionIDManager _manager;
         private readonly RequestDelegate _next;
         private readonly SessionAppSettings _options;
@@ -102,18 +99,15 @@ namespace ispsession.io
         {
 
             var isNewSessionKey = false;
-            var tryEstablishSession = ReturnTrue;
-
+             
             var text2 = _manager.GetSessionID(context);
             if (text2 == null || _options.Liquid)
             {
                 text2 = _manager.CreateSessionID(context);
-                isNewSessionKey = true;
-             
-                tryEstablishSession = (i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
-                
-              
+                isNewSessionKey = true;              
             }
+            Func<ISPSession, bool> tryEstablishSession = (i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
+
 #if !Demo
             string license = _appSettings.Lic;
             var lic = _appSettings.LicKey;

@@ -48,6 +48,10 @@ End If
 
             return View(login);
         }
+        public IActionResult Secure()
+        {
+            return View();
+        }
         [HttpPost]
         public IActionResult Login(LoginModel login)
         {
@@ -69,7 +73,7 @@ End If
             {
                 return BadRequest(ModelState);
             }
-            return PartialView(login);
+            return RedirectToAction("Secure");
         }
         public IActionResult Ajax()
         {

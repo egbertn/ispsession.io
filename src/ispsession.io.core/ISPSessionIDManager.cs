@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -36,9 +37,9 @@ namespace ispsession.io
                 if (!i.IsNewSession)
                 {
                     i.LoadAsync();
-                }              
-               
+                }            
             }
+
             return ret;
         }
         public ISPSessionIDManager(HttpContext context, string id, SessionAppSettings settings)
@@ -58,23 +59,19 @@ namespace ispsession.io
             return Task.FromResult(0);
         }
         private void SetCookie()
-        {
-            _shouldEstablishSession = false;
+        {         
             var request = _context.Request;
-            
-
             Helpers.TraceInformation("SetCookie {0}, {1}", _id, request.Path);
             var isHttps = request.IsHttps;
             var resp = this._context.Response;
             var opts = new CookieOptions()
             {
-                Domain = string.IsNullOrEmpty(this._settings.Domain) ? null : this._settings.Domain,
-                HttpOnly = true,
+                Domain = string.IsNullOrEmpty(this._settings.Domain) ? null : this._settings.Domain,               
                 Path = this._settings.Path ?? request.Path,
                 Secure = isHttps && _settings.CookieNoSSL == false ? true : false
             };
-           // resp.Cookies.Delete(this._settings.CookieName, opts);
-           
+            //unfortunately, workaround, otherwise cookies get duplicated
+            resp.Cookies.Delete(this._settings.CookieName, opts);
             resp.Cookies.Append(this._settings.CookieName, this._id, opts);
             var headers = resp.Headers;
             headers["Cache-Control"] = "no-cache";

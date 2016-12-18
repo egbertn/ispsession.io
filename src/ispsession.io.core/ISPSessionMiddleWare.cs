@@ -129,7 +129,7 @@ namespace ispsession.io
             var exp = double.Parse(Helpers.GetMetaData("at"));
             if (DateTime.Today > NativeMethods.FromOADate(exp))
             {
-                await context.Response.WriteAsync("The ispsession.io Module expired! We would welcome your order at <a href=\"http://ispsession.io/?page=order\">order here</a>");
+                await context.Response.WriteAsync(Helpers.MessageString);
             }
 
 #endif

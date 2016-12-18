@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ispsession.io;
+using CookieWebCore.Models;
 
 namespace CookieWebCore
 {
@@ -35,6 +36,8 @@ namespace CookieWebCore
         {
             // Add framework services.
             services.Configure<SessionAppSettings>(Configuration.GetSection("ispsession.io"));
+            services.Configure<MailSettings>(Configuration.GetSection("mailinfo"));
+
             services.AddISPSession();
 
             services.AddMvc();

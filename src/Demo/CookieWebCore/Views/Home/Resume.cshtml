@@ -1,0 +1,22 @@
+﻿@model CookieWebCore.Models.ResumeModel
+<div class="well">
+    <h2>Resume Session from URL Demo</h2>
+    <p>
+        This page shows that a session can be resumed using a URL inside an email. In fact, the URL can be kept anywhere. While your cookie has expired when you close the browser, it is still resumeable by having a browser click on a URL.<BR>
+        Note that this feature introduces security issues. A resumable session can be resumed by anyone who has access to the readable URL containing a sessionid.<BR>Programmers should take special care that such URL's are protected by passwords for instance.
+    </p>    
+    Your session ID: @Model.SessionID<br />
+    <span class="warning">@Model.Message</span><br/>
+    
+    <form asp-controller="Home" asp-action="Resume"method="post">
+        What food do you like most?<br />
+        <input type="hidden" asp-for="Start" />
+        
+        <input type="text" asp-for="Word"/><br />
+        To which email address we can sent your resumable Session? <br /><sub>Note, this email address is <b>not</b> monitored nor kept on file!</sub>
+        <br />
+        <input type="text" asp-for="Email"/><br />
+        <span asp-validation-for="Email"/>
+        <input type="submit" name="action" value="Send">
+    </form>
+</div>

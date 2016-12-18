@@ -80,9 +80,9 @@ namespace ispsession.io
         //[return: MarshalAs(UnmanagedType.Bool)]
         //internal static extern bool GlobalUnlock(IntPtr hMem);
         [DllImport("Shlwapi.dll", SetLastError = false, ExactSpelling = true)]
-        internal static extern uint HashData([In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)]
+        internal unsafe static extern uint HashData([In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)]
                                 byte[] pbData, int cbData,
-                            [Out, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 3)] byte[] piet,
+                             void* piet,
                             int outputLen);
         [DllImport("oleaut32.dll", SetLastError = false)]
         internal static extern int VariantChangeTypeEx( out tagVARIANT pvargDest, [In] ref tagVARIANT pvarSrc, int lcid, short wFlags, [MarshalAs(UnmanagedType.I2)] VarEnum vt);
@@ -103,7 +103,21 @@ namespace ispsession.io
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int CreateStreamOnHGlobal(IntPtr hGlobal, bool fDeleteOnRelease,
            out IStream ppstm);
-
+        internal static double ToOaDate(DateTime value)
+        {
+            _SYSTEMTIME st = new _SYSTEMTIME()
+            {
+                wYear = (short)value.Year,
+                wMonth = (short)value.Month,
+                wDay = (short)value.Day,
+                wHour = (short)value.Hour,
+                wMinute = (short)value.Minute,
+                wMilliseconds = (short)value.Millisecond
+            };
+            double d;
+            NativeMethods.SystemTimeToVariantTime(ref st, out d);
+            return d;
+        }
         internal static DateTime FromOADate(double d)
         {
             _SYSTEMTIME st = new _SYSTEMTIME();

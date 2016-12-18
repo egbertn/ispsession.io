@@ -32,16 +32,18 @@
     "Debug": {
       "buildOptions": {
         "keyFile": "..\\adccure.snk",
-        "define": [ "DEBUG", "TRACE", "Demo" ],
+        "define": [ "DEBUG", "TRACE", "Demo", "OPT" ],
         "optimize": false,
+        "allowUnsafe": true,
         "outputName": "ispsession.io"
       }
     },
     "Release": {
       "buildOptions": {
         "keyFile": "..\\adccure.snk",
-        "define": [ "RELEASE", "TRACE", "Demo" ],
+        "define": [ "RELEASE", "TRACE", "Demo", "OPT" ],
         "optimize": true,
+        "allowUnsafe": true,
         "outputName": "ispsession.io"
       }
     }

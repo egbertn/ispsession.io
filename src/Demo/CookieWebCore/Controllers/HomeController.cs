@@ -1,5 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CookieWebCore.Models;
+using Microsoft.Extensions.Options;
+using MimeKit;
+using System.Threading.Tasks;
+using MailKit.Security;
+using MimeKit.Text;
+using System;
 
 namespace CookieWebCore.Controllers
 {
@@ -10,11 +16,16 @@ namespace CookieWebCore.Controllers
     /// </summary>
     public class HomeController : BaseController
     {
+        private IOptions<MailSettings> _siteSettings;
+        public HomeController(IOptions<MailSettings> mailSettings)
+        {
+            _siteSettings = mailSettings;
+        }
         public IActionResult Default([FromQuery] string page)
         {
-          
+
             var model = new HomeModel();
-            model.CountRefresh =  (int)(Session["CountRefresh"] ?? 0);
+            model.CountRefresh = (int)(Session["CountRefresh"] ?? 0);
             model.CountRefresh++;
             // again, this is not how it should be done, but to keep the code sample
             // consistent!
@@ -33,6 +44,42 @@ namespace CookieWebCore.Controllers
             Session.Remove("LoggedIn");
             ViewData.Remove("LoggedIn");
             return RedirectToAction("Default");
+        }
+        [HttpGet]
+        public IActionResult Resume()
+        {
+            var model = new ResumeModel();
+            model.SessionID = Session.SessionID;
+            return PartialView(model);
+        }
+        [HttpPost]
+        public async Task<IActionResult> Resume(ResumeModel resume)
+        {
+            if (!ModelState.IsValid)
+            {
+                return PartialView(resume);
+            }
+            var msg = new MimeMessage();
+            msg.To.Add(new MailboxAddress(resume.Email));
+            msg.From.Add(new MailboxAddress("NOREPLY@ispsession.io"));
+            msg.Subject = "ISP Session resumable session demo";
+            var host = Request.Scheme +  "://"+ Request.Host.Host.ToString() + Url.Action("Resume", "Home", new { GUID = Session.SessionID });
+            msg.Body = new TextPart(TextFormat.Html) { Text = $@"<html><head></head><body>Resume your session with 
+
+    <a href=""{host}"">""Click here</a><br/>
+    Please close your browser to see that the session is resumed when you start a new browser using the URL inside the email!
+    </body></html>"};
+
+         
+
+            var cl = new MailKit.Net.Smtp.SmtpClient();
+            var arr = this._siteSettings.Value.SmtpServer.Split('.');
+            cl.LocalDomain = string.Join(".",arr,1,arr.Length-1);
+            await cl.ConnectAsync(this._siteSettings.Value.SmtpServer, 25, SecureSocketOptions.StartTlsWhenAvailable);
+            await cl.AuthenticateAsync(this._siteSettings.Value.UserName, this._siteSettings.Value.Password);
+            await cl.SendAsync(msg);
+
+            return PartialView(resume);
         }
         [HttpPost]
         public IActionResult Login(LoginModel login)

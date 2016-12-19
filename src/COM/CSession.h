@@ -4,10 +4,10 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Thu Dec 01 10:18:28 2016
+/* at Mon Dec 19 17:10:08 2016
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
     protocol : dce , ms_ext, app_config, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -121,48 +121,48 @@ EXTERN_C const IID IID_INWCVariantDictionary;
     INWCVariantDictionary : public IDispatch
     {
     public:
-        virtual /* [id][helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Item( 
+        virtual /* [id][propget] */ HRESULT STDMETHODCALLTYPE get_Item( 
             /* [in] */ VARIANT varKey,
             /* [retval][out] */ VARIANT *pVal) = 0;
         
-        virtual /* [id][helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_Item( 
+        virtual /* [id][propput] */ HRESULT STDMETHODCALLTYPE put_Item( 
             /* [in] */ VARIANT varKey,
             /* [in] */ VARIANT newVal) = 0;
         
-        virtual /* [defaultcollelem][id][helpstring][propputref] */ HRESULT STDMETHODCALLTYPE putref_Item( 
+        virtual /* [defaultcollelem][id][propputref] */ HRESULT STDMETHODCALLTYPE putref_Item( 
             /* [in] */ VARIANT varKey,
             /* [in] */ VARIANT newVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Key( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Key( 
             /* [in] */ VARIANT KeyIndex,
             /* [retval][out] */ VARIANT *pVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Count( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Count( 
             /* [retval][out] */ int *pVal) = 0;
         
         virtual /* [restricted][id] */ HRESULT STDMETHODCALLTYPE _NewEnum( 
             /* [retval][out] */ IUnknown **pVal) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Remove( 
+        virtual HRESULT STDMETHODCALLTYPE Remove( 
             /* [in] */ VARIANT varKey) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE RemoveAll( void) = 0;
+        virtual HRESULT STDMETHODCALLTYPE RemoveAll( void) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Exists( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Exists( 
             /* [in] */ VARIANT vKey,
             /* [retval][out] */ VARIANT_BOOL *pVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_VarType( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_VarType( 
             /* [in] */ VARIANT vKey,
             /* [retval][out] */ SHORT *pVal) = 0;
         
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_CaseSensitive( 
+        virtual /* [restricted][hidden][propget] */ HRESULT STDMETHODCALLTYPE get_CaseSensitive( 
             /* [retval][out] */ VARIANT_BOOL *pVal) = 0;
         
-        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_CaseSensitive( 
+        virtual /* [restricted][hidden][propput] */ HRESULT STDMETHODCALLTYPE put_CaseSensitive( 
             /* [in] */ VARIANT_BOOL newVal) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Persist( 
+        virtual HRESULT STDMETHODCALLTYPE Persist( 
             VARIANT varKey) = 0;
         
     };
@@ -223,27 +223,27 @@ EXTERN_C const IID IID_INWCVariantDictionary;
             /* [annotation][out] */ 
             _Out_opt_  UINT *puArgErr);
         
-        /* [id][helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Item )( 
+        /* [id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Item )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT varKey,
             /* [retval][out] */ VARIANT *pVal);
         
-        /* [id][helpstring][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Item )( 
+        /* [id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Item )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT varKey,
             /* [in] */ VARIANT newVal);
         
-        /* [defaultcollelem][id][helpstring][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Item )( 
+        /* [defaultcollelem][id][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Item )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT varKey,
             /* [in] */ VARIANT newVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Key )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Key )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT KeyIndex,
             /* [retval][out] */ VARIANT *pVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count )( 
             INWCVariantDictionary * This,
             /* [retval][out] */ int *pVal);
         
@@ -251,32 +251,32 @@ EXTERN_C const IID IID_INWCVariantDictionary;
             INWCVariantDictionary * This,
             /* [retval][out] */ IUnknown **pVal);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Remove )( 
+        HRESULT ( STDMETHODCALLTYPE *Remove )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT varKey);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *RemoveAll )( 
+        HRESULT ( STDMETHODCALLTYPE *RemoveAll )( 
             INWCVariantDictionary * This);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Exists )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Exists )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT vKey,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_VarType )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_VarType )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT vKey,
             /* [retval][out] */ SHORT *pVal);
         
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_CaseSensitive )( 
+        /* [restricted][hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_CaseSensitive )( 
             INWCVariantDictionary * This,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
-        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_CaseSensitive )( 
+        /* [restricted][hidden][propput] */ HRESULT ( STDMETHODCALLTYPE *put_CaseSensitive )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT_BOOL newVal);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Persist )( 
+        HRESULT ( STDMETHODCALLTYPE *Persist )( 
             INWCVariantDictionary * This,
             VARIANT varKey);
         
@@ -868,90 +868,90 @@ EXTERN_C const IID IID_INWCSession;
         
         virtual HRESULT STDMETHODCALLTYPE OnEndPage( void) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_SessionID( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_SessionID( 
             /* [retval][out] */ BSTR *pbstrRet) = 0;
         
-        virtual /* [helpstring][id][propget] */ HRESULT STDMETHODCALLTYPE get_Value( 
+        virtual /* [id][propget] */ HRESULT STDMETHODCALLTYPE get_Value( 
             /* [in] */ BSTR vkey,
             /* [retval][out] */ VARIANT *pVal) = 0;
         
-        virtual /* [helpstring][id][propput] */ HRESULT STDMETHODCALLTYPE put_Value( 
+        virtual /* [id][propput] */ HRESULT STDMETHODCALLTYPE put_Value( 
             /* [in] */ BSTR vkey,
             /* [in] */ VARIANT newVal) = 0;
         
-        virtual /* [helpstring][id][propputref] */ HRESULT STDMETHODCALLTYPE putref_Value( 
+        virtual /* [id][propputref] */ HRESULT STDMETHODCALLTYPE putref_Value( 
             /* [in] */ BSTR vkey,
             /* [in] */ VARIANT newVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_TimeOut( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_TimeOut( 
             /* [retval][out] */ LONG *pVal) = 0;
         
-        virtual /* [helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_TimeOut( 
+        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_TimeOut( 
             /* [in] */ LONG pVal) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Abandon( void) = 0;
+        virtual HRESULT STDMETHODCALLTYPE Abandon( void) = 0;
         
-        virtual /* [helpstring][hidden][propget] */ HRESULT STDMETHODCALLTYPE get_CodePage( 
+        virtual /* [hidden][propget] */ HRESULT STDMETHODCALLTYPE get_CodePage( 
             /* [retval][out] */ LONG *pVal) = 0;
         
-        virtual /* [helpstring][hidden][propput] */ HRESULT STDMETHODCALLTYPE put_CodePage( 
+        virtual /* [hidden][propput] */ HRESULT STDMETHODCALLTYPE put_CodePage( 
             /* [in] */ LONG newVal) = 0;
         
-        virtual /* [helpstring][hidden][propget] */ HRESULT STDMETHODCALLTYPE get_LCID( 
+        virtual /* [hidden][propget] */ HRESULT STDMETHODCALLTYPE get_LCID( 
             /* [retval][out] */ LONG *pVal) = 0;
         
-        virtual /* [helpstring][hidden][propput] */ HRESULT STDMETHODCALLTYPE put_LCID( 
+        virtual /* [hidden][propput] */ HRESULT STDMETHODCALLTYPE put_LCID( 
             /* [in] */ LONG newVal) = 0;
         
-        virtual /* [helpstring][hidden][propget] */ HRESULT STDMETHODCALLTYPE get_StaticObjects( 
+        virtual /* [hidden][propget] */ HRESULT STDMETHODCALLTYPE get_StaticObjects( 
             /* [retval][out] */ INWCVariantDictionary **ppProperties) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Contents( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Contents( 
             /* [retval][out] */ INWCVariantDictionary **pVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_IsExpired( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_IsExpired( 
             /* [retval][out] */ VARIANT_BOOL *pVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_IsNew( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_IsNew( 
             /* [retval][out] */ VARIANT_BOOL *pVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_LiquidCookie( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_LiquidCookie( 
             /* [retval][out] */ VARIANT_BOOL *pVal) = 0;
         
-        virtual /* [helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_LiquidCookie( 
+        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_LiquidCookie( 
             /* [in] */ VARIANT_BOOL newVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_ReEntrance( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_ReEntrance( 
             /* [retval][out] */ VARIANT_BOOL *pVal) = 0;
         
-        virtual /* [helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_ReEntrance( 
+        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_ReEntrance( 
             /* [in] */ VARIANT_BOOL newVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_URL( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_URL( 
             /* [in] */ VARIANT strCheckA,
             /* [retval][out] */ VARIANT *pVal) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Execute( 
+        virtual HRESULT STDMETHODCALLTYPE Execute( 
             /* [in] */ BSTR ToPage) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Transfer( 
+        virtual HRESULT STDMETHODCALLTYPE Transfer( 
             /* [in] */ BSTR ToPage) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_CreateInstance( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_CreateInstance( 
             /* [in] */ BSTR progid,
             /* [retval][out] */ IDispatch **pVal) = 0;
         
-        virtual /* [helpstring][propput] */ HRESULT STDMETHODCALLTYPE put_Readonly( 
+        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_Readonly( 
             /* [in] */ VARIANT_BOOL newVal) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Statistics( 
+        virtual HRESULT STDMETHODCALLTYPE Statistics( 
             /* [optional][in] */ VARIANT vAppKey,
             /* [optional][in] */ VARIANT vSessionID,
             /* [retval][out] */ INWCVariantDictionary **retVal) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE EnsureURLCookie( void) = 0;
+        virtual HRESULT STDMETHODCALLTYPE EnsureURLCookie( void) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_OldSessionID( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_OldSessionID( 
             /* [retval][out] */ BSTR *pVal) = 0;
         
     };
@@ -1019,116 +1019,116 @@ EXTERN_C const IID IID_INWCSession;
         HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
             INWCSession * This);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_SessionID )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_SessionID )( 
             INWCSession * This,
             /* [retval][out] */ BSTR *pbstrRet);
         
-        /* [helpstring][id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Value )( 
+        /* [id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Value )( 
             INWCSession * This,
             /* [in] */ BSTR vkey,
             /* [retval][out] */ VARIANT *pVal);
         
-        /* [helpstring][id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Value )( 
+        /* [id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Value )( 
             INWCSession * This,
             /* [in] */ BSTR vkey,
             /* [in] */ VARIANT newVal);
         
-        /* [helpstring][id][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Value )( 
+        /* [id][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Value )( 
             INWCSession * This,
             /* [in] */ BSTR vkey,
             /* [in] */ VARIANT newVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_TimeOut )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_TimeOut )( 
             INWCSession * This,
             /* [retval][out] */ LONG *pVal);
         
-        /* [helpstring][propput] */ HRESULT ( STDMETHODCALLTYPE *put_TimeOut )( 
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_TimeOut )( 
             INWCSession * This,
             /* [in] */ LONG pVal);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Abandon )( 
+        HRESULT ( STDMETHODCALLTYPE *Abandon )( 
             INWCSession * This);
         
-        /* [helpstring][hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_CodePage )( 
+        /* [hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_CodePage )( 
             INWCSession * This,
             /* [retval][out] */ LONG *pVal);
         
-        /* [helpstring][hidden][propput] */ HRESULT ( STDMETHODCALLTYPE *put_CodePage )( 
+        /* [hidden][propput] */ HRESULT ( STDMETHODCALLTYPE *put_CodePage )( 
             INWCSession * This,
             /* [in] */ LONG newVal);
         
-        /* [helpstring][hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_LCID )( 
+        /* [hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_LCID )( 
             INWCSession * This,
             /* [retval][out] */ LONG *pVal);
         
-        /* [helpstring][hidden][propput] */ HRESULT ( STDMETHODCALLTYPE *put_LCID )( 
+        /* [hidden][propput] */ HRESULT ( STDMETHODCALLTYPE *put_LCID )( 
             INWCSession * This,
             /* [in] */ LONG newVal);
         
-        /* [helpstring][hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_StaticObjects )( 
+        /* [hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_StaticObjects )( 
             INWCSession * This,
             /* [retval][out] */ INWCVariantDictionary **ppProperties);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Contents )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Contents )( 
             INWCSession * This,
             /* [retval][out] */ INWCVariantDictionary **pVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsExpired )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsExpired )( 
             INWCSession * This,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsNew )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsNew )( 
             INWCSession * This,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_LiquidCookie )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_LiquidCookie )( 
             INWCSession * This,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
-        /* [helpstring][propput] */ HRESULT ( STDMETHODCALLTYPE *put_LiquidCookie )( 
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_LiquidCookie )( 
             INWCSession * This,
             /* [in] */ VARIANT_BOOL newVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_ReEntrance )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ReEntrance )( 
             INWCSession * This,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
-        /* [helpstring][propput] */ HRESULT ( STDMETHODCALLTYPE *put_ReEntrance )( 
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_ReEntrance )( 
             INWCSession * This,
             /* [in] */ VARIANT_BOOL newVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_URL )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_URL )( 
             INWCSession * This,
             /* [in] */ VARIANT strCheckA,
             /* [retval][out] */ VARIANT *pVal);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Execute )( 
+        HRESULT ( STDMETHODCALLTYPE *Execute )( 
             INWCSession * This,
             /* [in] */ BSTR ToPage);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Transfer )( 
+        HRESULT ( STDMETHODCALLTYPE *Transfer )( 
             INWCSession * This,
             /* [in] */ BSTR ToPage);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_CreateInstance )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_CreateInstance )( 
             INWCSession * This,
             /* [in] */ BSTR progid,
             /* [retval][out] */ IDispatch **pVal);
         
-        /* [helpstring][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Readonly )( 
+        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_Readonly )( 
             INWCSession * This,
             /* [in] */ VARIANT_BOOL newVal);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Statistics )( 
+        HRESULT ( STDMETHODCALLTYPE *Statistics )( 
             INWCSession * This,
             /* [optional][in] */ VARIANT vAppKey,
             /* [optional][in] */ VARIANT vSessionID,
             /* [retval][out] */ INWCVariantDictionary **retVal);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *EnsureURLCookie )( 
+        HRESULT ( STDMETHODCALLTYPE *EnsureURLCookie )( 
             INWCSession * This);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_OldSessionID )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_OldSessionID )( 
             INWCSession * This,
             /* [retval][out] */ BSTR *pVal);
         

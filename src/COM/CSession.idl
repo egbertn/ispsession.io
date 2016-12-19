@@ -110,7 +110,7 @@ interface INWCSession : IDispatch
 	[propget] HRESULT  IsNew([out,retval] VARIANT_BOOL *pVal);
 	[propget] HRESULT  LiquidCookie([out,retval] VARIANT_BOOL *pVal);
 	[propput] HRESULT  LiquidCookie([in] VARIANT_BOOL newVal);
-	[propget)] HRESULT  ReEntrance([out,retval] VARIANT_BOOL *pVal);
+	[propget] HRESULT  ReEntrance([out,retval] VARIANT_BOOL *pVal);
 	[propput] HRESULT  ReEntrance([in] VARIANT_BOOL newVal);
 	[propget] HRESULT  URL([in] VARIANT strCheckA, [out,retval] VARIANT *pVal);
 

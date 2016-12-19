@@ -1,6 +1,8 @@
 // Copyright (c) 2014 Luca Marturana. All rights reserved.
 // Licensed under Apache 2.0, see LICENSE for details
+#ifndef WIN64
 #pragma comment(lib, "Ws2_32.lib")
+#endif
 #include "..\include\redis3m\utils\resolv.h"
 #ifndef _MSC_VER
 #include <sys/types.h>

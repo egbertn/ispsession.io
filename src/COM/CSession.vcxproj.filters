@@ -145,37 +145,37 @@
     <ClInclude Include="CStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="D:\Data\TFS\CSession\redis3m-master\include\redis3m\patterns\model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Data\TFS\CSession\redis3m-master\include\redis3m\patterns\orm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Data\TFS\CSession\redis3m-master\include\redis3m\patterns\scheduler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Data\TFS\CSession\redis3m-master\include\redis3m\patterns\script_exec.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Data\TFS\CSession\redis3m-master\include\redis3m\patterns\simple_obj_store.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Data\TFS\CSession\redis3m-master\include\redis3m\utils\noncopyable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Data\TFS\CSession\redis3m-master\include\redis3m\utils\pool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Data\TFS\CSession\redis3m-master\include\redis3m\utils\resolv.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="D:\Data\TFS\CSession\redis3m-master\include\redis3m\utils\sha1.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="bstrnocache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\redis3m\patterns\model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\redis3m\patterns\orm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\redis3m\patterns\scheduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\redis3m\patterns\script_exec.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\redis3m\patterns\simple_obj_store.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\redis3m\utils\noncopyable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\redis3m\utils\pool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\redis3m\utils\resolv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\redis3m\utils\sha1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

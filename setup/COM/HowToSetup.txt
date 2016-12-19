@@ -1,0 +1,34 @@
+ISP Session 8.0 will not have an MSI setup (previous versions had one, but where SQL based).
+To get ISP Session running do the following:
+
+1. 	Download the DEMO application http://ispsession.io/download/?file=ispsessiondemo (not yet available)
+	this includes classic asp & Asp.Net classic
+	(Hybrid solution, yes)
+2. 	The Demo contains a valid web.Config
+    	that ISP Session COM (classic asp) will read.
+3. 	Modify your website in order it includes or has 
+    	Server.CreateObject("NWCTools.CSession"). The demo has a simple sample.
+4.	Disable the integrated IIS 6+ session state. This can be done on the inetmgr.exe, configuring the website that you want to test.
+	Or else, use the page level meta <%@enablesessionstate=false %>	
+4. 	Install Redis. 
+	Dowload it from ispsession.io/download/?file=redis (not yet available at time of writing)
+5. 	Configure Redis datasource in Web.config
+6.	Run RegisterCOM.vbs from a command prompt.
+	It will register the Dll's and eventually dowload and install the VC 12 runtime.
+
+your site should be working now.
+
+Purchasing
+	Chose your license.
+	Enumerate all the domains that will use ISP Session. E.g. an active directory domain where you develop, e.g. applepie.local, would be sufficient.
+		Since many Web Servers are not domain members anymore, include the workgroup names or server names.
+		These names will be used for generating the license.
+	Just sent me an email at egbertDOTnieropATadccureDOTnl
+	I will sent you a paypal request.
+	The unlocked dlls will come your way, including the license. 
+	Just copy the dll's over the existing ones. No registration using regsvr32 is required.
+	The license must be applied to web.Config using the appKey settings "License" and "Csession.LIC"
+		eg:
+   		 <add key="ispsession_io:Csession.LIC" value="mydomain.local"/>
+    		<add key="ispsession_io:License" value="F01FB5D0BCA6CE4C8CC773916F281C32"/>
+		note: Each name must be separated by a \r\n (CR+LF), which in XML is &#xD;&#xA;

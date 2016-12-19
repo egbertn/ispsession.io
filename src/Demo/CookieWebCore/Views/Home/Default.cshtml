@@ -31,7 +31,7 @@
                 <span>Driedim Array(0, 1, 0) = @driedimg[0, 1, 0]</span>
 
             }            
-            }
+            }<br/>
             Session("a0") = @Model.Session["a0"]<br />
             Session("a2") = @Model.Session["a2"]<br />
             Session("CountRefresh") = @Model.Session["CountRefresh"]
@@ -77,27 +77,15 @@
     Session Count Variables = @Model.Session.Count
 <br/>
 
-    @*<%
-        Response.Write "Session Count Variables = "
-        Response.Write Session.Contents.Count
-        REsponse.Write "<br />"
-        For Each k in Session.Contents
-            Response.Write k 
-            Response.Write "<br /> type="
-            dim t
-            t = Session.Contents.VarType(k)
-            Response.Write Session.Contents.VarType(k)
-            Response.Write "<br /> value="
-            if (t And vbArray) = vbArray  Then            
-                'Response.Write Session.Contents.Item(k)
-            Else
-                Response.Write Session.Contents.Item(k)
-            End If
-            Response.Write "<br />"
-        Next
-        REsponse.Write "GetKey="
-        Response.Write Session.Contents.Key(1)
-        Response.Write "<br />"
-        Response.Write Session.Contents.Exists("A0")       
-    %>*@
+    
+
+        @foreach (var k in Model.Session.Keys)
+        {
+            <span>@k</span>            
+            if (Model.Session[k] != null)
+            {
+            <span>Type= @Model.Session[k].GetType().Name</span>}
+           <span>Value=@Model.Session[k]</span><br/>           
+        
+    }
 </pre>

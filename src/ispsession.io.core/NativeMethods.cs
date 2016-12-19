@@ -81,9 +81,7 @@ namespace ispsession.io
         //internal static extern bool GlobalUnlock(IntPtr hMem);
         [DllImport("Shlwapi.dll", SetLastError = false, ExactSpelling = true)]
         internal unsafe static extern uint HashData([In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)]
-                                byte[] pbData, int cbData,
-                             void* piet,
-                            int outputLen);
+                                byte[] pbData, int cbData, void* piet, int outputLen);
         [DllImport("oleaut32.dll", SetLastError = false)]
         internal static extern int VariantChangeTypeEx( out tagVARIANT pvargDest, [In] ref tagVARIANT pvarSrc, int lcid, short wFlags, [MarshalAs(UnmanagedType.I2)] VarEnum vt);
 

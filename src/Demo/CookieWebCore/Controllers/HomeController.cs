@@ -3,8 +3,11 @@ using CookieWebCore.Models;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using System.Threading.Tasks;
+#if NETSTANDARD1_6
+
 using MailKit.Security;
 using MimeKit.Text;
+#endif
 using System;
 
 namespace CookieWebCore.Controllers
@@ -32,6 +35,7 @@ namespace CookieWebCore.Controllers
             model.Session = this.Session;
             Session["CountRefresh"] = model.CountRefresh;
             ViewData["LoggedIn"] = Session["LoggedIn"];
+            Session["mydecimal"] = -1234.567M;
             if (model.CountRefresh > 10)
             {
                 Session.Abandon();
@@ -59,6 +63,7 @@ namespace CookieWebCore.Controllers
             {
                 return PartialView(resume);
             }
+#if NETSTANDARD1_6
             var msg = new MimeMessage();
             msg.To.Add(new MailboxAddress(resume.Email));
             msg.From.Add(new MailboxAddress("NOREPLY@ispsession.io"));
@@ -66,11 +71,12 @@ namespace CookieWebCore.Controllers
             var host = Request.Scheme +  "://"+ Request.Host.Host.ToString() + Url.Action("Resume", "Home", new { GUID = Session.SessionID });
             msg.Body = new TextPart(TextFormat.Html) { Text = $@"<html><head></head><body>Resume your session with 
 
-    <a href=""{host}"">""Click here</a><br/>
+    <a href=""{host}"">Click here</a><br/>
     Please close your browser to see that the session is resumed when you start a new browser using the URL inside the email!
     </body></html>"};
 
-         
+
+
 
             var cl = new MailKit.Net.Smtp.SmtpClient();
             var arr = this._siteSettings.Value.SmtpServer.Split('.');
@@ -78,7 +84,7 @@ namespace CookieWebCore.Controllers
             await cl.ConnectAsync(this._siteSettings.Value.SmtpServer, 25, SecureSocketOptions.StartTlsWhenAvailable);
             await cl.AuthenticateAsync(this._siteSettings.Value.UserName, this._siteSettings.Value.Password);
             await cl.SendAsync(msg);
-
+#endif
             return PartialView(resume);
         }
         [HttpPost]

@@ -195,13 +195,13 @@ namespace ispsession.io
         {
             Str.Read(_memoryBuff, 0, sizeof(decimal));
             var bits = new int[sizeof(decimal) / 4];
-            Array.Copy(_memoryBuff, 0, bits, 0, sizeof(decimal));
+            Buffer.BlockCopy(_memoryBuff, 0, bits, 0, sizeof(decimal));
             //the C++ DECIMAL struct is exactly the same as in .NET
             return new decimal(bits);
         }
         internal void WriteDecimal(decimal value)
         {            
-            Array.Copy(Decimal.GetBits(value), 0, _memoryBuff, 0, sizeof(decimal));
+            Buffer.BlockCopy(decimal.GetBits(value), 0, _memoryBuff, 0, sizeof(decimal));
             Str.Write(_memoryBuff, 0, sizeof(decimal));
         }
         internal decimal ReadCurrency()

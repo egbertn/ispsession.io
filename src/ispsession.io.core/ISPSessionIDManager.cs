@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using System;
 using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
@@ -60,7 +61,12 @@ namespace ispsession.io
         }
         private void SetCookie()
         {         
+            if (Validate(_id)== false)
+            {
+                return;
+            }
             var request = _context.Request;
+            
             Helpers.TraceInformation("SetCookie {0}, {1}", _id, request.Path);
             var isHttps = request.IsHttps;
             var resp = this._context.Response;
@@ -68,11 +74,14 @@ namespace ispsession.io
             {
                 Domain = string.IsNullOrEmpty(this._settings.Domain) ? null : this._settings.Domain,               
                 Path = this._settings.Path ?? request.Path,
-                Secure = isHttps && _settings.CookieNoSSL == false ? true : false
+                Secure = isHttps && _settings.CookieNoSSL == false ? true : false,
+                Expires =_settings.CookieExpires==0? default(DateTimeOffset?) : DateTime.UtcNow + TimeSpan.FromMinutes(_settings.CookieExpires)
             };
             //unfortunately, workaround, otherwise cookies get duplicated
-            resp.Cookies.Delete(this._settings.CookieName, opts);
+            //resp.Cookies.Delete(this._settings.CookieName, opts);
+          
             resp.Cookies.Append(this._settings.CookieName, this._id, opts);
+            
             var headers = resp.Headers;
             headers["Cache-Control"] = "no-cache";
             headers["Pragma"] = "no-cache";

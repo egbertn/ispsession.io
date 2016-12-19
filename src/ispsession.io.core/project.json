@@ -32,7 +32,7 @@
     "Debug": {
       "buildOptions": {
         "keyFile": "..\\adccure.snk",
-        "define": [ "DEBUG", "TRACE", "Demo", "OPT" ],
+        "define": [ "DEBUG", "TRACE", "Demo", "OPT"],
         "optimize": false,
         "allowUnsafe": true,
         "outputName": "ispsession.io"

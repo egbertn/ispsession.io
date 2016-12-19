@@ -85,7 +85,7 @@ namespace ispsession.io
         private readonly SessionAppSettings _options;
         private bool Checked;
         private readonly IISPSessionStore _sessionStore;
-        private static readonly Func<ISPSession, bool> ReturnTrue = (i) => true;
+        
 
         //  private readonly IDataProtector _dataProtector;
         public ISPSessionMiddleWare(RequestDelegate next, IISPSessionStore sessionStore, IOptions<SessionAppSettings> options)
@@ -106,6 +106,8 @@ namespace ispsession.io
                 text2 = _manager.CreateSessionID(context);
                 isNewSessionKey = true;              
             }
+            // do the cookie stuff just once
+            Func<bool> initialized =() => false;
             Func<ISPSession, bool> tryEstablishSession = (i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
 
 #if !Demo

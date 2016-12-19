@@ -4,9 +4,8 @@
 $( document ).ready(function() 
 {
         
-    function doAjaxPanel(refresh, path) {
-        
-        $.get(  path  + "&ajaxRefresh=" + (refresh ? "1" : "0"),
+    function doAjaxPanel(refresh, path) {        
+        $.get(path + "&ajaxRefresh=" + (refresh ? "1" : "0"),
                function( data ) { $( "div.default_content" ).html( data );}
         ); 
     };
@@ -14,8 +13,7 @@ $( document ).ready(function()
     $("button.refresh").click(function(){ window.location.reload();});
     // how to pass the session to an Ajax panel.   
     $("button.ajax").click(function (e) {
-        var me = $(this);
-        console.log('button.ajax');
+        var me = $(this);     
         doAjaxPanel(true, me.attr("data-path")); return false;
     });
             

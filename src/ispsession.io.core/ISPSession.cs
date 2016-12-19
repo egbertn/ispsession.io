@@ -22,7 +22,7 @@ namespace ispsession.io
         private bool _wasLoaded;
         //minutes
         private int _timeOut;
-        internal ISPSession(string sessionKey, Func<ISPSession, bool> tryEstablish,bool isNewSessionKey, SessionAppSettings settings)
+        internal ISPSession(string sessionKey, Func<ISPSession, bool> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
         {
             if(settings == null)
             {
@@ -65,6 +65,7 @@ namespace ispsession.io
 
                     return;
                 }
+                _wasLoaded = true;
                 this._sessionItems = items.Items;
                 this._sessionItems.IsNew = _isNew;                
                 this._sessionItems.Timeout = _timeOut;
@@ -74,12 +75,19 @@ namespace ispsession.io
         }
         private void CheckLoad()
         {
-            if (!_wasLoaded && IsNewSession == false)
+            if (!_wasLoaded)
             {
-                lock (locker)
+                if (!_tryEstablish(this))
                 {
-                    _wasLoaded = true;
-                    LoadAsync().Wait();
+                    throw new InvalidOperationException(CannotInitiateSession);
+                }
+                if (IsNewSession == false)
+                {
+                    lock (locker)
+                    {
+                        _wasLoaded = true;
+                        LoadAsync().Wait();
+                    }
                 }
             }
         }
@@ -87,20 +95,12 @@ namespace ispsession.io
         {
             get
             {
-                if (!_tryEstablish(this))
-                {
-                    throw new InvalidOperationException(CannotInitiateSession);
-                }
                 CheckLoad();
                 return _sessionItems[name];
             }
 
             set
-            {
-                if (!_tryEstablish(this))
-                {
-                    throw new InvalidOperationException(CannotInitiateSession);
-                }
+            {              
                 CheckLoad();
                 _sessionItems[name] = value;
             }
@@ -109,21 +109,13 @@ namespace ispsession.io
         public object this[int index]
         {
             get
-            {
-                if (!_tryEstablish(this))
-                {
-                    throw new InvalidOperationException(CannotInitiateSession);
-                }
+            {               
                 CheckLoad();
                 return _sessionItems[index];
             }
 
             set
             {
-                if (!_tryEstablish(this))
-                {
-                    throw new InvalidOperationException(CannotInitiateSession);
-                }
                 CheckLoad();
                 _sessionItems[index] = value;
             }
@@ -215,11 +207,9 @@ namespace ispsession.io
 
         public void Abandon()
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }            
+            CheckLoad();
             _isAbandoned = true;
+            _isAbandoned = false;
             _sessionItems.Clear();
             
             CSessionDL.SessionRemove(_settings, SessionID);            
@@ -227,20 +217,12 @@ namespace ispsession.io
 
         public void Add(string name, object value)
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }
             CheckLoad();
             _sessionItems[name] = value;
         }
 
         public void Clear()
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }
             CheckLoad();
             _sessionItems.Clear();
         }
@@ -276,66 +258,46 @@ namespace ispsession.io
 
         public IEnumerator GetEnumerator()
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }
             CheckLoad();
             return _sessionItems.GetEnumerator();
         }
 
         public Task LoadAsync()
         {
-            this.InitItems( CSessionDL.SessionGet(_settings, this.SessionID));
+            if (_wasLoaded == false)
+            {
+                this.InitItems(CSessionDL.SessionGet(_settings, this.SessionID));                
+                
+            }
             return Task.FromResult(0);
         }
 
         public void Remove(string key)
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }
             CheckLoad();
             _sessionItems.Remove(key);
         }
 
         public void RemoveAll()
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }
             CheckLoad();
             _sessionItems.Clear();
         }
 
         public void RemoveAt(int index)
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }
             CheckLoad();
             _sessionItems.RemoveAt(index);
         }
 
         public void Set(string key, byte[] value)
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }
             CheckLoad();
             _sessionItems[key] = value;
         }
 
         public bool TryGetValue(string key, out byte[] value)
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }
             CheckLoad();
 
             value = null;            
@@ -349,10 +311,6 @@ namespace ispsession.io
 
         IEnumerator IISPSession.GetEnumerator()
         {
-            if (!_tryEstablish(this))
-            {
-                throw new InvalidOperationException(CannotInitiateSession);
-            }
             CheckLoad();
             return _sessionItems.GetEnumerator();
         }

@@ -1,9 +1,9 @@
 ﻿{
   "dependencies": {
     "BundlerMinifier.Core": "2.2.306",
-    "ispsession.io.core": "1.0.4",
+    "ispsession.io.core": "1.0.5",
     "MailKit": "1.10.1",
-    "Microsoft.AspNetCore.Diagnostics": "1.0.0",
+    "Microsoft.AspNetCore.Diagnostics": "1.0.1",
     "Microsoft.AspNetCore.Mvc": "1.1.0",
     "Microsoft.AspNetCore.Razor.Tools": {
       "version": "1.0.0-preview2-final",
@@ -19,17 +19,19 @@
     "Microsoft.Extensions.Logging.Console": "1.1.0",
     "Microsoft.Extensions.Logging.Debug": "1.1.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.1.0",
-    "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.1.0",
-    "NETCore.MailKit": "1.0.1"
+    "Microsoft.VisualStudio.Web.BrowserLink.Loader": "14.1.0" 
   },
 
   "tools": {
+    "BundlerMinifier.Core": "2.0.238",
     "Microsoft.AspNetCore.Razor.Tools": "1.0.0-preview2-final",
     "Microsoft.AspNetCore.Server.IISIntegration.Tools": "1.0.0-preview2-final"
   },
 
   "frameworks": {
+    "net462":  {},
     "netcoreapp1.6": {
+      "dependencies": { "NETCore.MailKit": "1.0.1" },
       "imports": [
         "dnxcore50"
       ]

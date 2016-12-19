@@ -18,7 +18,7 @@ namespace ispsession.io.Store
             //this._loggerFactory = loggerFactory;
         }
 
-        public IISPSession Create(string sessionKey, Func<ISPSession, bool> tryEstablish,  bool isNewSessionKey, SessionAppSettings settings)
+        public IISPSession Create(string sessionKey, Func<ISPSession, bool> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
         {
             if (string.IsNullOrEmpty(sessionKey))
             {

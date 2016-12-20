@@ -1,0 +1,91 @@
+﻿@model CookieWebCore.Models.HomeModel
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+
+
+<div class="well main">
+    <h2>Compatibility and interoperability</h2>
+    <p>
+        Your sesssion ID = @Model.Session.SessionID<br />
+
+        <button class="btn btn-lg refresh btn-primary">Refresh this page</button>        
+        
+        @if (Model.Session["a3"] != null)
+        {
+            object[,] b;
+            object[,,]  driedimg;
+            b = (object[,])Model.Session["a3"];
+            driedimg = (object[,,])Model.Session["driedim"];
+            <br/>
+            <span>Dimensional Array(0, 0) = @b[0, 0];</span>            
+           <br/>
+        <span>Dimensional Array(0, 1) =  @b[0, 1]  </span> 
+            <br/>
+            <span>Dimensional Array(1, 1) =  @b[1, 1]</span>
+                <br/>
+
+            if (driedimg != null)
+            {
+                <span>Driedim Array(0, 1, 0) = @driedimg[0, 1, 0]</span>
+
+            }            
+            }<br/>
+            Session("a0") = @Model.Session["a0"]<br />
+            Session("a2") = @Model.Session["a2"]<br />
+            Session("CountRefresh") = @Model.Session["CountRefresh"]
+        
+        <br />
+        @{
+            var driedim = new object[2, 2, 2];
+            object[,,] aaa= null;
+            driedim[0, 0, 0] = "aap";
+            driedim[0, 0, 1] = "noot";
+            driedim[0, 1, 0] = "mies";
+            Model.Session["driedim"] = driedim;
+            Model.Session["aaa"] = aaa;
+            var a = new object[2, 2];
+            a[0, 0] = "start";
+            a[0, 1] = DateTime.Now;
+            a[1, 1] = "Bye";
+            Model.Session["a3"] = a;
+            Model.Session["a0"] = "Smith";
+            Model.Session["a2"] = DateTime.Now;
+        }
+    </p>
+</div>
+
+<div class="panel panel-info">
+    <div class="panel-heading">
+        <h3 class="panel-title">An ajax panel which uses the ASP Session replacement</h3>
+    </div>
+    <div class="panel-body default_content">
+        Ajax panel. If you see this, something obviously did not work
+    </div>
+</div>
+
+<p>
+    <button class="btn btn-lg ajax btn-primary" data-path='@Url.Action("Ajax", "Home", new  {Guid = Model.Session.SessionID})'>Ajaxpanel refresh</button>
+</p>
+<div class="well">
+    We invite you to login at our website to see the secret section by clicking login.<br />
+
+    Since we use an Ajax panel, iframes are supported as well. Even if they are from a different domain, as long as they run ISP Session on the same database server.
+</div>
+<pre>
+    Session Count Variables = @Model.Session.Count
+<br/>
+
+    
+
+        @foreach (var k in Model.Session.Keys)
+        {
+            <span>@k</span>            
+            if (Model.Session[k] != null)
+            {
+            <span>Type= @Model.Session[k].GetType().Name</span>}
+           <span>Value=@Model.Session[k]</span><br/>           
+        
+    }
+</pre>

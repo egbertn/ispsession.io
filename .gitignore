@@ -240,3 +240,7 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+/setup/Demo/CookieWeb/lib/bootstrap
+/setup/Demo/CookieWeb/lib/jquery
+/setup/Demo/CookieWebCore/wwwroot/lib/jquery
+/setup/Demo/CookieWebCore/wwwroot/lib/bootstrap

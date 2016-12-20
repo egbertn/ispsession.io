@@ -147,7 +147,7 @@ namespace ispsession.io
             var exp = double.Parse(Helpers.GetMetaData("at"));
             if (DateTime.Today > DateTime.FromOADate(exp))
             {
-                context.Response.Write("The ispsession.io Module expired! We would welcome your order at <a href=\"http://ispsession.io/?page=order\">order here</a>");
+                context.Response.Write(Helpers.LicString);
             }
 
 #endif

@@ -46,7 +46,7 @@ public:
 		bHashsessionID =
 		bIsDBOpen = 
 		bErrState = blnPersistDoneByOnEndPage=	blnCancel = blnNew = blnExpired =
-			blnNoCookie = blnSnifQueryStringFirst = blnCookieNoSSL = blnLoggedOn = blnReEntrance =
+			 blnSnifQueryStringFirst = blnCookieNoSSL = blnLoggedOn = blnReEntrance =
 			blnLiquid = blnWasLiquid = blnSucceeded = blnFoundURLGuid =
 			g_blnValid = bReadonly = FALSE;
 		
@@ -164,8 +164,7 @@ private:
 	bool licenseOK;
 	BOOL blnCancel,
 		blnNew,
-		blnExpired,
-		blnNoCookie,
+		blnExpired,		
 		blnSnifQueryStringFirst,
 		blnCookieNoSSL,
 		blnLoggedOn,	

@@ -47,6 +47,7 @@
     <Content Include="about.asp" />
     <Content Include="ajaxCallWithSession.asp" />
     <Content Include="ajaxCallWithSession.aspx" />
+    <Content Include="css\theme.css" />
     <Content Include="Default.asp" />
     <Content Include="Default.aspx" />
     <Content Include="Default_Content.asp" />
@@ -109,7 +110,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ispsession.io, Version=8.5.3.0, Culture=neutral, PublicKeyToken=9e8b40b682d8c05a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ispsession.io.1.0.6\lib\net452\ispsession.io.dll</HintPath>
+      <HintPath>..\..\packages\ispsession.io.1.0.7\lib\net452\ispsession.io.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure">

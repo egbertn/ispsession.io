@@ -13,9 +13,9 @@
     <title>Welcome at our ISP Session Sample site - Sessions using Cookies</title>
 
     <!-- Bootstrap -->
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
-      <link href="css/theme.css" rel="stylesheet">
+    <link href="./lib/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="./lib/bootstrap/dist/css/bootstrap-theme.min.css" rel="stylesheet">
+      <link href="./css/theme.css" rel="stylesheet">
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -91,7 +91,7 @@
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://code.jquery.com/jquery.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="js/bootstrap.min.js"></script>
+    <script src="./lib/dist/js/bootstrap.min.js"></script>
 	<script>
         function doAjaxPanel(refresh)
         {

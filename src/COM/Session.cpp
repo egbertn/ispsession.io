@@ -154,13 +154,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	logModule.Write(L"AD_DOMAIN: (%s), AD_PATH: (%s)", strCookieDOM, strAppPath);
 
 
-	bstrProp = L"NoCookie";
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0 && bstrProp.IsBool())
-	{		
-		blnNoCookie = bstrProp.ToBool() == VARIANT_TRUE ? TRUE : FALSE;
-	}
-	logModule.Write(L"NoCookie (%d)", blnNoCookie);
+	
 	
 	bstrProp = L"HASH_SESSIONID";
 	bstrProp.Attach(config.AppSettings(bstrProp));
@@ -243,7 +237,7 @@ STDMETHODIMP NWCSession::Initialize() throw()
 	vMissing.vt = VT_ERROR;
 	vMissing.scode = DISP_E_PARAMNOTFOUND;
 
-	if (blnNoCookie == FALSE && blnFoundURLGuid == FALSE) 
+	if (blnFoundURLGuid == FALSE) 
 	{
 		CComPtr<IRequestDictionary> oReqDict;
 		hr = m_piRequest->get_Cookies(&oReqDict);	
@@ -1030,7 +1024,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 
 	if ((blnNew == FALSE) && (blnExpired == FALSE))
 	{
-        if ((blnFoundURLGuid == TRUE) && (pgetSession.m_ReEntrance == VARIANT_FALSE) && (blnNoCookie == FALSE))
+        if ((blnFoundURLGuid == TRUE) && (pgetSession.m_ReEntrance == VARIANT_FALSE) )
 		{
 			logModule.Write(L"found Cookie in QueryString (or in AJAX callback) but disallowed because ReEntrance=false");
             blnExpired =  blnNew = TRUE;
@@ -1040,7 +1034,8 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 			CHECKHR
 		}
 	}
-
+	//always write a cookie
+	
     //read persisted record   
 	if (bDidInsert == false ) 
 	{
@@ -1056,7 +1051,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 
 	/*	int z_result = -1;*/
 		//int z_result = Z_OK;
-		// pgetSession.m_blobLength precaution because this seems to stay 0 on SQL NATIVE CLIENT.
+	
 		if (pgetSession.IsNULL == FALSE && pgetSession.m_blobLength > 0)
 		{
 			CComObject<CStream>* cseqs;
@@ -1092,8 +1087,10 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 			hr = NewID();
 			CHECKHR
 		}
+		
 
 	}
+	WriteCookie(strGUID);
 
 	{
 		VARIANT testel = { VT_EMPTY };
@@ -1126,10 +1123,7 @@ STDMETHODIMP NWCSession::NewID(void) throw()
 		hr = this->NewGuid(&guid);		
 	}
 	
-	sHexFromBt(&guid, &strGUID);		
-	if (blnNoCookie == FALSE && m_piResponse != NULL) 		
-		hr = WriteCookie(strGUID);
-
+	sHexFromBt(&guid, &strGUID);
 	return hr;
 }
 
@@ -1574,9 +1568,8 @@ STDMETHODIMP_(void) NWCSession::ReadCookieFromQueryString() throw()
 		{					
 			blnFoundURLGuid = TRUE;
 			logModule.Write(L"QueryString: %s, %x", vitem.bstrVal, hr);					
-			vitem.Detach(&strGUID);
-			if (blnNoCookie == FALSE) 
-				WriteCookie(strGUID);
+			vitem.Detach(&strGUID);			
+				
 		}
 		else
 			logModule.Write(L"tried QueryString(GUID)");	

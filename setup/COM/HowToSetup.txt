@@ -13,7 +13,9 @@ To get ISP Session running do the following:
 4. 	Install Redis. 
 	Dowload it from ispsession.io/download/?file=redis (not yet available at time of writing)
 5. 	Configure Redis datasource in Web.config
-6.	Run RegisterCOM.vbs from a command prompt.
+6. 	Create a folder, e.g. c:\IISTools\
+	Copy the files from the zip into it.
+7.	Run RegisterCOM.vbs from a command prompt.
 	It will register the Dll's and eventually dowload and install the VC 12 runtime.
 
 your site should be working now.

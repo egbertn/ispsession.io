@@ -56,6 +56,7 @@ namespace ispsession.io
         //ADC_ISPSTATE_PROVIDER_SIMPLE, ADC_ISPSTATE_PROVIDER_ENT,ADC_ISPSTATE_PROVIDER_ADV
         internal static readonly int[] Productid = {22, 23, 24 };
         internal const string ProductString = "ISP Session 8.5 State Module";
+        internal static readonly string  LicString = @"The ispsession.io Module should be licensed. Please contact ADC Cure for an updated license at information @adccure.nl";
         internal static int Maxinstances = 1000;
         // ReSharper disable once InconsistentNaming
         internal static readonly Encoding _encoding = Encoding.UTF8;

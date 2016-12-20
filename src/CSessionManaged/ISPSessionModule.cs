@@ -14,15 +14,15 @@ namespace ispsession.io
         internal PersistMetaData Meta;
         internal SessionStateItemCollection Items;
     }
-    internal sealed class ISPHttpSessionStateContainer: HttpSessionStateContainer
+    internal sealed class ISPHttpSessionStateContainer : HttpSessionStateContainer
     {
         internal ISPHttpSessionStateContainer(
-            string id, ISessionStateItemCollection sessionItems, 
-            HttpStaticObjectsCollection staticObjects, 
-            int timeout, 
-            bool newSession, 
-            HttpCookieMode cookieMode, 
-            SessionStateMode mode, 
+            string id, ISessionStateItemCollection sessionItems,
+            HttpStaticObjectsCollection staticObjects,
+            int timeout,
+            bool newSession,
+            HttpCookieMode cookieMode,
+            SessionStateMode mode,
             bool isReadonly) :
             base(id, sessionItems, staticObjects, timeout, newSession, cookieMode, mode, isReadonly)
         {
@@ -66,17 +66,17 @@ namespace ispsession.io
                     // Create a SessionIDManager.
                     _sessionIDManager = new ISPSessionIDManager(_appSettings);
 #if !Demo
-            string license = _appSettings.Lic;
-            var lic = _appSettings.LicKey;
-            if (string.IsNullOrEmpty(license))
-            {
-                throw new Exception("Ccession.LIC appsetting is missing in web.config");
-            }
-            if (string.IsNullOrEmpty(lic))
-            {
-                throw new Exception(
-                    "ISP Session requires a Appsetting such as <add key=\"License\" value=\"0245456556560418A91B161F23534007\" />");
-            }
+                    string license = _appSettings.Lic;
+                    var lic = _appSettings.LicKey;
+                    if (string.IsNullOrEmpty(license))
+                    {
+                        throw new Exception("Ccession.LIC appsetting is missing in web.config");
+                    }
+                    if (string.IsNullOrEmpty(lic))
+                    {
+                        throw new Exception(
+                            "ISP Session requires a Appsetting such as <add key=\"License\" value=\"0245456556560418A91B161F23534007\" />");
+                    }
                     Checked = Helpers.LicentieCheck(Helpers.HexToBytes(lic), license);
 #else
                     Checked = true;
@@ -140,7 +140,7 @@ namespace ispsession.io
 #if !Demo
             if (!Checked)
             {
-                HttpContext.Current.Response.Write("The ispsession.io Module should be licensed. Please contact ADC Cure for an updated license at information@adccure.nl");
+                HttpContext.Current.Response.Write(Helpers.LicString);
             }
 #else
 
@@ -151,17 +151,17 @@ namespace ispsession.io
             }
 
 #endif
+            bool redirected, cookieAdded;
             if (_appSettings.Liquid || sessionID == null)
             {
-                bool redirected, cookieAdded;
                 sessionID = this._sessionIDManager.CreateSessionID(context);
-                _sessionIDManager.SaveSessionID(context, sessionID, out redirected, out cookieAdded);
 
                 //if (redirected)
                 // create empty SessionState but we will not support this.
                 //    return;
             }
 
+            _sessionIDManager.SaveSessionID(context, sessionID, out redirected, out cookieAdded);
             if (sessionItems == null)
             {
                 // Identify the session as a new session state instance. Create a new SessionItem
@@ -171,12 +171,12 @@ namespace ispsession.io
                 sessionItems = new ISPSessionStateItemCollection()
                 {
                     Items = new SessionStateItemCollection(),
-                    Meta =  new PersistMetaData(false)
+                    Meta = new PersistMetaData(false)
                     {
                         Expires = this._appSettings.SessionTimeout,
                         Liquid = this._appSettings.Liquid,
                         ReEntrance = this._appSettings.ReEntrance
-                    } 
+                    }
                 };
                 if (sessionMode == PagesEnableSessionState.True)
                 {
@@ -186,11 +186,11 @@ namespace ispsession.io
             }
             else
             {
-                Helpers.TraceInformation("CSessionDL.SessionGet expires({0}), reentrance({1}), liquid({2}), size({3})", 
-				    sessionItems.Meta.Expires,
-				    sessionItems.Meta.ReEntrance,
-				    sessionItems.Meta.Liquid,
-				    sessionItems.Meta.ZLen);
+                Helpers.TraceInformation("CSessionDL.SessionGet expires({0}), reentrance({1}), liquid({2}), size({3})",
+                    sessionItems.Meta.Expires,
+                    sessionItems.Meta.ReEntrance,
+                    sessionItems.Meta.Liquid,
+                    sessionItems.Meta.ZLen);
             }
             SessionStateUtility.AddHttpSessionStateToContext(context,
                              new ISPHttpSessionStateContainer(sessionID,
@@ -242,7 +242,7 @@ namespace ispsession.io
 
             // Read the session state from the context
             var stateProvider = (ISPHttpSessionStateContainer)SessionStateUtility.GetHttpSessionStateFromContext(context);
-            
+
             var sessionID = stateProvider.SessionID;
 
             if (stateProvider.IsAbandoned)

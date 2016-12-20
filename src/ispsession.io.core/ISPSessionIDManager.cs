@@ -75,7 +75,7 @@ namespace ispsession.io
                 Domain = string.IsNullOrEmpty(this._settings.Domain) ? null : this._settings.Domain,               
                 Path = this._settings.Path ?? request.Path,
                 Secure = isHttps && _settings.CookieNoSSL == false ? true : false,
-                Expires =_settings.CookieExpires==0? default(DateTimeOffset?) : DateTime.UtcNow + TimeSpan.FromMinutes(_settings.CookieExpires)
+                Expires =_settings.CookieExpires==0? default(DateTimeOffset?) : DateTime.UtcNow.AddMinutes(_settings.CookieExpires)
             };
             //unfortunately, workaround, otherwise cookies get duplicated
             //resp.Cookies.Delete(this._settings.CookieName, opts);

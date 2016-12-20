@@ -129,16 +129,15 @@ namespace ispsession.io
             return true;
         }
 
-        internal static HttpCookie CreateSessionCookie(string id, bool isHttps, SessionAppSettings settings)
+        internal HttpCookie CreateSessionCookie(string id, bool isHttps)
         {
             //TODO: config domain etc...
-            return new HttpCookie(settings.CookieName, id)
+            return new HttpCookie(_settings.CookieName, id)
             {
-                Path = !string.IsNullOrEmpty(settings.Path) ? settings.Path : "/",
-                HttpOnly = true,
-                Expires = settings.CookieExpires > 0 ? DateTime.Now.AddMinutes(settings.CookieExpires) : DateTime.MinValue,
-                Domain = !string.IsNullOrEmpty(settings.Domain) ? settings.Domain : null,
-                Secure = isHttps ? (settings.CookieNoSSL == false ? true : false) : false
+                Path = !string.IsNullOrEmpty(_settings.Path) ? _settings.Path : "/",
+                Expires = _settings.CookieExpires > 0 ? DateTime.UtcNow.AddMinutes(_settings.CookieExpires) : DateTime.MinValue,
+                Domain = !string.IsNullOrEmpty(_settings.Domain) ? _settings.Domain : null,
+                Secure = isHttps ? (_settings.CookieNoSSL == false ? true : false) : false
             };
         }
 
@@ -162,7 +161,7 @@ namespace ispsession.io
             {
                 cookies.Remove(_settings.CookieName);
             }
-            cookies.Add(CreateSessionCookie(id, isHttps, _settings));
+            cookies.Add(CreateSessionCookie(id, isHttps));
         }
        
         public void RemoveSessionID(HttpContext context)

@@ -76,9 +76,9 @@ namespace ispsession.io
         //[return: MarshalAs(UnmanagedType.Bool)]
         //internal static extern bool GlobalUnlock(IntPtr hMem);
         [DllImport("Shlwapi.dll", SetLastError = false, ExactSpelling = true)]
-        internal static extern uint HashData([In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)] 
+        internal unsafe static extern uint HashData([In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)] 
                                 byte[] pbData, int cbData,
-                            [Out, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 3)] byte[] piet,
+                            void* piet,
                             int outputLen);
         [DllImport("oleaut32.dll", SetLastError = false)]
         internal static extern int VariantTimeToSystemTime(double vtime, [In] ref _SYSTEMTIME lpSystemTime);

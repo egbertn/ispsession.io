@@ -88,38 +88,120 @@ namespace ispsession.io
             }
         }
 
+#if OPT
+        internal unsafe char ReadChar()
+        {
+            Str.Read(_memoryBuff, 0, sizeof(char));
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                return *(char*)ptr;
+            }
+        }
+#else
         internal char ReadChar()
         {
             Str.Read(_memoryBuff, 0, sizeof(char));
             return BitConverter.ToChar(_memoryBuff, 0);
         }
+
+#endif
+
+#if OPT
+        internal unsafe short ReadInt16()
+        {
+            Str.Read(_memoryBuff, 0, sizeof(short));
+
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                return *(short*)ptr;
+            }
+        }
+#else
         internal short ReadInt16()
         {
             Str.Read(_memoryBuff, 0, sizeof(short));
             return BitConverter.ToInt16(_memoryBuff, 0);
         }
+#endif
+#if OPT
+        internal unsafe void WriteInt16(short value)
+        {
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                *(short*)ptr = value;
+            }
+            Str.Write(_memoryBuff, 0, sizeof(short));
+        }
+#else
         internal void WriteInt16(short value)
         {
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(short));
         }
+#endif
+#if OPT
+        internal unsafe int ReadInt32()
+        {
+            Str.Read(_memoryBuff, 0, sizeof(int));
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                return *(int*)ptr;
+            }
+        }
+#else
         internal int ReadInt32()
         {
             Str.Read(_memoryBuff, 0, sizeof(int));
             return BitConverter.ToInt32(_memoryBuff, 0);
         }
+#endif
+#if OPT
+        internal unsafe uint ReadUInt32()
+        {
+            Str.Read(_memoryBuff, 0, sizeof(uint));
+
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                return *(uint*)ptr;
+            }
+        }
+#else
         internal uint ReadUInt32()
         {
             Str.Read(_memoryBuff, 0, sizeof(uint));
             return BitConverter.ToUInt32(_memoryBuff, 0);
         }
+#endif
+#if OPT
+        internal unsafe void WriteInt32(int value)
+        {
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                *(int*)ptr = value;
+                Str.Write(_memoryBuff, 0, sizeof(int));
+
+            }
+        }
+#else
         internal void WriteInt32(int value)
         {
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(int));
         }
+#endif
+#if OPT
+        internal unsafe void WriteUInt32(uint value)
+        {
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                *(uint*)ptr = value;
+            }
+            Str.Write(_memoryBuff, 0, sizeof(uint));
+        }
+#else
         internal void WriteUInt32(uint value)
         {
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(uint));
         }
+#endif
         /// <summary>
         /// Persists a structure into buffer
         /// </summary>
@@ -164,33 +246,114 @@ namespace ispsession.io
                     Marshal.FreeHGlobal(ptPoit);
             }
         }
+#if OPT
+        internal unsafe long ReadInt64()
+        {
+            Str.Read(_memoryBuff, 0, sizeof(long));
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                return *(long*)ptr;
+            }
+        }
+#else
         internal long ReadInt64()
         {
             Str.Read(_memoryBuff, 0, sizeof(long));
             return BitConverter.ToInt64(_memoryBuff, 0);
         }
+#endif
+
+#if OPT
+        internal unsafe ulong ReadUInt64()
+        {
+            Str.Read(_memoryBuff, 0, sizeof(ulong));
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                return *(ulong*)ptr;
+            }
+        }
+#else
         internal ulong ReadUInt64()
         {
             Str.Read(_memoryBuff, 0, sizeof(ulong));
             return BitConverter.ToUInt64(_memoryBuff, 0);
         }
+#endif
+#if OPT
+        internal unsafe void WriteInt64(long value)
+        {
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                *(long*)ptr = value;
+            }
+             Str.Write(_memoryBuff, 0, sizeof(long));
+        }
+#else
         internal void WriteInt64(long value)
         {
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(long));
         }
+#endif
+#if OPT
+        internal unsafe void WriteUInt64(ulong value)
+        {
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                *(ulong*)ptr = value;
+                Str.Write(_memoryBuff, 0, sizeof(ulong));
+            }
+        }
+#else
         internal void WriteUInt64(ulong value)
         {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(long));
+            Str.Write(BitConverter.GetBytes(value), 0, sizeof(ulong));
         }
+#endif
+#if OPT
+        internal unsafe float ReadFloat()
+        {
+            Str.Read(_memoryBuff, 0, sizeof(float));
+            fixed (byte* ptr = _memoryBuff)
+            {
+                return *(float*)ptr;
+            }
+        }
+#else
         internal float ReadFloat()
         {
             Str.Read(_memoryBuff, 0, sizeof(float));
+
             return BitConverter.ToSingle(_memoryBuff, 0);
         }
+#endif
+
+#if OPT
+        internal unsafe void WriteFloat(float value)
+        {
+            fixed (byte* ptr = _memoryBuff)
+            {
+                *(float*)ptr = value;
+                Str.Write(_memoryBuff, 0, sizeof(float));
+            }
+        }
+
+#else
         internal void WriteFloat(float value)
         {
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(float));
         }
+#endif
+#if OPT
+        internal unsafe decimal ReadDecimal()
+        {
+            Str.Read(_memoryBuff, 0, sizeof(decimal));
+            fixed (byte* ptr = _memoryBuff)
+            {
+                var ptr2 = (IntPtr)ptr;
+                return Marshal.PtrToStructure<decimal>(ptr2);
+            }
+        }
+#else
         internal decimal ReadDecimal()
         {
             Str.Read(_memoryBuff, 0, sizeof(decimal));
@@ -199,11 +362,26 @@ namespace ispsession.io
             //the C++ DECIMAL struct is exactly the same as in .NET
             return new decimal(bits);
         }
-        internal void WriteDecimal(decimal value)
-        {            
-            Buffer.BlockCopy(decimal.GetBits(value), 0, _memoryBuff, 0, sizeof(decimal));
+#endif
+
+#if OPT
+        internal unsafe void WriteDecimal(decimal value)
+        {
+            fixed (byte* ptr = _memoryBuff)
+            {
+                var ptr2 = (IntPtr)ptr;
+                Marshal.StructureToPtr(value, ptr2, false);
+            }
             Str.Write(_memoryBuff, 0, sizeof(decimal));
         }
+#else
+        internal void WriteDecimal(decimal value)
+        {
+            Buffer.BlockCopy(Decimal.GetBits(value), 0, _memoryBuff, 0, sizeof(decimal));
+
+            Str.Write(_memoryBuff, 0, sizeof(decimal));
+        }
+#endif
         internal decimal ReadCurrency()
         {
             return Decimal.FromOACurrency(ReadInt64());
@@ -220,19 +398,53 @@ namespace ispsession.io
         {
             WriteInt16(value ? (short)-1 : (short)0);
         }
+#if OPT
+        internal unsafe double ReadDouble()
+        {
+            Str.Read(_memoryBuff, 0, sizeof(double));
+            fixed (byte* ptr = _memoryBuff)
+            {
+                return *(double*)ptr;
+            }
+        }
+#else
         internal double ReadDouble()
         {
             Str.Read(_memoryBuff, 0, sizeof(double));
+
             return BitConverter.ToDouble(_memoryBuff, 0);
         }
+#endif
+#if OPT
+        internal unsafe void WriteDouble(double value)
+        {
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                *(double*)ptr = value;
+                Str.Write(_memoryBuff, 0, sizeof(double));
+            }
+        }
+#else
         internal void WriteDouble(double value)
         {
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(double));
         }
+#endif
+#if OPT
+        internal unsafe void WriteChar(char value)
+        {
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                *(char*)ptr = value;
+            }
+            Str.Write(_memoryBuff, 0, sizeof(char));
+        }
+#else
         internal void WriteChar(char value)
         {
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(char));
         }
+#endif
         internal DateTime ReadDateTime()
         {
             //return DateTime.FromOADate(ReadDouble());
@@ -1159,17 +1371,17 @@ namespace ispsession.io
                 giveDnsName ? NativeMethods.COMPUTER_NAME_FORMAT.ComputerNameDnsHostname :
                     NativeMethods.COMPUTER_NAME_FORMAT.ComputerNameNetBIOS, nt4Netbiosname, ref compNameLength) ? nt4Netbiosname.Substring(0, compNameLength) : null;
         }
-        public static uint GetHashCode2(string value)
+        public unsafe static uint GetHashCode2(string value)
         {
             if (string.IsNullOrEmpty(value)) return 0;
             var bytes = _encoding.GetBytes(value);
-            var outp = new byte[4];
-            var result = NativeMethods.HashData(bytes, bytes.Length, outp, 4);
+            uint outp;
+            var result = NativeMethods.HashData(bytes, bytes.Length, &outp, sizeof(uint));
             if (result != 0)
             {
                 return 0;
             }
-            return BitConverter.ToUInt32(outp, 0);
+            return outp;
         }
         private static readonly object l = new object();
         private static Dictionary<string, string> _cache;

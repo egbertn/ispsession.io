@@ -137,15 +137,16 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 		return HRESULT_FROM_WIN32( ERROR_FILE_NOT_FOUND);
 	}
 	ConfigurationManager config(retVal);
-	
+	const PWSTR prefix = L"ispsession_io:";
 	CComBSTR bstrProp ( L"AD_PATH");	
-	
+	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0)
 	{
 		strAppPath.Attach(bstrProp.Detach()); //attach + detach, an ugly optimization just moving pointers instead of values...
 	}
 	bstrProp = L"AD_DOMAIN";
+	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0)
 	{		
@@ -157,6 +158,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	
 	
 	bstrProp = L"HASH_SESSIONID";
+	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0 && bstrProp.IsBool())
 	{
@@ -165,6 +167,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	logModule.Write(L"HashSessionId (%d)", bHashsessionID);
 
 	bstrProp = L"SnifQueryStringFirst";
+	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0 && bstrProp.IsBool())
 	{	
@@ -174,6 +177,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 
 	
 	bstrProp = L"CookieNoSSL";
+	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0 && bstrProp.IsBool())
 	{	
@@ -181,6 +185,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	}	
 
 	bstrProp = L"CookieExpires";
+	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0 && bstrProp.IsNumeric())
 	{// could be VT_I2 or VT_I4			
@@ -194,6 +199,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	logModule.Write(L"CookieNoSSL (%d), expiration %s", blnCookieNoSSL, bstrProp);	
 
 	bstrProp = L"APP_KEY";
+	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0)
 		logModule.Write(L"AppKey: (%s)", bstrProp);

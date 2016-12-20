@@ -108,8 +108,8 @@
     <Folder Include="lib\" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ispsession.io, Version=8.5.2.0, Culture=neutral, PublicKeyToken=9e8b40b682d8c05a, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\ispsession.io.1.0.5\lib\net452\ispsession.io.dll</HintPath>
+    <Reference Include="ispsession.io, Version=8.5.3.0, Culture=neutral, PublicKeyToken=9e8b40b682d8c05a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ispsession.io.1.0.6\lib\net452\ispsession.io.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.Web.Infrastructure">

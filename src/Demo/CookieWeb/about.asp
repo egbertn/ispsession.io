@@ -5,9 +5,11 @@ The session is managed using the ADC Cure ASP Session Replacement called ISP Ses
     In addition, it supports the 8-byte integer, officially also supported OLE Automation, but not officially by VB Script<br />
 </div>
 <div class="well">
-    <h2>ISP Session does not support .NET compatibility</h2>
+    <h2>ISP Session supports .NET compatibility</h2>
     <p>
-        In theory, it is possible to run ISP Session, which is an unmanaged classic COM object, in co-operation with .NET aspx pages. However, in testing situations, even using all possible options such aspcompat=true.<br />
-        This was not a reliable and stable solution. 
+        As long as you use interoperable variable types, (ispsession.io mentions which ones) variables can be shared.<br />
+        RUn this website e.g. with .aspx extension<br />
+        default.asp or default.aspx, show that the session is persisted and maintained.<br />
+        This also applies to MVC controller views.
     </p>
 </div>

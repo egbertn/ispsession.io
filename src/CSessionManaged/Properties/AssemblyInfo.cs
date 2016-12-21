@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCompany("ADC Cure")]
 [assembly: AssemblyProduct("ISP Session ASP.NET Classic")]
 [assembly: AssemblyVersion("8.5.3")]
-[assembly: AssemblyFileVersion("8.5.3.129")]
+[assembly: AssemblyFileVersion("8.5.3.130")]
 [assembly: AssemblyCopyright("Copyright © ADC Cure 2001-2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]

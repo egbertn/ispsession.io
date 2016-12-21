@@ -12,6 +12,7 @@ namespace CookieWeb.Models
         public string SessionID { get; set; }
 
         public int CountRefresh { get; set; }
+        public string Refresh { get; set; }
         //JUST TO DEMONSTRATE compatibility, not howto use the Session within MVC!
         public HttpSessionStateBase Session { get; set; }
     }

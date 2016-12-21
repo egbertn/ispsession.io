@@ -145,8 +145,9 @@ namespace ispsession.io
         {
             redirected = false; //because we do not do HttpCookieMode.UseUri            
             cookieAdded = true;//always added because HttpCookieMode.UseCookies 
+            var response = context.Response;
             Helpers.TraceInformation("SaveSessionID {0}", id);
-            if (context.Response.HeadersWritten)
+            if (response.HeadersWritten)
             {
                 throw new HttpException("Response was Flushed, cannot save Session Cookie");
             }
@@ -156,12 +157,19 @@ namespace ispsession.io
             }
 
             var isHttps = context.Request.IsSecureConnection;
-            var cookies = context.Response.Cookies;
+            var cookies = response.Cookies;
             if (Array.FindIndex(cookies.AllKeys, x => x == _settings.CookieName) >= 0)
             {
                 cookies.Remove(_settings.CookieName);
             }
             cookies.Add(CreateSessionCookie(id, isHttps));
+            //Session implies, that caching is disabled
+            var cache = response.Cache;
+            response.Headers["pragma"] = "no-cache";            
+            cache.SetCacheability(HttpCacheability.NoCache);
+            cache.SetExpires(DateTime.UtcNow.AddMinutes(-1));
+            cache.SetRevalidation(HttpCacheRevalidation.AllCaches);
+            cache.SetNoStore();
         }
        
         public void RemoveSessionID(HttpContext context)

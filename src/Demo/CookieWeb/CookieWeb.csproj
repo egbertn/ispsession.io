@@ -54,6 +54,10 @@
     <Content Include="empty.asp" />
     <Content Include="Global.asax" />
     <Content Include="ISPSession.asp" />
+    <Content Include="js\site.js" />
+    <Content Include="js\site.min.js">
+      <DependentUpon>site.js</DependentUpon>
+    </Content>
     <Content Include="login.asp" />
     <Content Include="logout.asp" />
     <Content Include="Recordset.asp" />
@@ -61,7 +65,9 @@
     <Content Include="securepage.asp" />
     <Content Include="statistics.asp" />
     <Content Include="thestuff.xml" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ajaxCallWithSession.aspx.cs">
@@ -97,6 +103,7 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="package.json" />
+    <Content Include="Views\Shared\Ajax.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

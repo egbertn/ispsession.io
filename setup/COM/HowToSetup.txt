@@ -1,4 +1,4 @@
-ISP Session 8.0 will not have an MSI setup (previous versions had one, but where SQL based).
+ISP Session 8.0 will not have an MSI setup (previous did).
 To get ISP Session running do the following:
 
 1. 	Download the DEMO application http://ispsession.io/download/?file=ispsessiondemo (not yet available)

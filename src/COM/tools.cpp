@@ -194,6 +194,10 @@ STDMETHODIMP ReadDllConfig(BSTR * strConstruct, LONG *lTimeOutSetting, /*BOOL *h
 	
 	key = L"ispsession_io:DataSource";
 	*strConstruct = config.AppSettings(key);
+	if (*strConstruct == NULL)
+	{
+		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+	}
 	key = L"ispsession_io:SessionTimeout";
 	val.Attach(config.AppSettings(key, L"20"));
 	if (val.Length() > 0 && val.IsNumeric())

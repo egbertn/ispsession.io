@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "tools.h"
 #include <ctime>
+#include <sys/types.h>
 #include <sys/stat.h>
 #include "config.h"
 #include "ADCLogModule.h"
@@ -40,10 +41,15 @@ void ConfigurationManager::Init() throw()
 }
 time_t ConfigurationManager::GetFileTime() throw()
 {	
-	struct stat stResult;
+	struct ::stat stResult;
 	CComBSTR ansi(_szFilePath);
 	ansi.Attach(ansi.ToByteString());
-	::stat((char*)ansi.m_str, &stResult);		// get the attributes of afile.txt
+	
+	auto result=	stat((char*)ansi.m_str, &stResult);		// get the attributes of afile.txt
+	if (result == 0)
+	{
+		return 0;
+	}	
 	//tm* clock = gmtime(&stResult.st_mtime);	// Get the last modified time and put it into the time structure 
 	return stResult.st_mtime;
 }
@@ -85,7 +91,10 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 {
 	
 	auto curT = GetFileTime();
-	
+	if (curT == 0)
+	{
+		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+	}
 	PCWSTR pwzValue;
 	auto memResult = ::difftime(curT, _ftLastCheck);
 	if (memResult != 0.0F)

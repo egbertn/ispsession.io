@@ -4,6 +4,7 @@
     <add key="ispsession_io:APP_KEY" value="F01FB5D0BCA6CE4C8CC773916F281C32" xdt:Transform="Insert"/>
     <add key="ispsession_io:AD_PATH" value="/" xdt:Transform="Insert"/>
     <add key="ispsession_io:AD_DOMAIN" value="" xdt:Transform="Insert"/>
+    <add key="ispsession_io:CookieName" value="" xdt:Transform="Insert"/>
     <add key="ispsession_io:SnifQueryStringFirst" value="true" xdt:Transform="Insert"/>
     <add key="ispsession_io:CookieNoSSL" value="false" xdt:Transform="Insert"/>
     <add key="ispsession_io:Liquid" value="false" xdt:Transform="Insert"/>

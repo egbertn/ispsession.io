@@ -609,8 +609,8 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 
         lElements = lMemSize;
         lMemSize *= ElSize;
-		logModule.Write(L"writing array els(%d) elsize(%d)", lElements, ElSize);
-
+		logModule.Write(L"writing array els(%d) elsize(%d)", lElements, ElSize);		
+		
 		
         if ((vcopy == VT_I1) ||
 			(vcopy == VT_UI1) || (vcopy == VT_I2) || (vcopy == VT_I4) || (vcopy == VT_R4) ||
@@ -974,8 +974,9 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 		cDims = descriptor.Dims;
 		lType = vtype; // 'cache the old vtype we need it to set the type of vartype
 		vtype ^= VT_ARRAY; // mask out
-		//WARNING on Windows x64 and x86, the variant size array differs
-
+		auto isJagged = false;
+		
+		//WARNING on Windows x64 and x86, the variant size array differs		
 		auto doGetType = (vtype == VARENUM::VT_UNKNOWN || vtype == VARENUM::VT_ERROR || vtype == VARENUM::VT_VARIANT); //VT_VARIANT because we have object arrays with a specific type?
 		if (doGetType)
 		{
@@ -987,7 +988,18 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 				logModule.Write(L"FATAL: Cannot support .NET typed arrays %s", BogusVariantType);
 				return E_INVALIDARG;
 			}
-		}		
+		}
+		else
+		{
+			CComBSTR BogusVariantType;
+			ReadString(pStream, &BogusVariantType);
+			isJagged = BogusVariantType == L"__jagged";
+			if (isJagged)
+			{
+				BogusVariantType.Empty();
+				ReadString(pStream, &BogusVariantType); // e.g. System.Int32[][] this has no use for OLEAuto
+			}
+		}
 		if (ElSize == 0 || cDims == 0)
 		{
 			logModule.Write(L"Array is empty");

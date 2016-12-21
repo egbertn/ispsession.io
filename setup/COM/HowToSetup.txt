@@ -1,25 +1,142 @@
-ISP Session 8.0 will not have an MSI setup (previous did).
+ISP Session Setup notes.
+
+Date: Dec-21-2016
+Stable build: 8.0.0.137
+Author: Egbert Nierop
+Contact: egbertDOTnieropATadccureDOTnl (replace DOT and AT to get correct email address)
+============
+SETUP
+ISP Session 8.0 will not have an MSI setup .
 To get ISP Session running do the following:
 
-1. 	Download the DEMO application http://ispsession.io/download/?file=ispsessiondemo (not yet available)
+1. 	Download the DEMO application http://ispsession.io/downloads/5
 	this includes classic asp & Asp.Net classic
-	(Hybrid solution, yes)
-2. 	The Demo contains a valid web.Config
-    	that ISP Session COM (classic asp) will read.
-3. 	Modify your website in order it includes or has 
-    	Server.CreateObject("NWCTools.CSession"). The demo has a simple sample.
-4.	Disable the integrated IIS 6+ session state. This can be done on the inetmgr.exe, configuring the website that you want to test.
-	Or else, use the page level meta <%@enablesessionstate=false %>	
-4. 	Install Redis. 
-	Dowload it from ispsession.io/download/?file=redis (not yet available at time of writing)
-5. 	Configure Redis datasource in Web.config
-6. 	Create a folder, e.g. c:\IISTools\
-	Copy the files from the zip into it.
-7.	Run RegisterCOM.vbs from a command prompt.
+	(Hybrid solution)
+2. 	Create a folder, e.g. c:\IISTools\
+	Copy the files from ISPSessionCOM.zip into it.
+3.	Run RegisterCOM.vbs from a command prompt.
 	It will register the Dll's and eventually dowload and install the VC 12 runtime.
+	Note: CSession.DLL and CSession64.dll must allow the IIS Application pool to have read/execute access.
+	In case this is not set, 'Server.CreateObject' will fail with an activation exception.
+	So, make sure that IIS AppPool\[your appPoolname] e.g. IIS AppPool\DefaultAppPool is added to the ACL of both DLL's and the config files.
+	In case you would like to create a log (see troubleshooting), The Appool instance, also needs write/create access on the folder that contains
+	the COM dlls.
+
+
+====== Configuration Note ======
+ISP Session for classic ASP has at least two .config files.
+	1. c:\IISTools\CSession.dll.Config
+		this file contains registration information, and global settings
+	2. \pathtoyouriisfolder\web.Config
+	web.Config/configuration/appSettings is shared with ASP.NET for settings they have in common	
+================================
+
+
+3. 	The Demo contains a valid web.Config
+    	that ISP Session COM (classic asp) will read.
+4. 	Modify your website in order it includes or has 
+   	Server.CreateObject("NWCTools.CSession"). The demo has a simple sample.
+5.	Disable the integrated IIS 6+ session state. This can be done on the inetmgr.exe, configuring the website that you want to test.
+	Or else, use the page level meta <%@enablesessionstate=false %>	
+6. 	Install Redis if you have no Redis server instance. 
+	Dowload it from ispsession.io/downloads/5
+	At the moment of writing, this is Redis 2.8, while Microsoft currently has a fork of 3.0 or higher.
+	This redis instance, has default options for a single master configuration.
+	If you want a cluster or master/slave config, please contact me.
+7. 	Configure the Redis datasource in Web.config so ISP Session knows where to find Redis.
+	
+	<add key="ispsession_io:DataSource" value="localhost:6379"/>
+	The demo assumes Redis is installed locally.
+
+
 
 your site should be working now.
 
+
+
+
+============== Settings ==========
+web.Config
+<configuration>
+<appSettings>
+    <!--Redis server, currently supports only master mode-->
+	<!-- 
+		APP_KEY must be a valid 32 hexadecimal value, which uniquely identifies your session in the context of an application 
+	-->
+    <add key="ispsession_io:APP_KEY" value="F01FB5D0BCA6CE4C8CC773916F281C32"/>
+	<!-- 
+		The Session CookiePath. Which is mostly your virtual path such as /mypath (if your site needs session only within the /mypath/ folder 
+	-->
+    <add key="ispsession_io:AD_PATH" value="/"/>
+	<!--
+		Leave empty. This defaults to a CookieName named 'GUID'.
+		If you customize the name of the cookie, make sure any URL references or otherwebsites that depend on this, also get's this modification
+	-->
+    <add key="ispsession_io:CookieName" value=""/>	
+
+	<!-- 
+	your cookie domain if not kept default, such as .mydomain.com Note that a valid cookiedomain MUST contain at least two dots. 
+	Do not set it equal to a servername such as MYSERVER 
+	-->
+
+    <add key="ispsession_io:AD_DOMAIN" value=""/>
+    <!-- if this is used, a GUID in a URI QueryString parameter, is accepted as a 'cookie'. Note, that this is a security risk.
+	Any URL parameters, are logged, in e.g. firewalls, so as long as the session is valid, anyone having access to the site using this GUID, could 'resume' the session.
+	 -->
+    <add key="ispsession_io:SnifQueryStringFirst" value="true"/>
+
+	<!-- If your site is running the https protocol scheme, it would be bad practise to switch, anywhere, to http, as this would void the idea of a secure session
+		set this to true, if you still DO want to share a session with http  -->
+    <add key="ispsession_io:CookieNoSSL" value="false"/>
+	<!-- 
+		ISP Session supports a Session GUID change on each HTTP request, which is very secure! 
+		Do use this option only if you have single page requests, not using frames or AJAX, otherwise, the session might get lost
+	 -->
+    <add key="ispsession_io:Liquid" value="false"/>
+	<!-- 
+		Leave empty. Only use when you went a session cookie to be persistent, instead of Sessiononly
+		Persistent cookies, are more troublesome, since these might be refused by browser settings
+		In addition, they would allow to resume a session if a browser re-establishes a connection to your website.
+		Keep in mind, that persistent session cookies, are a security risk. 
+		Anyone who can access the browser, having persistent cookies, could resume a session
+	-->
+    <add key="ispsession_io:CookieExpires" value=""/>
+	<!-- 
+		Leave true if you want to allow a session to be re-used, even if Redis has no record of it.
+		In addition, if this value is true, a session can be resume by a URL Query string (eg. ?GUID=ABCFB5D0BCA6CE4C8CC773916F281C32)
+	 -->
+    <add key="ispsession_io:ReEntrance" value="true"/>
+	<!--
+		This timeout is in minutes, and correspondents with the timeout for a session on Redis
+	-->
+    <add key="ispsession_io:SessionTimeout" value="30"/>
+	<!--
+		Some old asp websites, still rely on Session.SessionID to return a numeric value.
+		If you need that, set this to 'true'. 
+	-->
+    <add key="ispsession_io:HASH_SESSIONID" value="false"/>
+	<!--
+		Do not use. ISP Session for ASP, does not support State compression (yet) (only ASP.NET Classic does)
+	-->
+    <add key="ispsession_io:Compress" value="false"/>
+	<!--
+		see purchasing
+	-->
+    <add key="ispsession_io:Csession.LIC" value="mydomain.local"/>
+	<!--
+		see purchasing
+	-->
+    <add key="ispsession_io:License" value="F01FB5D0BCA6CE4C8CC773916F281C32"/>
+	<!--
+		a valid Redis hostname. In addition, a password should work too e.g. password@localhost:6379
+		at the moment of writing, no encrypted connection to Redis is supported.
+		ISP Session for classic ASP only supports one Redis server, no multiplexing or master/slave configuration
+	-->
+    <add key="ispsession_io:DataSource" value="localhost:6379"/>
+</appSettings></configuration>
+
+
+============
 Purchasing
 	Chose your license.
 	Enumerate all the domains that will use ISP Session. E.g. an active directory domain where you develop, e.g. applepie.local, would be sufficient.
@@ -34,3 +151,18 @@ Purchasing
    		 <add key="ispsession_io:Csession.LIC" value="mydomain.local"/>
     		<add key="ispsession_io:License" value="F01FB5D0BCA6CE4C8CC773916F281C32"/>
 		note: Each name must be separated by a \r\n (CR+LF), which in XML is &#xD;&#xA;
+
+============
+Troubleshouting
+If there is a case of unpredicted behaviour, you can create a log in three ways.
+by setting in CSession.dll.Config the value as below
+<add key="ispsession_io:EnableLogging" value="1" />
+
+where 	1 means use the directory of CSession.dll
+	2 means use windowse output debug
+	3 means both
+	0 means 'off'. 
+Remember, at production, this MUST be 0! Otherwise, performance will be reduced.
+If you wish to create a trace log, I advise to use 2, and to start dbgview.exe, which is a debug viewer tool from SysInternals (Microsoft)
+Dbgview.exe must be started as an 'admin'
+If you are asked to sent the log, you can either export the log or use option 1, and sent the log minus privacy sensitive info.

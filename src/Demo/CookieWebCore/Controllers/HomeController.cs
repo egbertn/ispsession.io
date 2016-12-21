@@ -120,7 +120,7 @@ namespace CookieWebCore.Controllers
             return View();
         }
       
-        public IActionResult Ajax()
+        public IActionResult Ajax(string ajaxRefresh)
         {
             var model = new HomeModel();
             model.CountRefresh = (int)(Session["CountRefresh"] ?? 0);
@@ -128,6 +128,7 @@ namespace CookieWebCore.Controllers
             Session["CountRefresh"] = model.CountRefresh;
             // again, this is not how it should be done, but to keep the code samples a little bit the same            
             model.Session = this.Session;
+            model.Refresh = ajaxRefresh;
             return PartialView(model);
         }
         public IActionResult Error()

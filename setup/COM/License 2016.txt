@@ -1,0 +1,60 @@
+ISP Session License Terms between you (Company) and ADC Cure (provider of the component), Amsterdam, Netherlands.
+
+You should accept these terms before using ispsession.io as a product, provided by ADC Cure.
+
+Liability.
+Usage of ISP Session is at your own risk. ADC Cure does not accept any claims related to using ISP Session.
+
+Authorship & copyright.
+It is illegal to decompile ISP Session related assemblies or DLL's in order to remove license checks, 
+or to reuse any code into your own code even if it is for non-profit reasons.
+Please respect my hard work and research into this component, which has taken many, many months (cummulative) and I also have to feed a family. 
+Thanks for understanding!
+
+Purchase:
+Purchase of ISP Session is done through either Paypal, or an IBAN transfer. Normally, the payment must be received before a license is issued.
+
+Package.
+Target: Classic ASP/ASP.NET and AspNetCore environments.
+ISP Session comes with several license models for these environments above.
+1) max 2 Instances per web application (pool within IIS or a process if you run Kestrel)
+2) max. 6 Instances per web application 
+3) Unlimited number of Session instances per pool or process
+You get a copy of the source code, as a backup. 
+4) Bulk. You have unlimited distribution for your customers, except for reselling the ISP License AS IS.
+You also get a copy of the source code..
+In case the license is 'violated', say, 3 instances are required however, limited to 2, ISP Session will only try to eventlog this (depends on access rights) and introduce a delay, 
+which slows down a bit. You are responsable for monitoring, if this is the case.
+
+Demo version
+ISP session is provided on Nuget as a demo version. The demo will expire at the end of the month. After expiration, a http nagging (this is a demo) message 
+will appear, that probably will make the site malfunction.
+Therefore, do never deploy ISP Session on a production environment. 
+If you wish to extent the demo, just redeploy the latest version. Notify us, in case you need the demo extended anytime.
+
+License validity and length.
+Each license is valid for a specific environment. So, ISP Session for Classic ASP, requires a different license than the one for classic ASP.NET.
+Licenses do not expire and are not a subscription.
+A license is valid for specified domains/workgroups/servers, which includes developer stations.
+In case if a license needs to be regenerated, ADC Cure might charge a small fee for that.
+Licences will not expire.
+If a major version number changes, e.g. version 9.0 becomes 9.1, a upgrade license is required.
+
+Licenses are not transferable to other companies outside your business.
+
+REDIS dependency. ISP Session will be tested on specific Redis server environment. 
+The least required version is 2.8. However, ADC Cure, cannot garuantee that any future REDIS release, would break functionality.
+
+Free Upgrades. 
+Minor version releases, e.g. from version 9.0.1 to 9.0.2 a always free. You should request the upgrade, if you wish so.
+For major releases, say, from 9.0.x to 9.1.x an upgrade free is charged.
+
+Privacy
+ISP Session. ADC Cure will never collect data from your sessions.
+Except if you create a log file, for debugging purpose, that log file may contain information that you wish to review first, before sending the log.
+In any way, ISP Session is not able to collect and push any of your web application data to external processes outside of your IT.
+
+Troubleshouting.
+ADC Cure mostly fixes bugs within 2 workdays. However, it is essential that you provide logs and steps to reproduce any issue.
+2 Months after purchasing ISP Session, ADC Cure might charge a reasonable fee for troubleshouting. 
+Within 2 months, any issues that need to be addressed, are 'free tickets'.

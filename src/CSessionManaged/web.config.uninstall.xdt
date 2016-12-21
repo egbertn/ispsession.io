@@ -4,6 +4,7 @@
     <add key="ispsession_io:APP_KEY"  xdt:Transform="Remove" xdt:Locator="Match(key)"/>
     <add key="ispsession_io:AD_PATH"  xdt:Transform="Remove" xdt:Locator="Match(key)"/>
     <add key="ispsession_io:AD_DOMAIN"  xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:CookieName"  xdt:Transform="Remove" xdt:Locator="Match(key)"/>    
     <add key="ispsession_io:SnifQueryStringFirst" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
     <add key="ispsession_io:CookieNoSSL" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
     <add key="ispsession_io:Liquid" xdt:Transform="Remove" xdt:Locator="Match(key)"/>

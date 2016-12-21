@@ -152,11 +152,16 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	{		
 		strCookieDOM.Attach(bstrProp.Detach());		
 	}
-	logModule.Write(L"AD_DOMAIN: (%s), AD_PATH: (%s)", strCookieDOM, strAppPath);
 
+	bstrProp = L"CookieName";
+	bstrProp.Insert(0, prefix);
+	bstrProp.Attach(config.AppSettings(bstrProp));
+	if (bstrProp.Length() > 0)
+	{
+		m_bstrToken.Attach(bstrProp.Detach());
+	}
+	logModule.Write(L"AD_DOMAIN: (%s), AD_PATH: (%s), CookieName (%s)", strCookieDOM, strAppPath, m_bstrToken);
 
-	
-	
 	bstrProp = L"HASH_SESSIONID";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));

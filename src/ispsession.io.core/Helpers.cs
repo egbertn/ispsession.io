@@ -524,7 +524,15 @@ namespace ispsession.io
                 EnsureMemory(byteSize + sizeof(int));
                 
                 _encoding.GetBytes(value, 0, wideSize, _memoryBuff, sizeof(int));
+#if OPT
+                fixed (byte*ptr = _memoryBuff)
+                {
+                    *(int*)ptr = byteSize;
+                }
+#else
                 Array.Copy(BitConverter.GetBytes(byteSize), _memoryBuff, sizeof(int));
+#endif
+
                 //one single operation, instead of two
                 Str.Write(_memoryBuff, 0, byteSize + sizeof(int));
             }

@@ -46,7 +46,7 @@ time_t ConfigurationManager::GetFileTime() throw()
 	ansi.Attach(ansi.ToByteString());
 	
 	auto result=	stat((char*)ansi.m_str, &stResult);		// get the attributes of afile.txt
-	if (result == 0)
+	if (result != 0)
 	{
 		return 0;
 	}	

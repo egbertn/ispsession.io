@@ -3,7 +3,7 @@
   "title": "ispsession.io Session State Broker",    
   "copyright": "(c) 2001-2016, ADC Cure, Amsterdam",
   "description": "Session State broker for AspNetCore, compatible with classic ASP and classic ASP.NET (when combined with respective session.io products)",
-  "version": "1.0.6-*",
+  "version": "1.0.7-*",
   "dependencies": {
     "NETStandard.Library": { "version": "1.5.0-rc2-24027" },
     "Microsoft.AspNetCore.Server.IISIntegration": "1.0.0",

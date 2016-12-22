@@ -1,21 +1,25 @@
+These samples, are not compiled. Make sure you compile them first.
+
 Install the demo website e.g. on IIS on 
 http://localhost/CookieWeb
 
 and if you want to test ASP.NET Core with ISP Session
 http://localhost/CookieWebCore
 
+In web.Config you have to modify the mailSettings tag in order to have the resume demo working.
+For resume.asp, do the same. 
 
 Now, for CookieWeb you have 3 entry points.
-1) http://localhost/default.asp 
+1) http://localhost/CookieWeb/default.asp 
 	(testing classic ASP)
-2) http://localhost/default.aspx
+2) http://localhost/CookieWeb/default.aspx
 	(testing ASP.NET Classic)
-3) http://localhost/home/default 
+3) http://localhost/CookieWeb/home/default 
 	(testing MVC 5.2)
 
 If you switch pages, say, from asp to aspx, you should see that all session variables are maintained.
 
-The same applies to CookieWebCore, however, you cannot let IIS run all those technologies together.
+The same applies to CookieWebCore, since ASP.NET core is self-hosting, it will not allow hybrid configurations (asp/asp.net etc)
 	You should configure an ASP.NET Core app on a different virtual app.
 
 Make sure that the ispsession_io:AD_PATH variable, which is the CookiePath, equals '/'. Otherwise, 

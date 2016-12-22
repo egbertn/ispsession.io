@@ -47,10 +47,9 @@
                <li class="dropdown">
               <a class="dropdown-toggle" href="#" data-toggle="dropdown">Power tools<b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="?page=statistics">Show Session statistics</a></li>                
+                <!--<li><a href="?page=statistics">Show Session statistics</a></li>                -->
                 <li><a href="?page=resume">Resumable Session</a></li>
-                <li><a href="?page=recordset">Store ADODB.Recordset and (XML) DOMDocument in Session</a></li>
-                <li><a href="?page=download" target="_blank">Download this demo</a></li>            
+                <li><a href="?page=recordset">Store ADODB.Recordset and (XML) DOMDocument in Session</a></li>                
               </ul>
             </li>     
           </ul>
@@ -79,8 +78,8 @@
             Session.Execute "securepage.asp"
         Case "login"
             Session.Execute "Login.asp"
-		Case "download"
-			Response.Redirect "Cookieweb.zip"
+		
+			
         Case Else
             Session.Execute "Default_Content.asp"
         End Select
@@ -92,7 +91,7 @@
     <script src="https://code.jquery.com/jquery.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="./lib/bootstrap/dist/js/bootstrap.min.js"></script>
-	<script>
+    	<script>
         function doAjaxPanel(refresh)
         {
          $.get(  "<%=Session.URL("ajaxCallWithSession.asp")%>&ajaxRefresh=" + (refresh ? "1" : "0"),

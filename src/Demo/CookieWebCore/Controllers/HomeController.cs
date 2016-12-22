@@ -62,7 +62,7 @@ namespace CookieWebCore.Controllers
             };
             return View(model);
         }
-        [HttGet]
+        [HttpGet]
         public IActionResult About()
         {
             return View();

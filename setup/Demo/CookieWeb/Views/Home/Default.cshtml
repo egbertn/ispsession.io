@@ -6,7 +6,7 @@
 
 
 <div class="well main">
-    <h2>Compatibility and interoperability</h2>
+    <h2>Compatibility and interoperability - ASP.NET MVC 5.2 with ISP Session</h2>
     <p>
         Your sesssion ID = @Model.Session.SessionID<br />
 
@@ -66,7 +66,7 @@
 </div>
 
 <p>
-    <button class="btn btn-lg ajax btn-primary" data-path='@Url.Action("Ajax", "Home", new  {Guid = Model.Session.SessionID})'>Ajaxpanel refresh</button>
+    <button class="btn btn-lg ajax btn-primary" data-path='@Url.Action("Ajax", "Home", new  {GUID = Model.Session.SessionID})'>Ajaxpanel refresh</button>
 </p>
 <div class="well">
     We invite you to login at our website to see the secret section by clicking login.<br />

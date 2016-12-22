@@ -4,15 +4,8 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - CookieWebCore</title>
-
-    <environment names="Development">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
-        @*<link rel="stylesheet" href="~/css/site.css" />*@
-    </environment>
-    <environment names="Staging,Production">
-        <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
-        @*<link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />*@
-    </environment>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/css/theme.css" />   
   
 </head>
 <body role="document">
@@ -31,35 +24,35 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li class="active"><a href="./">Home</a></li>
-                    <li><a href="?page=about">About</a></li>
+                    <li><a href="@Url.Action("About", "Home")">About</a></li>
                     @if (Convert.ToBoolean(ViewData["LoggedIn"]) != true)
                         {
-                    <li><a asp-action="Login" asp-controller="Home">Login </a></li>
+                    <li><a href="@Url.Action("Login", "Home")">Login </a></li>
                       }
                         else {
-                    <li><a asp-action="Logout" asp-controller="Home">Logout</a></li>}
+                    <li><a href="@Url.Action("Logout", "Home")">Logout</a></li>}
                     <li class="dropdown">
                         <a class="dropdown-toggle" href="#" data-toggle="dropdown">Power tools<b class="caret"></b></a>
                         <ul class="dropdown-menu">
                             @*<li><a href="?page=statistics">Show Session statistics</a></li>*@
-                            <li><a asp-action="Resume" asp-controller="Home">Resumable Session</a></li>
-                            <li><a asp-action="Recordset" asp-controller="Home">Store ADODB.Recordset and (XML) DOMDocument in Session</a></li>
-                            <li><a asp-action="Download" asp-controller="Home" target="_blank">Download this demo</a></li>
+                            <li><a href="@Url.Action("Resume", "Home")" asp-controller="Home">Resumable Session</a></li>
+                            <li><a href="@Url.Action("Recordset", "Home")" asp-controller="Home">Store ADODB.Recordset and (XML) DOMDocument in Session</a></li>
+                            @*<li><a href="@Url.Action("Resume", "Download")" asp-controller="Home" target="_blank">Download this demo</a></li>*@
                         </ul>
                     </li>
                 </ul>
             </div><!--/.nav-collapse -->
         </div>
     </div>
-    <div class="container theme-showcase" role="main">
+    <div class="container body-content">
         @RenderBody()
     </div>   
 
-    <environment names="Staging,Production">
-        <script src="~/lib/jquery/dist/jquery.min.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-        <script src="~/js/site.min.js" asp-append-version="true"></script>
-    </environment>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/js/site.min.js" asp-append-version="true"></script>
+
 
     @RenderSection("scripts", required: false)
 </body>

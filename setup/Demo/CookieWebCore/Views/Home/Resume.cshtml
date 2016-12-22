@@ -7,7 +7,7 @@
     </p>    
     Your session ID: @Model.SessionID<br />
     <span class="warning">@Model.Message</span><br/>
-    
+    <div asp-validation-summary="ModelOnly"></div>
     <form asp-controller="Home" asp-action="Resume"method="post">
         What food do you like most?<br />
         <input type="hidden" asp-for="Start" />

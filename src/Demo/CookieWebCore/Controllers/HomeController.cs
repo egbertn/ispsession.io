@@ -42,6 +42,7 @@ namespace CookieWebCore.Controllers
             }
             return View(model);
         }
+
         [HttpGet]
         public IActionResult Logout()
         {
@@ -52,17 +53,29 @@ namespace CookieWebCore.Controllers
         [HttpGet]
         public IActionResult Resume()
         {
-            var model = new ResumeModel();
-            model.SessionID = Session.SessionID;
-            return PartialView(model);
+            var model = new ResumeModel()
+            {
+                Email = (string)(Session["Email"] ?? ""),
+                Word = (string)(Session["Word"] ?? ""),
+                Message = string.IsNullOrEmpty((string)(Session["Word"] ?? "")) ? null : "Restored from session",
+                SessionID = Session.SessionID
+            };
+            return View(model);
+        }
+        [HttGet]
+        public IActionResult About()
+        {
+            return View();
         }
         [HttpPost]
         public async Task<IActionResult> Resume(ResumeModel resume)
         {
             if (!ModelState.IsValid)
             {
-                return PartialView(resume);
+                return View(resume);
             }
+            Session["Email"] = resume.Email;
+            Session["Word"] = resume.Word;
 #if NETSTANDARD1_6
             var msg = new MimeMessage();
             msg.To.Add(new MailboxAddress(resume.Email));
@@ -85,7 +98,7 @@ namespace CookieWebCore.Controllers
             await cl.AuthenticateAsync(this._siteSettings.Value.UserName, this._siteSettings.Value.Password);
             await cl.SendAsync(msg);
 #endif
-            return PartialView(resume);
+            return View(resume);
         }
         [HttpPost]
         public IActionResult Login(LoginModel login)

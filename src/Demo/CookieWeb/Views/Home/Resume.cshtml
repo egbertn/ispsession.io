@@ -1,0 +1,30 @@
+﻿@model CookieWeb.Models.ResumeModel
+<div class="well main">
+    <h2>Resume Session from URL Demo</h2>
+    <p>
+        This page shows that a session can be resumed using a URL inside an email. In fact, the URL can be kept anywhere. While your cookie has expired when you close the browser, it is still resumeable by having a browser click on a URL.<BR>
+        Note that this feature introduces security issues. A resumable session can be resumed by anyone who has access to the readable URL containing a sessionid.<BR>Programmers should take special care that such URL's are protected by passwords for instance.
+    </p>
+    Your session ID: @Model.SessionID<br />
+    <span class="glyphicon-warning-sign">@Model.Message</span><br />
+    @Html.ValidationSummary()
+        @using (Html.BeginForm("Resume", "Home", FormMethod.Post))
+        {
+            <fieldset>
+                <span class="form-group">
+                    <span>What food do you like most?</span><br />
+                    <input class="form-field" type="hidden" name="Start" value="@Model.Start"/>
+                    <input type="hidden" name="SessionID" value="@Model.SessionID"/>
+                    <input class="form-field" type="text" name="Word" value="@Model.Word" maxlength="25"/>
+                    
+
+                    <span>To which email address we can sent your resumable Session? <br /><sub>Note, this email address is <b>not</b> monitored nor kept on file!</sub></span>
+                    <br />
+                    <input type="text" value="@Model.Email" name="Email" maxlength="200"/>
+                     <br />                    
+                    <input type="submit" name="action" value="Send">
+                </span>
+            </fieldset>
+        }
+
+</div>

@@ -1,0 +1,11 @@
+﻿
+<div class="well main">
+    <h2>Compatibility and interoperability</h2>
+    <p>
+        Although it is possible to store an ADODB.Recordset (COM) data into (ISP) Session within ASP.NET,
+        it is never done with the purpose of sharing it with classic ASP.<br/>
+        Up to .NET framework 4.6.3, it will be possible to persist binary data, such as from ADO.NET<br/>
+        However, MS deprecated BinaryFormatter for future frameworks because of good reasons, such as incompatibility at deserialisation if an Assembly changes any type.<br/>
+        So, I could show you how to persist an ADO.NET DataSet, as 'xml' for instance, but that trick goes beyond the purpose of this demo. So, yes, strings (containing Xml) are persisted by ISP Session.
+    </p>
+</div>

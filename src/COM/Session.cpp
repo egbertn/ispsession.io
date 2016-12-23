@@ -1217,7 +1217,9 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookie) throw()
 	vMissing.bstrVal = m_bstrToken;
 	CComVariant vRet;
 	CComPtr<IRequestDictionary> pReq;
-
+	m_piResponse->put_Expires(-1);
+	CComBSTR noCache(L"no-cache");
+	m_piResponse->put_CacheControl(noCache);
 	HRESULT hr = m_piResponse->get_Cookies(&pReq);
 	if (SUCCEEDED(hr))
 	{

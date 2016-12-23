@@ -446,7 +446,7 @@ STDMETHODIMP CVariantDictionary::LocalLoad(IStream* pStream, const DWORD lSize) 
 
 		m_lVDictElements= varTemp.intVal;
 		logModule.Write(L"LocalLoad %d elements", m_lVDictElements);		
-		if ((m_lVDictElements < 0) || (m_lVDictElements > 32767)) 
+		if ((m_lVDictElements < 0) || (m_lVDictElements > MAXSHORT)) 
 		{
 			logModule.Write(L"Too many elements");
 			return E_FAIL;
@@ -465,9 +465,7 @@ STDMETHODIMP CVariantDictionary::LocalLoad(IStream* pStream, const DWORD lSize) 
 				CComVariant v;
 				k.Attach(key);
 				v.Attach(&val);
-				logModule.Write(L"add key %s", key);
 				_dictionary.insert(std::pair<CComBSTR, CComVariant>(k, v));
-				logModule.Write(L"ReadProperty %s %x", k, hr);
 			}		
 		}
 	}

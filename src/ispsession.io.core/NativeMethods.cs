@@ -83,7 +83,7 @@ namespace ispsession.io
         internal unsafe static extern uint HashData([In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)]
                                 byte[] pbData, int cbData, void* piet, int outputLen);
         [DllImport("oleaut32.dll", SetLastError = false)]
-        internal static extern int VariantChangeTypeEx( out tagVARIANT pvargDest, [In] ref tagVARIANT pvarSrc, int lcid, short wFlags, [MarshalAs(UnmanagedType.I2)] VarEnum vt);
+        internal static extern unsafe int VariantChangeTypeEx( void* pvargDest, void* pvarSrc, int lcid, short wFlags, [MarshalAs(UnmanagedType.I2)] VarEnum vt);
 
         [DllImport("oleaut32.dll", SetLastError = false)]
         internal static extern int VariantTimeToSystemTime(double vtime, [In] ref _SYSTEMTIME lpSystemTime);
@@ -121,6 +121,24 @@ namespace ispsession.io
             _SYSTEMTIME st = new _SYSTEMTIME();
             NativeMethods.VariantTimeToSystemTime(d, ref st);
             return  new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
+        }
+        internal unsafe static long ToOACurrency(this decimal value)
+        {
+            tagDECIMAL ll;
+            tagVARIANT theDec;
+            Buffer.MemoryCopy(&value, &ll, sizeof(decimal), sizeof(decimal));
+            ll.wReserved = (ushort)VarEnum.VT_DECIMAL;
+            NativeMethods.VariantChangeTypeEx(&theDec, &ll, 1033, 0, VarEnum.VT_CY);
+            return theDec.llVal;
+        }
+        internal unsafe static decimal FromOACurrency(long i64)
+        {
+            tagDECIMAL theDec;          
+            //fake it to be a CUR
+            tagVARIANT ll = new tagVARIANT() { vt = VarEnum.VT_CY, llVal = i64 };
+            NativeMethods.VariantChangeTypeEx(&theDec, &ll, 1033, 0, VarEnum.VT_DECIMAL);
+            return new decimal(theDec.Lo32, theDec.Mid32, theDec.Hi32, theDec.sign == 0x80, theDec.scale);
+
         }
         //[DllImport("ole32.dll", ExactSpelling = true)]
         //internal static extern int GetHGlobalFromStream(IStream pstm, out IntPtr phglobal);

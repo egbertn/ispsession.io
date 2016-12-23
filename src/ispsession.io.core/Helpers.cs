@@ -429,22 +429,11 @@ namespace ispsession.io
 #endif
         internal decimal ReadCurrency()
         {
-            tagVARIANT theDec;
-            long i64= ReadInt64();
-            //fake it to be a CUR
-            tagVARIANT ll= new tagVARIANT() { vt = VarEnum.VT_CY, llVal = i64 };
-            
-            NativeMethods.VariantChangeTypeEx(out theDec, ref ll, 1033, 0, VarEnum.VT_DECIMAL);
-            return new decimal(theDec.decVal.Lo32, theDec.decVal.Mid32, theDec.decVal.Hi32, theDec.decVal.sign==0x80, theDec.decVal.scale);
+            return NativeMethods.FromOACurrency(ReadInt64());
         }
         internal void WriteCurrency(decimal value)
-        {
-            tagVARIANT theDec;
-            var uDec = decimal.ToInt64(value);//CU is 8 bytes anyway
-            //fake it to be a CUR
-            tagVARIANT ll = new tagVARIANT() { vt = VarEnum.VT_I8, llVal = uDec };
-            NativeMethods.VariantChangeTypeEx(out theDec, ref ll, 1033, 0, VarEnum.VT_CY);
-            WriteInt64(theDec.llVal);
+        {          
+            WriteInt64(value.ToOACurrency());
         }
         internal bool ReadBoolean()
         {
@@ -507,7 +496,7 @@ namespace ispsession.io
         }
 #endif
     
-    internal DateTime ReadDateTime()
+        internal DateTime ReadDateTime()
         {
             return NativeMethods.FromOADate(ReadDouble());
         }

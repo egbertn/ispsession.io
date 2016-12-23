@@ -177,7 +177,7 @@ namespace ispsession.io
     }
     [StructLayout(LayoutKind.Sequential, Size =16)]
     internal struct tagDECIMAL
-    {
+    {       
         public ushort wReserved;
         /// Specifies the number of digits to the right of the decimal point and ranges from 0 to 28.
         public byte scale;

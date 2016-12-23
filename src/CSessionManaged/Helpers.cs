@@ -361,10 +361,13 @@ namespace ispsession.io
 #else
         internal decimal ReadDecimal()
         {
-            Str.Read(_memoryBuff, 0, sizeof(decimal));            
+            Str.Read(_memoryBuff, 0, sizeof(decimal));
+            _memoryBuff[0] = 0;
+            _memoryBuff[1] = 0;
             var bits = Marshal.AllocHGlobal(sizeof(decimal));
             Marshal.Copy(_memoryBuff, 0, bits, sizeof(decimal));
-            var dec = Marshal.GetObjectForNativeVariant<decimal>(bits);
+            //var dec = Marshal.GetObjectForNativeVariant<decimal>(bits);
+            var dec = Marshal.PtrToStructure<decimal>(bits);
             Marshal.FreeHGlobal(bits);
             return dec;            
         }
@@ -397,9 +400,11 @@ namespace ispsession.io
                 }
              * */
             var bits = Marshal.AllocHGlobal(sizeof(decimal));
-            Marshal.GetNativeVariantForObject(value, bits); //also writes VT_DECIMAL to structure
+            //Marshal.GetNativeVariantForObject(value, bits); //also writes VT_DECIMAL to structure
+            Marshal.StructureToPtr(value, bits, false);
             Marshal.Copy(bits, _memoryBuff, 0, sizeof(decimal));
             Marshal.FreeHGlobal(bits);
+            _memoryBuff[0] = (byte)VarEnum.VT_DECIMAL;            
             //var tgDecimal = new tagDECIMAL() 
             //{  
             //    wReserved = VarEnum.VT_DECIMAL,

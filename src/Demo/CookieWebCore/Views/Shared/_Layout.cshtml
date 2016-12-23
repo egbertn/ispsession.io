@@ -11,9 +11,10 @@
     </environment>
     <environment names="Staging,Production">
         <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
-        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />
+        <link rel="stylesheet" href="~/css/site.min.css" asp-append-version="true" />        
+
     </environment>
-  
+    <link rel="stylesheet" href="~/css/theme.css" />
 </head>
 <body role="document">
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
@@ -31,7 +32,7 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li class="active"><a href="./">Home</a></li>
-                    <li><a href="?page=about">About</a></li>
+                    <li><a asp-action="About" asp-controller="Home">About</a></li>
                     @if (Convert.ToBoolean(ViewData["LoggedIn"]) != true)
                         {
                     <li><a asp-action="Login" asp-controller="Home">Login </a></li>
@@ -43,7 +44,7 @@
                         <ul class="dropdown-menu">
                             @*<li><a href="?page=statistics">Show Session statistics</a></li>*@
                             <li><a asp-action="Resume" asp-controller="Home">Resumable Session</a></li>
-                            <li><a asp-action="Recordset" asp-controller="Home">Store ADODB.Recordset and (XML) DOMDocument in Session</a></li>
+                            @*<li><a asp-action="Recordset" asp-controller="Home">Store ADODB.Recordset and (XML) DOMDocument in Session</a></li>*@
                             <li><a asp-action="Download" asp-controller="Home" target="_blank">Download this demo</a></li>
                         </ul>
                     </li>
@@ -55,11 +56,11 @@
         @RenderBody()
     </div>   
 
-    <environment names="Staging,Production">
-        <script src="~/lib/jquery/dist/jquery.min.js"></script>
-        <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
-        <script src="~/js/site.min.js" asp-append-version="true"></script>
-    </environment>
+    
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="~/js/site.min.js" asp-append-version="true"></script>
+    
 
     @RenderSection("scripts", required: false)
 </body>

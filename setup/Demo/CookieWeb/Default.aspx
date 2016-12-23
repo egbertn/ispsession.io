@@ -12,7 +12,8 @@ if (countRefresh == 10) {
     %>
 
     <form id="form1" runat="server">
-    <div>
+    <div>        
+        
             <h2>Compatibility and interoperability</h2>
             <p>  
                 Your sesssion ID = <%=Session.SessionID%><br />

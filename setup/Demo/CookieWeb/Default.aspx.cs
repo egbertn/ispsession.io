@@ -59,18 +59,19 @@ public partial class _Default : Page
             }
         }
         obj[0, 0] = new object[] { 1, 2, 3, 4 };
-        if (Session["jagged"] != null)
-        {
-            txtJagged.Text =  ((int[][])Session["jagged"])[1][1].ToString();
-        }
+        //warning, do not use Jagged arrays. ISP Session for classic ASP does not support it.
+        //if (Session["jagged"] != null)
+        //{
+        //    txtJagged.Text =  ((int[][])Session["jagged"])[1][1].ToString();
+        //}
         Session["BigArray"] = obj;
-        var jagged = new int[4][];
-        jagged[1] = new int[10];
-        jagged[0] = new int[10];
-        jagged[2] = new int[10];
-        jagged[3] = new int[10];
-        jagged[1][1]=123;
-        Session["jagged"] = jagged;
+        //var jagged = new int[4][];
+        //jagged[1] = new int[10];
+        //jagged[0] = new int[10];
+        //jagged[2] = new int[10];
+        //jagged[3] = new int[10];
+        //jagged[1][1]=123;
+        //Session["jagged"] = jagged;
         //Session["arraywithLBound"] = arr;
        // Session["m"] = ' ';
     }

@@ -36,17 +36,17 @@
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
             <li class="active"><a href="./">Home</a></li>
-            <li><a href="?page=about">About</a></li>
+            <li><a href="about.aspx">About</a></li>
               <%if (Convert.ToBoolean(Session["LoggedIn"]) != true) { %>
-            <li><a href="?page=login">Login</a></li><%}else {                
-                 %><li><a href="?page=logout">Logout</a></li><%}%>
+            <li><a href="login.aspx">Login</a></li><%}else {                
+                 %><li><a href="logout.aspx">Logout</a></li><%}%>
                <li class="dropdown">
               <a class="dropdown-toggle" href="#" data-toggle="dropdown">Power tools<b class="caret"></b></a>
               <ul class="dropdown-menu">
-                <li><a href="?page=statistics">Show Session statistics</a></li>                
-                <li><a href="?page=resume">Resumable Session</a></li>
-                <li><a href="?page=recordset">Store ADODB.Recordset and (XML) DOMDocument in Session</a></li>
-                <li><a href="?page=download" target="_blank">Download this demo</a></li>            
+                <%--<li><a href="?page=statistics">Show Session statistics</a></li>                --%>
+                <li><a href="resume.aspx">Resumable Session</a></li>
+                <li><a href="recordset.aspx">Store ADODB.Recordset and (XML) DOMDocument in Session</a></li>
+                <%--<li><a href="?page=download" target="_blank">Download this demo</a></li>            --%>
               </ul>
             </li>     
           </ul>

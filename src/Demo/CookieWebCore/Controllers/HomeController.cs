@@ -3,11 +3,11 @@ using CookieWebCore.Models;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using System.Threading.Tasks;
-#if NETSTANDARD1_6
+//#if NETSTANDARD1_6
 
 using MailKit.Security;
 using MimeKit.Text;
-#endif
+//#endif
 using System;
 
 namespace CookieWebCore.Controllers
@@ -42,6 +42,7 @@ namespace CookieWebCore.Controllers
             }
             return View(model);
         }
+
         [HttpGet]
         public IActionResult Logout()
         {
@@ -52,23 +53,35 @@ namespace CookieWebCore.Controllers
         [HttpGet]
         public IActionResult Resume()
         {
-            var model = new ResumeModel();
-            model.SessionID = Session.SessionID;
-            return PartialView(model);
+            var model = new ResumeModel()
+            {
+                Email = (string)(Session["Email"] ?? ""),
+                Word = (string)(Session["Word"] ?? ""),
+                Message = string.IsNullOrEmpty((string)(Session["Word"] ?? "")) ? null : "Restored from session",
+                SessionID = Session.SessionID
+            };
+            return View(model);
+        }
+        [HttpGet]
+        public IActionResult About()
+        {
+            return View();
         }
         [HttpPost]
         public async Task<IActionResult> Resume(ResumeModel resume)
         {
             if (!ModelState.IsValid)
             {
-                return PartialView(resume);
+                return View(resume);
             }
-#if NETSTANDARD1_6
+            Session["Email"] = resume.Email;
+            Session["Word"] = resume.Word;
+//#if NETSTANDARD1_6
             var msg = new MimeMessage();
             msg.To.Add(new MailboxAddress(resume.Email));
             msg.From.Add(new MailboxAddress("NOREPLY@ispsession.io"));
             msg.Subject = "ISP Session resumable session demo";
-            var host = Request.Scheme +  "://"+ Request.Host.Host.ToString() + Url.Action("Resume", "Home", new { GUID = Session.SessionID });
+            var host = Request.Scheme +  "://"+ Request.Host.ToString() + Url.Action("Resume", "Home", new { GUID = Session.SessionID });
             msg.Body = new TextPart(TextFormat.Html) { Text = $@"<html><head></head><body>Resume your session with 
 
     <a href=""{host}"">Click here</a><br/>
@@ -84,8 +97,9 @@ namespace CookieWebCore.Controllers
             await cl.ConnectAsync(this._siteSettings.Value.SmtpServer, 25, SecureSocketOptions.StartTlsWhenAvailable);
             await cl.AuthenticateAsync(this._siteSettings.Value.UserName, this._siteSettings.Value.Password);
             await cl.SendAsync(msg);
-#endif
-            return PartialView(resume);
+            //#endif
+            resume.Message = "You can close your browser now";
+            return View(resume);
         }
         [HttpPost]
         public IActionResult Login(LoginModel login)

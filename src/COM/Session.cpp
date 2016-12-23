@@ -1218,8 +1218,9 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookie) throw()
 	CComVariant vRet;
 	CComPtr<IRequestDictionary> pReq;
 	m_piResponse->put_Expires(-1);
-	CComBSTR noCache(L"no-cache");
+	CComBSTR noCache(L"no-cache"), pragma(L"Pragma");
 	m_piResponse->put_CacheControl(noCache);
+	m_piResponse->AddHeader(pragma, noCache);
 	HRESULT hr = m_piResponse->get_Cookies(&pReq);
 	if (SUCCEEDED(hr))
 	{

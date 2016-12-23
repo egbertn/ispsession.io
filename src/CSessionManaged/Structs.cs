@@ -90,6 +90,17 @@ namespace ispsession.io
         [MarshalAs(UnmanagedType.LPWStr)]
         internal string ClientSiteName;
     }
+    [StructLayout(LayoutKind.Sequential, Size = 16)]
+    internal struct tagDECIMAL
+    {
+        public ushort wReserved;
+        /// Specifies the number of digits to the right of the decimal point and ranges from 0 to 28.
+        public byte scale;
+        public byte sign; //0x80=negative
+        public int Hi32;
+        public int Mid32;
+        public int Lo32;
+    }
     internal struct _SYSTEMTIME
     {
         internal short wYear;

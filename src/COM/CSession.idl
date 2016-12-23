@@ -33,9 +33,9 @@ interface INWCVariantDictionary : IDispatch
 interface IVariantDictionary2 : IUnknown
 {
 	[restricted] HRESULT GetTypeInfoCount2(UINT *pctinfo);//idispatch stubs
-	[restricted] HRESULT GetTypeInfo2(UINT iTInfo, LCID lcid, UINT **ppTInfo);
-	[restricted] HRESULT GetIDsOfNames2( UINT* riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
-	[restricted] HRESULT Invoke2(DISPID dispIdMember,UINT* riid,LCID lcid,WORD wFlags,UINT *pDispParams,VARIANT *pVarResult,UINT *pExcepInfo,UINT *puArgErr);
+	[restricted] HRESULT GetTypeInfo2(UINT iTInfo, LCID lcid, ITypeInfo **ppTInfo);
+	[restricted] HRESULT GetIDsOfNames2( REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
+	[restricted] HRESULT Invoke2(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
 
     [propget] HRESULT Item2([in] VARIANT VarKey, [out, retval] VARIANT* pvar);
     [propput] HRESULT Item2([in] VARIANT VarKey, [in] VARIANT pvar);

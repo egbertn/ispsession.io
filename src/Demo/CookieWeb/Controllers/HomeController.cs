@@ -120,11 +120,11 @@ namespace CookieWeb
             var host = Request.Url.Scheme +  "://"+ Request.Url.Host.ToString() +(Request.Url.IsDefaultPort ? "" : ":"+ Request.Url.Port.ToString()) + Url.Action("Resume", "Home", new { GUID = Session.SessionID });
             Session["Word"] = resume.Word;
             Session["Email"] = resume.Email;
-            msg.Body = $@"<html><head></head><body>Resume your session with 
+            msg.Body = string.Format(@"<html><head></head><body>Resume your session with 
 
-    <a href=""{host}"">Click here</a><br/>
+    <a href=""{0}"">Click here</a><br/>
     Please close your browser to see that the session is resumed when you start a new browser using the URL inside the email!
-    </body></html>";
+    </body></html>", host);
             msg.IsBodyHtml = true;
 
 

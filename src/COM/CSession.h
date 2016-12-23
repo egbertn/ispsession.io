@@ -4,11 +4,11 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Mon Dec 19 17:10:08 2016
+/* at Fri Dec 23 10:18:53 2016
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
-    protocol : dce , ms_ext, app_config, c_ext, robust
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
+    protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -387,10 +387,10 @@ EXTERN_C const IID IID_IVariantDictionary2;
         virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE GetTypeInfo2( 
             UINT iTInfo,
             LCID lcid,
-            UINT **ppTInfo) = 0;
+            ITypeInfo **ppTInfo) = 0;
         
         virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE GetIDsOfNames2( 
-            UINT *riid,
+            REFIID riid,
             LPOLESTR *rgszNames,
             UINT cNames,
             LCID lcid,
@@ -398,12 +398,12 @@ EXTERN_C const IID IID_IVariantDictionary2;
         
         virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE Invoke2( 
             DISPID dispIdMember,
-            UINT *riid,
+            REFIID riid,
             LCID lcid,
             WORD wFlags,
-            UINT *pDispParams,
+            DISPPARAMS *pDispParams,
             VARIANT *pVarResult,
-            UINT *pExcepInfo,
+            EXCEPINFO *pExcepInfo,
             UINT *puArgErr) = 0;
         
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Item2( 
@@ -462,11 +462,11 @@ EXTERN_C const IID IID_IVariantDictionary2;
             IVariantDictionary2 * This,
             UINT iTInfo,
             LCID lcid,
-            UINT **ppTInfo);
+            ITypeInfo **ppTInfo);
         
         /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames2 )( 
             IVariantDictionary2 * This,
-            UINT *riid,
+            REFIID riid,
             LPOLESTR *rgszNames,
             UINT cNames,
             LCID lcid,
@@ -475,12 +475,12 @@ EXTERN_C const IID IID_IVariantDictionary2;
         /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *Invoke2 )( 
             IVariantDictionary2 * This,
             DISPID dispIdMember,
-            UINT *riid,
+            REFIID riid,
             LCID lcid,
             WORD wFlags,
-            UINT *pDispParams,
+            DISPPARAMS *pDispParams,
             VARIANT *pVarResult,
-            UINT *pExcepInfo,
+            EXCEPINFO *pExcepInfo,
             UINT *puArgErr);
         
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Item2 )( 

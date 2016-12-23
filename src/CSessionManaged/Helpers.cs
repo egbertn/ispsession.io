@@ -347,9 +347,13 @@ namespace ispsession.io
 #if OPT
         internal unsafe decimal ReadDecimal()
         {
+            // we cannot use decimal.GetBits, since that would flip the structure and make it incompatible with VARIANT
+            //return new int[] {d.lo, d.mid, d.hi, d.flags }; <- wrong
+            
             Str.Read(_memoryBuff, 0, sizeof(decimal));
             fixed (byte* ptr = _memoryBuff)
             {
+                *(short*)ptr = 0;
                 var ptr2 = (IntPtr)ptr;
                 return Marshal.PtrToStructure<decimal>(ptr2);
             }
@@ -357,11 +361,12 @@ namespace ispsession.io
 #else
         internal decimal ReadDecimal()
         {
-            Str.Read(_memoryBuff, 0, sizeof(decimal));
-            var bits = new int[sizeof(decimal) / 4];
-            Buffer.BlockCopy(_memoryBuff, 0, bits, 0, sizeof(decimal));
-            //the C++ DECIMAL struct is exactly the same as in .NET
-            return new decimal(bits);
+            Str.Read(_memoryBuff, 0, sizeof(decimal));            
+            var bits = Marshal.AllocHGlobal(sizeof(decimal));
+            Marshal.Copy(_memoryBuff, 0, bits, sizeof(decimal));
+            var dec = Marshal.GetObjectForNativeVariant<decimal>(bits);
+            Marshal.FreeHGlobal(bits);
+            return dec;            
         }
 #endif
 
@@ -371,15 +376,40 @@ namespace ispsession.io
             fixed (byte* ptr = _memoryBuff)
             {
                 var ptr2 = (IntPtr)ptr;
-                Marshal.StructureToPtr(value, ptr2, false);
+                
+                Marshal.StructureToPtr(value, ptr2, false);                
+                *(short*)ptr = (short)VarEnum.VT_DECIMAL;//fix structure
+                
             }
             Str.Write(_memoryBuff, 0, sizeof(decimal));
         }
 #else
         internal void WriteDecimal(decimal value)
         {
-            Buffer.BlockCopy(Decimal.GetBits(value), 0, _memoryBuff, 0, sizeof(decimal));
-
+            /*
+             * 	int num = bits[3];
+                if ((num & 2130771967) == 0 && (num & 16711680) <= 1835008)
+                {
+                    this.lo = bits[0];
+                    this.mid = bits[1];
+                    this.hi = bits[2];
+                    this.flags = num;				
+                }
+             * */
+            var bits = Marshal.AllocHGlobal(sizeof(decimal));
+            Marshal.GetNativeVariantForObject(value, bits); //also writes VT_DECIMAL to structure
+            Marshal.Copy(bits, _memoryBuff, 0, sizeof(decimal));
+            Marshal.FreeHGlobal(bits);
+            //var tgDecimal = new tagDECIMAL() 
+            //{  
+            //    wReserved = VarEnum.VT_DECIMAL,
+            //    scale = (bits[3] >>16)& 31,
+            //    sign = (bits[3] >> 24) & 31,
+            //    Hi32 = bits[2],
+            //    Mid32 = bits[1],
+            //    Lo32 = bits[0]
+            //};
+            //Marshal.StructureToPtr(tgDecimal, )           
             Str.Write(_memoryBuff, 0, sizeof(decimal));
         }
 #endif

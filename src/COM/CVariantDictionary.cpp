@@ -42,25 +42,25 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 	return hr;
 }
 
-
-
 //IVariantDictionary compatiblity with 
-STDMETHODIMP CVariantDictionary::GetTypeInfoCount2(UINT *) throw()
-{
-	return E_NOTIMPL;
-}
-STDMETHODIMP CVariantDictionary::GetTypeInfo2(UINT , LCID , UINT **) throw()
-{
-	return E_NOTIMPL;
-}
-STDMETHODIMP CVariantDictionary::GetIDsOfNames2 ( UINT* ,LPOLESTR *,UINT ,LCID ,DISPID *) throw()
-{
-	return E_NOTIMPL;
-}
-STDMETHODIMP CVariantDictionary::Invoke2(DISPID ,UINT* ,LCID ,WORD ,UINT *,VARIANT *,UINT *,UINT *) throw()
-{
-	return E_NOTIMPL;
-}
+	STDMETHODIMP CVariantDictionary::GetTypeInfoCount2(UINT * pctInfo) throw()
+	{
+		//why would somebody with C++ do IDispatch on this?? Anyway, to be sure.
+		// by convention, IDispatch is done on the default interface
+		return this->GetTypeInfoCount(pctInfo);
+	}
+	STDMETHODIMP CVariantDictionary::GetTypeInfo2(UINT itinfo, LCID lcid, ITypeInfo ** pptinfo) throw()
+	{
+		return this->GetTypeInfo(itinfo, lcid, pptinfo);
+	}
+	STDMETHODIMP CVariantDictionary::GetIDsOfNames2 ( REFIID riid ,LPOLESTR * rgszNames,UINT cNames,LCID lcid,DISPID * dispid) throw()
+	{
+		return this->GetIDsOfNames(riid, rgszNames, cNames, lcid, dispid);
+	}
+	STDMETHODIMP CVariantDictionary::Invoke2(DISPID dispid,REFIID refid ,LCID lcid,WORD wflags ,DISPPARAMS * dispparams,VARIANT * pvarResult,EXCEPINFO * exceptInfo,UINT * puargErr) throw()
+	{
+		return this->Invoke(dispid, refid, lcid, wflags, dispparams, pvarResult, exceptInfo, puargErr);
+	}
 	STDMETHODIMP CVariantDictionary::get_Item2(VARIANT VarKey, VARIANT *pvar) throw()
 	{
 		return get_Item(VarKey, pvar);
@@ -817,7 +817,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			case VT_DECIMAL:
 				//correct because decimal eats the whole variant !
 				cBytes = sizeof(DECIMAL);
-				hr = pStream->Write(&TheVal->decVal, cBytes, NULL);
+				hr = pStream->Write(TheVal, cBytes, NULL);
 				break;
 			case VT_BSTR:
 
@@ -1154,7 +1154,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 				break;
 			case VT_DECIMAL:				
 				cBytes = sizeof(DECIMAL);
-				hr = pStream->Read(&TheValue->decVal, cBytes, NULL);
+				hr = pStream->Read(TheValue, cBytes, NULL);
 				break;
 			case VT_RECORD: // can happen within .NET
 				{

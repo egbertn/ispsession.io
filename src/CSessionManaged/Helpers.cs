@@ -483,28 +483,11 @@ namespace ispsession.io
 #endif
         internal DateTime ReadDateTime()
         {
-            //return DateTime.FromOADate(ReadDouble());
-            var d = ReadDouble();
-            _SYSTEMTIME st = new _SYSTEMTIME();
-            NativeMethods.VariantTimeToSystemTime(d, ref st);
-            return new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
-
+            return NativeMethods.FromOADate(ReadDouble());
         }
         internal void WriteDateTime(DateTime value)
         {
-            //WriteDouble(value.ToOADate());
-            _SYSTEMTIME st = new _SYSTEMTIME()
-            {
-                wYear = (short)value.Year,
-                wMonth = (short)value.Month,
-                wDay = (short)value.Day,
-                wHour = (short)value.Hour,
-                wMinute = (short)value.Minute,
-                wMilliseconds = (short)value.Millisecond
-            };
-            double d;
-            NativeMethods.SystemTimeToVariantTime(ref st, out d);
-            WriteDouble(d);
+            WriteDouble(NativeMethods.ToOaDate(value));
         }
         /// <summary>
         /// 

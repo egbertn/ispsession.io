@@ -90,7 +90,7 @@ namespace ispsession.io
         [MarshalAs(UnmanagedType.LPWStr)]
         internal string ClientSiteName;
     }
-    [StructLayout(LayoutKind.Sequential, Size = 16)]
+    //[StructLayout(LayoutKind.Sequential, Size = 16)]
     internal struct tagDECIMAL
     {
         public ushort wReserved;

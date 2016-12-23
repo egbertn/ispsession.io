@@ -86,9 +86,9 @@ namespace ispsession.io
         internal static extern unsafe int VariantChangeTypeEx( void* pvargDest, void* pvarSrc, int lcid, short wFlags, [MarshalAs(UnmanagedType.I2)] VarEnum vt);
 
         [DllImport("oleaut32.dll", SetLastError = false)]
-        internal static extern int VariantTimeToSystemTime(double vtime, [In] ref _SYSTEMTIME lpSystemTime);
+        internal unsafe static extern int VariantTimeToSystemTime(double vtime,  _SYSTEMTIME* lpSystemTime);
         [DllImport("oleaut32.dll", SetLastError = false)]
-        internal static extern int SystemTimeToVariantTime([In] ref _SYSTEMTIME lpSystemTime, out double OaDate);
+        internal static unsafe extern int SystemTimeToVariantTime(_SYSTEMTIME* lpSystemTime, double* OaDate);
 
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int ReadClassStm(IStream pStm, out Guid clsid);
@@ -101,25 +101,25 @@ namespace ispsession.io
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int CreateStreamOnHGlobal(IntPtr hGlobal, bool fDeleteOnRelease,
            out IStream ppstm);
-        internal static double ToOaDate(DateTime value)
+        internal unsafe static double ToOaDate(DateTime value)
         {
-            _SYSTEMTIME st = new _SYSTEMTIME()
-            {
-                wYear = (short)value.Year,
-                wMonth = (short)value.Month,
-                wDay = (short)value.Day,
-                wHour = (short)value.Hour,
-                wMinute = (short)value.Minute,
-                wMilliseconds = (short)value.Millisecond
-            };
+            _SYSTEMTIME st;
+
+            st.wYear = (short)value.Year;
+            st.wMonth = (short)value.Month;
+            st.wDay = (short)value.Day;
+            st.wHour = (short)value.Hour;
+            st.wMinute = (short)value.Minute;
+            st.wMilliseconds = (short)value.Millisecond;
+            
             double d;
-            NativeMethods.SystemTimeToVariantTime(ref st, out d);
+            NativeMethods.SystemTimeToVariantTime(&st, &d);
             return d;
         }
-        internal static DateTime FromOADate(double d)
+        internal unsafe static DateTime FromOADate(double d)
         {
-            _SYSTEMTIME st = new _SYSTEMTIME();
-            NativeMethods.VariantTimeToSystemTime(d, ref st);
+            _SYSTEMTIME st ;
+            NativeMethods.VariantTimeToSystemTime(d, &st);
             return  new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
         }
         internal unsafe static long ToOACurrency(this decimal value)
@@ -133,10 +133,15 @@ namespace ispsession.io
         }
         internal unsafe static decimal FromOACurrency(long i64)
         {
-            tagDECIMAL theDec;          
+            tagDECIMAL theDec;
             //fake it to be a CUR
-            tagVARIANT ll = new tagVARIANT() { vt = VarEnum.VT_CY, llVal = i64 };
+            tagVARIANT ll;
+            ll.vt = VarEnum.VT_CY;
+            ll.llVal = i64;
             NativeMethods.VariantChangeTypeEx(&theDec, &ll, 1033, 0, VarEnum.VT_DECIMAL);
+            //decimal retVal;
+            //theDec.wReserved = 0;
+           // Buffer.MemoryCopy(&theDec, &retVal, sizeof(decimal), sizeof(decimal));            
             return new decimal(theDec.Lo32, theDec.Mid32, theDec.Hi32, theDec.sign == 0x80, theDec.scale);
 
         }

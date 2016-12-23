@@ -81,9 +81,9 @@ namespace ispsession.io
                             void* piet,
                             int outputLen);
         [DllImport("oleaut32.dll", SetLastError = false)]
-        internal static extern int VariantTimeToSystemTime(double vtime, [In] ref _SYSTEMTIME lpSystemTime);
+        internal static unsafe extern int VariantTimeToSystemTime(double vtime, _SYSTEMTIME * lpSystemTime);
         [DllImport("oleaut32.dll", SetLastError = false)]
-        internal static extern int SystemTimeToVariantTime([In] ref _SYSTEMTIME lpSystemTime, out double OaDate);
+        internal static unsafe extern int SystemTimeToVariantTime( _SYSTEMTIME* lpSystemTime, double* OaDate);
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int ReadClassStm(IStream pStm, out Guid clsid);
         [DllImport("ole32.dll", ExactSpelling = true)]
@@ -95,6 +95,29 @@ namespace ispsession.io
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int CreateStreamOnHGlobal(IntPtr hGlobal, bool fDeleteOnRelease,
            out IStream ppstm);
+
+        internal unsafe static double ToOaDate(DateTime value)
+        {
+            _SYSTEMTIME st;
+
+            st.wYear = (short)value.Year;
+            st.wMonth = (short)value.Month;
+            st.wDay = (short)value.Day;
+            st.wHour = (short)value.Hour;
+            st.wMinute = (short)value.Minute;
+            st.wMilliseconds = (short)value.Millisecond;
+
+            double d;
+            NativeMethods.SystemTimeToVariantTime(&st, &d);
+            return d;
+        }
+        internal unsafe static DateTime FromOADate(double d)
+        {
+            _SYSTEMTIME st;
+            NativeMethods.VariantTimeToSystemTime(d, &st);
+            return new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
+        }
+
         //[DllImport("ole32.dll", ExactSpelling = true)]
         //internal static extern int GetHGlobalFromStream(IStream pstm, out IntPtr phglobal);
 

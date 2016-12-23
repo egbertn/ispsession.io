@@ -151,40 +151,40 @@ namespace ispsession.io
     /// <summary>
     /// TODO: add more stuff, .NET has deprecated
     /// </summary>
-    [StructLayout(LayoutKind.Explicit, Size = 16)]
+    //[StructLayout(LayoutKind.Explicit, Size = 16)]
     internal struct tagVARIANT
     {
-        [FieldOffset(0), MarshalAs(UnmanagedType.I2)]
+        //[FieldOffset(0), MarshalAs(UnmanagedType.I2)]
         internal VarEnum vt;
 
-        [FieldOffset(2)]
+        //[FieldOffset(2)]
         internal ushort wReserved1;
 
-        [FieldOffset(4)]
+        //[FieldOffset(4)]
         internal ushort wReserved2;
 
-        [FieldOffset(6)]
+        //[FieldOffset(6)]
         internal ushort wReserved3;
 
-        [FieldOffset(8)]
-        internal tagCURRENCY cyVal;
+        //[FieldOffset(8)]
+        //internal tagCURRENCY cyVal;
 
-        [FieldOffset(8)]
+        //[FieldOffset(8)]
         internal long llVal;
 
-        [FieldOffset(8)]
-        internal tagDECIMAL decVal;
+        //[FieldOffset(8)]
+        //internal tagDECIMAL decVal;
     }
-    [StructLayout(LayoutKind.Sequential, Size =16)]
+  //  [StructLayout(LayoutKind.Sequential, Size =16)]
     internal struct tagDECIMAL
-    {       
+    {
         public ushort wReserved;
         /// Specifies the number of digits to the right of the decimal point and ranges from 0 to 28.
         public byte scale;
         public byte sign; //0x80=negative
         public int Hi32;
-        public int Mid32;
         public int Lo32;
+        public int Mid32;
     }
     internal struct _SYSTEMTIME
     {

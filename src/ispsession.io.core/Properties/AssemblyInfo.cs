@@ -4,12 +4,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyCompany("ADC Cure, Egbert Nierop")]
+[assembly: AssemblyCompany("ADC Cure")]
 [assembly: AssemblyProduct("ISPSession Asp.Net Core")]
-[assembly: AssemblyVersion("9.0.6")]
-[assembly: AssemblyFileVersion("9.0.0.6")]
+[assembly: AssemblyVersion("9.0.7")]
+[assembly: AssemblyFileVersion("9.0.0.7")]
 [assembly: AssemblyTrademark("")]
-[assembly: AssemblyTitle("ASP.NET Session Broker Replacement Middleware")]
+[assembly: AssemblyTitle("ASP.NET Session Broker")]
 [assembly: AssemblyDescription("ASP.NET Session Broker Replacement Middleware for AspNetCore")]
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug")]

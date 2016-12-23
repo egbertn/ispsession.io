@@ -374,7 +374,8 @@ namespace ispsession.io
             decimal ret;
             fixed (byte* ptr = _memoryBuff)
             {
-                Buffer.MemoryCopy(&ret, ptr, sizeof(decimal), sizeof(decimal));
+                *(short*)ptr = 0; //clear vt (VARTYPE)
+                Buffer.MemoryCopy(ptr, &ret, sizeof(decimal), sizeof(decimal));
             }
             return ret;
         }
@@ -382,10 +383,13 @@ namespace ispsession.io
         internal decimal ReadDecimal()
         {
             Str.Read(_memoryBuff, 0, sizeof(decimal));
-            var bits = new int[sizeof(decimal) / 4];
-            Buffer.BlockCopy(_memoryBuff, 0, bits, 0, sizeof(decimal));
-            //the C++ DECIMAL struct is exactly the same as in .NET
-            return new decimal(bits);
+            _memoryBuff[0] = 0; //clear vt (VARTYPE)
+            _memoryBuff[1] = 0;
+            var ptr = Marshal.AllocHGlobal(sizeof(decimal));
+            Marshal.Copy(_memoryBuff, 0, ptr, sizeof(decimal));
+            var dec = Marshal.PtrToStructure<decimal>(ptr);
+            Marshal.FreeHGlobal(ptr);
+            return dec;
         }
 #endif
 
@@ -394,14 +398,31 @@ namespace ispsession.io
         {
             fixed (byte* ptr = _memoryBuff)
             {
-                Buffer.MemoryCopy(ptr, &value, sizeof(decimal), sizeof(decimal));
+                Buffer.MemoryCopy(&value, ptr, sizeof(decimal), sizeof(decimal));
+                *(short*)ptr = (short)VarEnum.VT_DECIMAL;
             }
             Str.Write(_memoryBuff, 0, sizeof(decimal));
         }
 #else
         internal void WriteDecimal(decimal value)
         {
-            Buffer.BlockCopy(Decimal.GetBits(value), 0, _memoryBuff, 0, sizeof(decimal));
+            var ptr = Marshal.AllocHGlobal(sizeof(decimal));
+            Marshal.StructureToPtr(value, ptr, false);            
+            Marshal.Copy(ptr, _memoryBuff, 0, sizeof(decimal));            
+            Marshal.FreeHGlobal(ptr);
+            _memoryBuff[0] = (byte)VarEnum.VT_DECIMAL;
+            _memoryBuff[1] = 0; //to be sure
+            //var bits = Decimal.GetBits(value);
+            //var tgDecimal = new tagDECIMAL() 
+            //{  
+            //    wReserved = (ushort)VarEnum.VT_DECIMAL,
+            //    scale = (byte)((bits[3] >>16)& 31),
+            //    sign = (byte)((bits[3] >> 24) & 31),
+            //    Hi32 = bits[2],
+            //    Mid32 = bits[1],
+            //    Lo32 = bits[0]
+            //};
+            //Buffer.BlockCopy(, 0, _memoryBuff, 0, sizeof(decimal));
 
             Str.Write(_memoryBuff, 0, sizeof(decimal));
         }
@@ -512,7 +533,11 @@ namespace ispsession.io
             //int done =  Encoding.UTF8.GetChars(_memoryBuff, 0, size, newstr, 0);
             //return new string(newstr);
         }
+#if OPT
+        internal unsafe void WriteString(string value)
+#else
         internal void WriteString(string value)
+#endif
         {
             var wideSize = value == null ? 0 : value.Length;
             var byteSize = 0;

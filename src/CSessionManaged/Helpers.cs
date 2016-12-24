@@ -507,9 +507,13 @@ namespace ispsession.io
             //int done =  Encoding.UTF8.GetChars(_memoryBuff, 0, size, newstr, 0);
             //return new string(newstr);
         }
+#if OPT
+        internal unsafe void WriteString(string value)
+#else
         internal void WriteString(string value)
+#endif
         {
-            var wideSize = value == null ? 0 : value.Length;
+        var wideSize = value == null ? 0 : value.Length;
             var byteSize = 0;
             if (wideSize > 0)
             {
@@ -519,7 +523,14 @@ namespace ispsession.io
                 EnsureMemory(byteSize + sizeof(int));
                 // ReSharper disable once AssignNullToNotNullAttribute
                 _encoding.GetBytes(value, 0, wideSize, _memoryBuff, sizeof(int));
+#if OPT
+                fixed (byte* ptr =_memoryBuff)
+                {
+                    *(int*)ptr = byteSize;
+                }
+#else
                 Array.Copy(BitConverter.GetBytes(byteSize), _memoryBuff, sizeof(int));
+#endif
                 //one single operation, instead of two
                 Str.Write(_memoryBuff, 0, byteSize + sizeof(int));
             }

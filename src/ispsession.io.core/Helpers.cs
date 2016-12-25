@@ -1500,7 +1500,7 @@ namespace ispsession.io
             }
             var retVal = false;
             var licenseType = license[0];
-            if (!Productid.Contains(licenseType)) //ISP Session 6.0 and others are excluded
+            if (!Array.Exists( Productid,x => x ==licenseType)) //ISP Session 6.0 and others are excluded
             {
                 return false;
             }
@@ -1526,7 +1526,7 @@ namespace ispsession.io
             var lines = new List<string>(licensedfor.Split(new[] { licensedfor.IndexOf("\r\n", StringComparison.Ordinal) > 0 ? "\r\n" : " " }, StringSplitOptions.None));
 
             lines.Insert(0, ProductString);
-            var foundLicensedItem = lines.Any(x => x == nt4Netbiosname || x == workgroupname || x == cwName);
+            var foundLicensedItem = lines.Exists(x => x == nt4Netbiosname || x == workgroupname || x == cwName);
             if (!foundLicensedItem && (licenseType != 4 && licenseType != 24))
             {
                 TraceInformation("Could not find licensedItem {0} in allowed licensee {1}", cwName, licensedfor);

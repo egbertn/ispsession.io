@@ -111,8 +111,8 @@ namespace ispsession.io
             Func<ISPSession, bool> tryEstablishSession = (i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
 
 #if !Demo
-            string license = _appSettings.Lic;
-            var lic = _appSettings.LicKey;
+            string license = _options.Lic;
+            var lic = _options.LicKeyCore;
             if (string.IsNullOrEmpty(license))
             {
                 throw new Exception("Ccession.LIC appsetting is missing in web.config");

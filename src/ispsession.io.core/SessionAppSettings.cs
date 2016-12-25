@@ -41,7 +41,7 @@
         //    [Description("Csession.LIC"]
         public string Lic { get; set; }
         // [Description("License")]
-        public string LicKey { get; set; }
+        public string LicKeyCore { get; set; }
         //redis datasource
         //   [Description("DataSource")]
         /// <summary>
@@ -74,7 +74,7 @@
                 DatabaseConnection = this.DatabaseConnection,
                 Domain = this.Domain,
                 Lic = this.Lic,
-                LicKey = this.LicKey,
+                LicKeyCore = this.LicKeyCore,
                 Liquid = this.Liquid,
                 Path = this.Path,
                 ReEntrance = this.ReEntrance,

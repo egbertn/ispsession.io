@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>ispsession.io</id>
-    <version>1.0.9</version>
+    <version>1.0.10</version>
     <title>Classic ASP.NET Session State Broker</title>    
     <authors>ADC Cure</authors>
     <owners>ADC Cure</owners>
@@ -17,8 +17,8 @@
     <description>Session State broker as a replacement for built in state for classic ASP/classic ASP.NET and AspNetCore. 
 Enables interoperable Sessionstate between those three frameworks. 
 Uses Redis 2.8(+) as a backend storage server.</description>
-    <releaseNotes>Fixes cookieheader issue and decimal persistance.
-    ISP Session exists as of 2001 as a COM component and steadily grew with the market for features.</releaseNotes>
+    <releaseNotes>1.0.10 fixes decimal array persistance.
+    The purchased assembly contains more memory optimizations, however, the demo performance very well too.</releaseNotes>
 
   <copyright>Copyright © 2016 ADC Cure, Netherlands</copyright>
   <dependencies>

@@ -600,8 +600,8 @@ namespace ispsession.io
                 lMemSize *= ElSize;
                 if (!isJagged && ((vT == VarEnum.VT_I1) || (vT == VarEnum.VT_UI2) ||
                     (vT == VarEnum.VT_UI1) || (vT == VarEnum.VT_I2) || (vT == VarEnum.VT_I4) || (vT == VarEnum.VT_UI8) || (vT == VarEnum.VT_UI4) || (vT == VarEnum.VT_R4) ||
-                    (vT == VarEnum.VT_R8) || (vT == VarEnum.VT_CY) || (vT == VarEnum.VT_DATE) || (vT == VarEnum.VT_BOOL) ||
-                    (vT == VarEnum.VT_DECIMAL) || (vT == VarEnum.VT_I8) || (vT == VarEnum.VT_VECTOR))
+                    (vT == VarEnum.VT_R8) || (vT == VarEnum.VT_CY) || (vT == VarEnum.VT_DATE) || (vT == VarEnum.VT_BOOL)
+                    || (vT == VarEnum.VT_I8))
                     )
                 {
                     var straightToStream = vT == VarEnum.VT_UI1 && cDims == 1;
@@ -612,7 +612,7 @@ namespace ispsession.io
                     }
                     Str.Write(straightToStream ? (byte[])psa : _memoryBuff, 0, lMemSize);
                 }
-                else if (!isJagged && (vT == VarEnum.VT_BSTR && lElements > 0))
+                else if (!isJagged && ((vT == VarEnum.VT_BSTR || vT == VarEnum.VT_DECIMAL) && lElements > 0))
                 {
                     var rgIndices = new int[cDims];
                     for (var x = 0; x < cDims; x++)
@@ -626,7 +626,16 @@ namespace ispsession.io
                         if (rgIndices[dimPointer] <
                             (int)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound)
                         {
-                            WriteString((string)psa.GetValue(rgIndices));
+                            switch(vT)
+                            {
+                                case VarEnum.VT_BSTR:
+                                    WriteString((string)psa.GetValue(rgIndices));
+                                    break;
+                                case VarEnum.VT_DECIMAL:
+                                    WriteValue(psa.GetValue(rgIndices), VarEnum.VT_DECIMAL);
+                                    break;
+                            }
+                            
                             rgIndices[dimPointer]++;
                             //end of loop
                             if (++findEl == lElements)
@@ -944,7 +953,7 @@ namespace ispsession.io
                 }
                 if (!isJagged && ((vT == VarEnum.VT_UI1) || (vT == VarEnum.VT_I2) || (vT == VarEnum.VT_I4) || (vT == VarEnum.VT_UI4) || (vT == VarEnum.VT_R4) || (vT == VarEnum.VT_R8)
                         || (vT == VarEnum.VT_CY) || (vT == VarEnum.VT_DATE) || (vT == VarEnum.VT_UI2)
-                        || (vT == VarEnum.VT_BOOL) || (vT == VarEnum.VT_DECIMAL) || (vT == VarEnum.VT_I8) || (vT == VarEnum.VT_UI8) || (vT == VarEnum.VT_I1))
+                        || (vT == VarEnum.VT_BOOL) || (vT == VarEnum.VT_I8) || (vT == VarEnum.VT_UI8) || (vT == VarEnum.VT_I1))
                                 )
                 {
                     if (vT == VarEnum.VT_UI1 && cDims == 1)
@@ -961,7 +970,7 @@ namespace ispsession.io
                     }
                     return psa;
                 }
-                if (!isJagged && (vT == VarEnum.VT_BSTR && lElements > 0))
+                if (!isJagged && ((vT == VarEnum.VT_BSTR || vT== VarEnum.VT_DECIMAL) && lElements > 0))
                 {
                     var psaBound = new SAFEARRAYBOUND[cDims];
                     var rgIndices = new int[cDims];
@@ -979,7 +988,16 @@ namespace ispsession.io
 
                         if (rgIndices[dimPointer] < lengths[dimPointer] + lowerbounds[dimPointer])
                         {
-                            psa.SetValue(ReadString(), rgIndices);
+                            switch(vT)
+                            {
+                                case VarEnum.VT_DECIMAL:
+                                    psa.SetValue(ReadDecimal(), rgIndices);
+                                    break;
+                                case VarEnum.VT_BSTR:
+                                    psa.SetValue(ReadString(), rgIndices);
+                                    break;
+                            }
+                            
                             rgIndices[dimPointer]++;
                             if (++findEl == lElements)
                             {

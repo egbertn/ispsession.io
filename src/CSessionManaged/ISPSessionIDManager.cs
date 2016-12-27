@@ -114,14 +114,15 @@ namespace ispsession.io
 
         public bool Validate(string id)
         {
-            if (string.IsNullOrEmpty(id) || id.Length != 32)
+            int l;
+            if (string.IsNullOrEmpty(id) || (l = id.Length) != 32)
             {
                 return false;
             }
-            for (int x = 0; x <= 30; x += 2)
+            while (l-- != 0)
             {
-                byte bogus;
-                if (byte.TryParse(id.Substring(x, 2), NumberStyles.AllowHexSpecifier, null, out bogus) == false)
+                var ch = id[l] | 32; //lowercase
+                if (!((ch >= 'a' && ch <= 'f') || (ch >= '0' && ch <= '9')))
                 {
                     return false;
                 }

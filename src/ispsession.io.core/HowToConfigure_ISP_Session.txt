@@ -22,7 +22,7 @@ At the time of writing, Nuget 3.x does not support automating steps below.
     "Compress": false,
     "Lic": "mydomain.local",
     "EnableLogging": 0,
-    "LicKey": "F01FB5D0BCA6CE4C8CC773916F281C32",
+    "LicKeyCore": "F01FB5D0BCA6CE4C8CC773916F281C32",
     "DatabaseConnection": "localhost",
 	"Database": -1
   },

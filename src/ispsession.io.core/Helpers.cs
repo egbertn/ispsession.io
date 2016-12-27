@@ -1288,24 +1288,7 @@ namespace ispsession.io
                     return null;
             }
         }
-        [DebuggerStepThrough]
-        public static byte[] HexToBytes(string h)
-        {
-            if (string.IsNullOrEmpty(h))
-            {
-                throw new ArgumentNullException("h", "Id cannot be empty");
-            }
-            if (h.Length != 32)
-            {
-                throw new ArgumentException("Id length must be 32", "h");
-            }
-            var bts = new byte[16];
-            for (int x = 30, y = 15; x >= 0; x -= 2, y--)
-            {
-                bts[y] = byte.Parse(h.Substring(x, 2), NumberStyles.AllowHexSpecifier);
-            }
-            return bts;
-        }
+     
 
         /// <summary>
         /// saves a COM object using IPersistStreamInit

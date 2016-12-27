@@ -83,7 +83,7 @@ namespace ispsession.io
         internal unsafe static extern uint HashData([In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)]
                                 byte[] pbData, int cbData, void* piet, int outputLen);
         [DllImport("oleaut32.dll", SetLastError = false)]
-        internal static extern unsafe int VariantChangeTypeEx( void* pvargDest, void* pvarSrc, int lcid, short wFlags, [MarshalAs(UnmanagedType.I2)] VarEnum vt);
+        internal static extern unsafe int VariantChangeTypeEx( void* pvargDest, void* pvarSrc, int lcid, short wFlags, short vt);
 
         [DllImport("oleaut32.dll", SetLastError = false)]
         internal unsafe static extern int VariantTimeToSystemTime(double vtime,  _SYSTEMTIME* lpSystemTime);
@@ -128,7 +128,7 @@ namespace ispsession.io
             tagVARIANT theDec;
             Buffer.MemoryCopy(&value, &ll, sizeof(decimal), sizeof(decimal));
             ll.wReserved = (ushort)VarEnum.VT_DECIMAL;
-            NativeMethods.VariantChangeTypeEx(&theDec, &ll, 1033, 0, VarEnum.VT_CY);
+            NativeMethods.VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short)VarEnum.VT_CY);
             return theDec.llVal;
         }
         internal unsafe static decimal FromOACurrency(long i64)
@@ -138,7 +138,7 @@ namespace ispsession.io
             tagVARIANT ll;
             ll.vt = VarEnum.VT_CY;
             ll.llVal = i64;
-            NativeMethods.VariantChangeTypeEx(&theDec, &ll, 1033, 0, VarEnum.VT_DECIMAL);
+            NativeMethods.VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short) VarEnum.VT_DECIMAL);
             //decimal retVal;
             //theDec.wReserved = 0;
            // Buffer.MemoryCopy(&theDec, &retVal, sizeof(decimal), sizeof(decimal));            

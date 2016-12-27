@@ -24,7 +24,7 @@
     "iconUrl": "http://ispsession.io/images/Platipus3_Transparant_small.png",
     "owners": [ "ADC Cure" ],
     "tags": [ "Session", "SessionState" ],
-    "releaseNotes": "Stable release as of version 1.0.7. 1.0.9 fixes decimal compatibility. \r\n.1.0.10 Fixes Currency (VT_CY) compatibility. Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The commercial build, contains extra optimizations.",
+    "releaseNotes": "1.0.10 fixes decimal array persistance and \r\nCurrency (VT_CY) compatibility. Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The purchased assembly, contains extra optimizations, however, the demo performs very well too.",
     "requireLicenseAcceptance": true,
     "summary": "ISP Session is a lean and mean, verstatile and performant Session State broker that functions as a replacement for built in session state management, for classic ASP/classic ASP.NET and AspNetCore. Enables interoperable Sessionstate between those three frameworks. Uses Redis 2.8+ as a backend storage server."
   },

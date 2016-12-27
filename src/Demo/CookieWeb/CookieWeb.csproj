@@ -48,6 +48,8 @@
     <Content Include="about.aspx" />
     <Content Include="ajaxCallWithSession.asp" />
     <Content Include="ajaxCallWithSession.aspx" />
+    <Content Include="bin\ispsession.io.dll" />
+    <Content Include="bin\ispsession.io.pdb" />
     <Content Include="css\theme.css" />
     <Content Include="Default.asp" />
     <Content Include="Default.aspx" />

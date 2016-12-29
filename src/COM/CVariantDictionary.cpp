@@ -612,8 +612,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 		
         if ((vcopy == VT_I1) ||
 			(vcopy == VT_UI1) || (vcopy == VT_I2) || (vcopy == VT_I4) || (vcopy == VT_R4) ||
-			(vcopy == VT_R8) || (vcopy == VT_CY) ||  (vcopy == VT_DATE) || (vcopy == VT_BOOL) ||
-			(vcopy == VT_DECIMAL) || (vcopy == VT_I8) || (vcopy == VT_VECTOR)
+			(vcopy == VT_R8) || (vcopy == VT_CY) ||  (vcopy == VT_DATE) || (vcopy == VT_BOOL) || (vcopy == VT_I8) 
 			)
             //wow, write the whole block at once. Simple, not?
 		{
@@ -627,7 +626,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 				}
 			}
 		}
-		else if (vcopy == VT_BSTR)            
+		else if ((vcopy == VT_BSTR)  || (vcopy == VT_DECIMAL))
 		{
 			if (lElements > 0) 
 			{
@@ -635,13 +634,22 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 				if (hr == S_OK)
 				{
 					//the BSTR allocation area is contigious.
-					logModule.Write(L"Writing VT_BSTR array length=%d", lElements);
-					BSTR* myarray = static_cast<BSTR*>(psadata);			
-					int els = 0;
+					logModule.Write(L"Writing vt = %d array length=%d", vcopy, lElements);
 					int backup = logModule.get_Logging(); // disable for the moment
 					logModule.set_Logging(0);
-					for (; els < lElements && hr == S_OK; els++) 			
-						hr = WriteString(pStream, myarray[els]);			
+					int els = 0;
+					if (vcopy == VT_BSTR)
+					{
+						auto myarray = static_cast<BSTR*>(psadata);						
+						for (; els < lElements && hr == S_OK; els++)
+							hr = WriteString(pStream, myarray[els]);
+					}
+					else if (vcopy == VT_DECIMAL)
+					{
+						auto myarray = static_cast<VARIANT*>(psadata); // ugly, but true
+						for (; els < lElements && hr == S_OK; els++)
+							hr = WriteValue(pStream, &myarray[els], VT_DECIMAL, strKeyName);
+					}
 					logModule.set_Logging(backup);
 					logModule.Write(L"written VT_BSTR array length=%d %x", els, hr);
 					::SafeArrayUnaccessData(psa);
@@ -1032,7 +1040,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 		if (
 			(vtype == VT_UI1) || (vtype == VT_I2) || (vtype == VT_I4) || (vtype == VT_R4) || (vtype== VT_R8)
 			|| (vtype == VT_CY) || (vtype == VT_DATE) 
-			|| (vtype == VT_BOOL) || (vtype == VT_DECIMAL) || (vtype == VT_I8) || (vtype == VT_I1)
+			|| (vtype == VT_BOOL) || (vtype == VT_I8) || (vtype == VT_I1)
 			)
 		{
 			//retrieve pointer to first address
@@ -1043,17 +1051,27 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 				::SafeArrayUnaccessData(psa);
 			}
 		}
-		else if (vtype== VT_BSTR && lElements > 0)
+		else if ((vtype== VT_BSTR || vtype == VT_DECIMAL) && lElements > 0)
 		{
 			hr = ::SafeArrayAccessData(psa, &psadata);
 			if (hr == S_OK)
 			{
-				BSTR *btemp = static_cast<BSTR*>(psadata);
 				logModule.Write(L"VT_BSTR array %d", lElements);
 				int backup = logModule.get_Logging(); // disable for the moment
 				logModule.set_Logging(0);
-				for (els = 0; els < lElements && hr == S_OK; els++)
-					hr = ReadString(pStream, &btemp[els]);
+				if (vtype == VT_BSTR)
+				{
+					auto btemp = static_cast<BSTR*>(psadata);
+					for (els = 0; els < lElements && hr == S_OK; els++)
+						hr = ReadString(pStream, &btemp[els]);
+				}
+				else if (vtype == VT_DECIMAL)
+				{
+					auto btemp = static_cast<VARIANT*>(psadata); //ugly but true
+					for (els = 0; els < lElements && hr == S_OK; els++)
+						hr = ReadValue(pStream, &btemp[els], VT_DECIMAL);
+				}
+
 				::SafeArrayUnaccessData(psa);
 				logModule.set_Logging(backup);
 			}

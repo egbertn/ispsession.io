@@ -11,6 +11,9 @@
 #include <atlsync.h>
 namespace redis3m
 {
+	static std::set<connection::ptr_t> connections;
+	static ATL::CCriticalSection _access_mutex;
+
 
 /**
  * @brief Manages a pool of connections to a single Redis server
@@ -88,8 +91,6 @@ private:
     std::string _host;
     unsigned int _port;
     unsigned int _database;
-    static std::set<connection::ptr_t> connections;
-	static ATL::CCriticalSection _access_mutex;
 };
 
 template<>

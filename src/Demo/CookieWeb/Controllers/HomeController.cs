@@ -16,7 +16,7 @@ namespace CookieWeb
         {
             var model = new HomeModel() { SessionID = Session.SessionID };
             
-            model.CountRefresh = (int)(Session["CountRefresh"] ?? 0);
+            model.CountRefresh = Convert.ToInt32(Session["CountRefresh"] ?? 0);
             model.CountRefresh++;
             // again, this is not how it should be done, but to keep the code sample
             // consistent!

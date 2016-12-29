@@ -19,7 +19,7 @@ public partial class _Default : Page
     protected override void OnLoad(EventArgs e)
     {
         
-        var countRefresh = (int)(Session["CountRefresh"] ?? 0); ;
+        var countRefresh = Convert.ToInt32(Session["CountRefresh"] ?? 0); 
         countRefresh++;
         Session["CountRefresh"] = countRefresh;
         if (countRefresh > 10)

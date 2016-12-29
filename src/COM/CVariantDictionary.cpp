@@ -760,68 +760,68 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			case VT_I8:	case VT_UI8: case VT_CY: case VT_R8: case VT_DATE:
 				cBytes = sizeof(LONGLONG);
 				break;
-			case VT_RECORD: //mainly only with .NET structs
-				{					
-					// create a shorter cut
-					IRecordInfo * pRecordInfo = TheVal->pRecInfo;
+			//case VT_RECORD: //mainly only with .NET structs
+			//	{					
+			//		// create a shorter cut
+			//		IRecordInfo * pRecordInfo = TheVal->pRecInfo;
 
-					//prepare our own structure for persistence
-					wire_UDT nfo = {0};
-					
-					if (pRecordInfo == NULL)
-						hr = E_POINTER;
-					// get the recordsize
-					if (hr == S_OK) 
-						hr = TheVal->pRecInfo->GetSize(&nfo.clSize);
+			//		//prepare our own structure for persistence
+			//		wire_UDT nfo = {0};
+			//		
+			//		if (pRecordInfo == NULL)
+			//			hr = E_POINTER;
+			//		// get the recordsize
+			//		if (hr == S_OK) 
+			//			hr = TheVal->pRecInfo->GetSize(&nfo.clSize);
 
-					if (hr == S_OK)	
-						hr = CoGetMarshalSizeMax(&nfo.ifaceSize, 
-							IID_IRecordInfo,
-							TheVal->pRecInfo,
-							MSHCTX_NOSHAREDMEM,
-							NULL,
-							MSHLFLAGS_NORMAL);
+			//		if (hr == S_OK)	
+			//			hr = CoGetMarshalSizeMax(&nfo.ifaceSize, 
+			//				IID_IRecordInfo,
+			//				TheVal->pRecInfo,
+			//				MSHCTX_NOSHAREDMEM,
+			//				NULL,
+			//				MSHLFLAGS_NORMAL);
 
-						logModule.Write(L"GetMarshalSizeMax %x %d", hr, nfo.ifaceSize);
+			//			logModule.Write(L"GetMarshalSizeMax %x %d", hr, nfo.ifaceSize);
 
-					//put our stuff on the line
-					if (hr != S_OK) 
-					{
-						nfo.clSize =
-						nfo.ifaceSize = 0;
-					}
-					pStream->Write(&nfo, sizeof(wire_UDT), NULL);
-					
-					if (hr == S_OK)
-					{
-						HGLOBAL hglob = GlobalAlloc(GMEM_MOVEABLE, nfo.ifaceSize);
-						CComPtr<IStream> pstream;
-						if (hglob != NULL)
-							hr = CreateStreamOnHGlobal(hglob, TRUE, &pstream);
-						else hr = E_OUTOFMEMORY;
-						if (hr == S_OK)
-							hr = CoMarshalInterface(pstream, 
-								IID_IRecordInfo, 
-								pRecordInfo, 
-								MSHCTX_NOSHAREDMEM, 
-								NULL,
-								MSHLFLAGS_NORMAL);						
-						//copy to main stream
-						if (hr == S_OK) 
-						{
-							pStream->Write(GlobalLock(hglob), nfo.ifaceSize, NULL);
-							GlobalUnlock(hglob);
-						}
-					}
+			//		//put our stuff on the line
+			//		if (hr != S_OK) 
+			//		{
+			//			nfo.clSize =
+			//			nfo.ifaceSize = 0;
+			//		}
+			//		pStream->Write(&nfo, sizeof(wire_UDT), NULL);
+			//		
+			//		if (hr == S_OK)
+			//		{
+			//			HGLOBAL hglob = GlobalAlloc(GMEM_MOVEABLE, nfo.ifaceSize);
+			//			CComPtr<IStream> pstream;
+			//			if (hglob != NULL)
+			//				hr = CreateStreamOnHGlobal(hglob, TRUE, &pstream);
+			//			else hr = E_OUTOFMEMORY;
+			//			if (hr == S_OK)
+			//				hr = CoMarshalInterface(pstream, 
+			//					IID_IRecordInfo, 
+			//					pRecordInfo, 
+			//					MSHCTX_NOSHAREDMEM, 
+			//					NULL,
+			//					MSHLFLAGS_NORMAL);						
+			//			//copy to main stream
+			//			if (hr == S_OK) 
+			//			{
+			//				pStream->Write(GlobalLock(hglob), nfo.ifaceSize, NULL);
+			//				GlobalUnlock(hglob);
+			//			}
+			//		}
 
-					logModule.Write(L"CoMarshalInterface %x", hr);
-					// now copy the raw record data
-					if (hr == S_OK)
-						hr = pStream->Write(TheVal->pvRecord, nfo.clSize, NULL);
-					
-				}	
-				cBytes=0;
-				break;
+			//		logModule.Write(L"CoMarshalInterface %x", hr);
+			//		// now copy the raw record data
+			//		if (hr == S_OK)
+			//			hr = pStream->Write(TheVal->pvRecord, nfo.clSize, NULL);
+			//		
+			//	}	
+			//	cBytes=0;
+			//	break;
 			case VT_DECIMAL:
 				//correct because decimal eats the whole variant !
 				cBytes = sizeof(DECIMAL);
@@ -1174,49 +1174,49 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 				cBytes = sizeof(DECIMAL);
 				hr = pStream->Read(TheValue, cBytes, NULL);
 				break;
-			case VT_RECORD: // can happen within .NET
-				{
-					wire_UDT nfo;
-					hr = pStream->Read(&nfo, sizeof(wire_UDT), NULL);
-					
-					if (nfo.ifaceSize != 0) 
-					{
-						HGLOBAL hglob = GlobalAlloc(GMEM_MOVEABLE, nfo.ifaceSize);
-						if (hglob != NULL )
-						{
-							logModule.Write(L"stream size=%d, recordsize %d", nfo.ifaceSize, nfo.clSize);
-							hr = pStream->Read(GlobalLock(hglob), nfo.ifaceSize, NULL);												
-							GlobalUnlock(hglob);
-							IStream*pTemp;
-							hr = CreateStreamOnHGlobal(hglob, TRUE, &pTemp);
-							if (hr == S_OK)
-							{
-								TheValue->pRecInfo = NULL;
-								hr = CoUnmarshalInterface(pTemp, 
-									IID_IRecordInfo, 
-									(void**)&TheValue->pRecInfo);
-								pTemp->Release();
-							}
-							logModule.Write(L"CoUnmarshalInterface %x", hr);
-						}
-					}
+			//case VT_RECORD: // can happen within .NET
+			//	{
+			//		wire_UDT nfo;
+			//		hr = pStream->Read(&nfo, sizeof(wire_UDT), NULL);
+			//		
+			//		if (nfo.ifaceSize != 0) 
+			//		{
+			//			HGLOBAL hglob = GlobalAlloc(GMEM_MOVEABLE, nfo.ifaceSize);
+			//			if (hglob != NULL )
+			//			{
+			//				logModule.Write(L"stream size=%d, recordsize %d", nfo.ifaceSize, nfo.clSize);
+			//				hr = pStream->Read(GlobalLock(hglob), nfo.ifaceSize, NULL);												
+			//				GlobalUnlock(hglob);
+			//				IStream*pTemp;
+			//				hr = CreateStreamOnHGlobal(hglob, TRUE, &pTemp);
+			//				if (hr == S_OK)
+			//				{
+			//					TheValue->pRecInfo = NULL;
+			//					hr = CoUnmarshalInterface(pTemp, 
+			//						IID_IRecordInfo, 
+			//						(void**)&TheValue->pRecInfo);
+			//					pTemp->Release();
+			//				}
+			//				logModule.Write(L"CoUnmarshalInterface %x", hr);
+			//			}
+			//		}
 
-					//allocate memory -not- using our own memory allocator!
-					if (hr == S_OK) 
-					{
-						logModule.Write(L"pRecInfo->RecordCreate");
-						TheValue->pvRecord = TheValue->pRecInfo->RecordCreate();				
-						hr = pStream->Read(TheValue->pvRecord, nfo.clSize, NULL);
-					}
-					//if error skip to next variable
-					else
-					{
-						//hr = pStream->Seek(nfo.clSize, STREAM_SEEK_CUR, NULL);
-						goto error;
-					}
-				}
-				cBytes = 0;
-				break;
+			//		//allocate memory -not- using our own memory allocator!
+			//		if (hr == S_OK) 
+			//		{
+			//			logModule.Write(L"pRecInfo->RecordCreate");
+			//			TheValue->pvRecord = TheValue->pRecInfo->RecordCreate();				
+			//			hr = pStream->Read(TheValue->pvRecord, nfo.clSize, NULL);
+			//		}
+			//		//if error skip to next variable
+			//		else
+			//		{
+			//			//hr = pStream->Seek(nfo.clSize, STREAM_SEEK_CUR, NULL);
+			//			goto error;
+			//		}
+			//	}
+			//	cBytes = 0;
+			//	break;
 			case VT_BSTR:
 				hr = ReadString(pStream, &TheValue->bstrVal);
 				cBytes = SysStringByteLen(TheValue->bstrVal);

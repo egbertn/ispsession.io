@@ -50,6 +50,8 @@ a(1,1) = "Bye"
 Session("a3") = a
 Session("a0") = "Smith"
 Session("a2") = Now()
+
+
 %> 
 </p>
 </div>

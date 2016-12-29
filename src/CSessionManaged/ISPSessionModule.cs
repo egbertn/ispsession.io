@@ -35,15 +35,15 @@ namespace ispsession.io
     //System.Web.SessionState.ISessionStateModule 4.6.2
     public sealed class ISPSessionModule : IHttpModule
     {
-        private bool _initialized;
+        private static bool _initialized;
         /// <summary>
         /// INCR can also be supported at Redis. TODO: think about this idea
         /// </summary>
-        private int _instanceCount;
-        private ISPSessionIDManager _sessionIDManager;
-        private readonly object locker = new object();
+        private static int _instanceCount;
+        private static ISPSessionIDManager _sessionIDManager;
+        private static readonly object locker = new object();
 
-        private SessionAppSettings _appSettings;
+        private static SessionAppSettings _appSettings;
 
         private const string UninitString = "Uninit CSessionManaged {0}";
         private const string InitString = "Init CSessionManaged {0}";
@@ -62,7 +62,7 @@ namespace ispsession.io
                 lock (locker)
                 {
                     _initialized = true;
-                    this._appSettings = new SessionAppSettings();
+                    _appSettings = new SessionAppSettings();
                     // Create a SessionIDManager.
                     _sessionIDManager = new ISPSessionIDManager(_appSettings);
 #if !Demo
@@ -121,12 +121,17 @@ namespace ispsession.io
             {
                 return;//no business here
             }
+            //TODO: remove license Debug.WriteLine muke!
             if (Interlocked.Increment(ref _instanceCount) > Helpers.Maxinstances)
             {
                 Thread.Sleep(500 * (_instanceCount - Helpers.Maxinstances));
+                NativeMethods.OutputDebugStringW(string.Format("LICENSE ERROR max = {0} requested ={1} \r\n", Helpers.Maxinstances, _instanceCount));
                 ISPSessionModule.WriteToEventLog(new Exception(string.Format(LicenseSpace, _instanceCount, Helpers.Maxinstances)), "instancing");
             }
-
+            //if (DateTime.UtcNow.Second % 6 == 0)
+            //{
+            //    NativeMethods.OutputDebugStringW(string.Format("License {0}\r\n", _instanceCount));
+            //}
             bool isNew = false;
             string sessionID;
 
@@ -154,7 +159,7 @@ namespace ispsession.io
             bool redirected, cookieAdded;
             if (_appSettings.Liquid || sessionID == null)
             {
-                sessionID = this._sessionIDManager.CreateSessionID(context);
+                sessionID = _sessionIDManager.CreateSessionID(context);
 
                 //if (redirected)
                 // create empty SessionState but we will not support this.
@@ -173,14 +178,14 @@ namespace ispsession.io
                     Items = new SessionStateItemCollection(),
                     Meta = new PersistMetaData(false)
                     {
-                        Expires = this._appSettings.SessionTimeout,
-                        Liquid = this._appSettings.Liquid,
-                        ReEntrance = this._appSettings.ReEntrance
+                        Expires = _appSettings.SessionTimeout,
+                        Liquid = _appSettings.Liquid,
+                        ReEntrance = _appSettings.ReEntrance
                     }
                 };
                 if (sessionMode == PagesEnableSessionState.True)
                 {
-                    CSessionDL.SessionInsert(this._appSettings, sessionID, sessionItems.Meta);
+                    CSessionDL.SessionInsert(_appSettings, sessionID, sessionItems.Meta);
                 }
 
             }

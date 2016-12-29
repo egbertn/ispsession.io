@@ -7,8 +7,8 @@
 #include "../../include/redis3m/connection.h"
 #include <set>
 #include <memory>
-#include <mutex>
-
+//#include <mutex>
+#include <atlsync.h>
 namespace redis3m
 {
 
@@ -88,8 +88,8 @@ private:
     std::string _host;
     unsigned int _port;
     unsigned int _database;
-    std::set<connection::ptr_t> connections;
-    std::mutex access_mutex;
+    static std::set<connection::ptr_t> connections;
+	static ATL::CCriticalSection _access_mutex;
 };
 
 template<>

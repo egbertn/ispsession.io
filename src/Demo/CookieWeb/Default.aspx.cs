@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -67,6 +68,7 @@ public partial class _Default : Page
         {
             realbig.Text = ((decimal[])Session["realbig"])[1999].ToString();
         }
+        Thread.Sleep(new Random().Next(50, 500));
         //var obj = new object[100, 100];
         //for (int y = 0; y < 100; y++)
         //{

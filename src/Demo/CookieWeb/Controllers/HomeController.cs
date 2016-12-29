@@ -1,6 +1,7 @@
 ﻿using CookieWeb.Models;
 using System;
 using System.Net.Mail;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 namespace CookieWeb
@@ -23,6 +24,18 @@ namespace CookieWeb
             Session["CountRefresh"] = model.CountRefresh;
             ViewData["LoggedIn"] = Session["LoggedIn"];
             Session["mydecimal"] = -1234.567M;
+            if (Session["realbig"] == null)
+            {
+                var arr = new decimal[2000];
+                arr[0] = 23403240432.234M;
+                arr[1999] = 23403240432.234M;
+                Session["realbig"] = arr;
+            }
+            else
+            {
+                var txt = ((decimal[])Session["realbig"])[1999].ToString();
+            }
+            Thread.Sleep(new Random().Next(50, 500));
             if (model.CountRefresh > 10)
             {
                 Session.Abandon();

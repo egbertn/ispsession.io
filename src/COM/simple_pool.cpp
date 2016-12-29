@@ -11,7 +11,8 @@ connection::ptr_t simple_pool::get()
     connection::ptr_t ret;
 
     {
-        std::lock_guard<std::mutex> lock(access_mutex);
+        //std::lock_guard<std::mutex> lock(access_mutex);
+		_access_mutex.Enter();
         std::set<connection::ptr_t>::iterator it = connections.begin();
         if (it != connections.end())
         {
@@ -23,20 +24,21 @@ connection::ptr_t simple_pool::get()
 
     if (!ret)
     {
-        if (!_path.empty())
+      /*  if (!_path.empty())
         {
             ret = connection::create_unix(_path);
         }
         else
-        {
+        {*/
             ret = connection::create(_host, _port);
-        }
+        //}
         // Setup connections selecting db
         if (_database != 0)
         {
             ret->run(command("SELECT") << _database);
         }
     }
+	_access_mutex.Leave();
     return ret;
 }
 
@@ -45,8 +47,10 @@ void simple_pool::put(connection::ptr_t conn)
 {
     if (conn->is_valid())
     {
-        std::lock_guard<std::mutex> lock(access_mutex);
+        //std::lock_guard<std::mutex> lock(access_mutex);
+		_access_mutex.Enter();
         connections.insert(conn);
+		_access_mutex.Leave();
     }
 }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -17,6 +18,14 @@ public partial class _Default : Page
 {
     protected override void OnLoad(EventArgs e)
     {
+        
+        var countRefresh = Convert.ToInt32(Session["CountRefresh"] ?? 0); 
+        countRefresh++;
+        Session["CountRefresh"] = countRefresh;
+        if (countRefresh > 10)
+        {
+            Session.Abandon();
+        }
 
         if (IsPostBack)
         {
@@ -38,7 +47,7 @@ public partial class _Default : Page
         }
        // Session["Piet"] = "Hello";
         Session["randomize"] = new Random().Next();
-        Session["BigString"] = new string('0', 1000);
+      //  Session["BigString"] = new string('0', 1000);
         if (Session["myintArray"] == null)
         {
             Session["myintArray"] = new[] { 1, 2, 3, 4 };
@@ -48,23 +57,33 @@ public partial class _Default : Page
         //    var objects = new[] { new SomeData() { ONe = "Een", Two = 2, When = DateTime.UtcNow } };
         //    Session["myobjects"] = objects;
         //}
-
-        // Session["realbig"] = new double[120000];
-        var obj = new object[100, 100];
-        for (int y = 0; y < 100; y++)
+        if (Session["realbig"] == null)
         {
-            for (int x = 0; x < 100; x++)
-            {
-                obj[y, x] = new Random().Next(1000);
-            }
+            var arr  = new decimal[2000];
+            arr[0] = 23403240432.234M;
+            arr[1999] = 23403240432.234M;
+            Session["realbig"] = arr;
         }
-        obj[0, 0] = new object[] { 1, 2, 3, 4 };
+        else
+        {
+            realbig.Text = ((decimal[])Session["realbig"])[1999].ToString();
+        }
+        Thread.Sleep(new Random().Next(50, 500));
+        //var obj = new object[100, 100];
+        //for (int y = 0; y < 100; y++)
+        //{
+        //    for (int x = 0; x < 100; x++)
+        //    {
+        //        obj[y, x] = new Random().Next(1000);
+        //    }
+        //}
+        //obj[0, 0] = new object[] { 1, 2, 3, 4 };
         //warning, do not use Jagged arrays. ISP Session for classic ASP does not support it.
         //if (Session["jagged"] != null)
         //{
         //    txtJagged.Text =  ((int[][])Session["jagged"])[1][1].ToString();
         //}
-        Session["BigArray"] = obj;
+        //Session["BigArray"] = obj;
         //var jagged = new int[4][];
         //jagged[1] = new int[10];
         //jagged[0] = new int[10];

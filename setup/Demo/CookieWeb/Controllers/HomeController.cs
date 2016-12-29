@@ -1,6 +1,7 @@
 ﻿using CookieWeb.Models;
 using System;
 using System.Net.Mail;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 namespace CookieWeb
@@ -15,7 +16,7 @@ namespace CookieWeb
         {
             var model = new HomeModel() { SessionID = Session.SessionID };
             
-            model.CountRefresh = (int)(Session["CountRefresh"] ?? 0);
+            model.CountRefresh = Convert.ToInt32(Session["CountRefresh"] ?? 0);
             model.CountRefresh++;
             // again, this is not how it should be done, but to keep the code sample
             // consistent!
@@ -23,6 +24,18 @@ namespace CookieWeb
             Session["CountRefresh"] = model.CountRefresh;
             ViewData["LoggedIn"] = Session["LoggedIn"];
             Session["mydecimal"] = -1234.567M;
+            if (Session["realbig"] == null)
+            {
+                var arr = new decimal[2000];
+                arr[0] = 23403240432.234M;
+                arr[1999] = 23403240432.234M;
+                Session["realbig"] = arr;
+            }
+            else
+            {
+                var txt = ((decimal[])Session["realbig"])[1999].ToString();
+            }
+            Thread.Sleep(new Random().Next(50, 500));
             if (model.CountRefresh > 10)
             {
                 Session.Abandon();
@@ -120,11 +133,11 @@ namespace CookieWeb
             var host = Request.Url.Scheme +  "://"+ Request.Url.Host.ToString() +(Request.Url.IsDefaultPort ? "" : ":"+ Request.Url.Port.ToString()) + Url.Action("Resume", "Home", new { GUID = Session.SessionID });
             Session["Word"] = resume.Word;
             Session["Email"] = resume.Email;
-            msg.Body = $@"<html><head></head><body>Resume your session with 
+            msg.Body = string.Format(@"<html><head></head><body>Resume your session with 
 
-    <a href=""{host}"">Click here</a><br/>
+    <a href=""{0}"">Click here</a><br/>
     Please close your browser to see that the session is resumed when you start a new browser using the URL inside the email!
-    </body></html>";
+    </body></html>", host);
             msg.IsBodyHtml = true;
 
 

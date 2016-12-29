@@ -3,6 +3,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 
@@ -85,7 +86,7 @@ namespace ispsession.io
         private readonly SessionAppSettings _options;
         private bool Checked;
         private readonly IISPSessionStore _sessionStore;
-        
+        private static int _instanceCount;
 
         //  private readonly IDataProtector _dataProtector;
         public ISPSessionMiddleWare(RequestDelegate next, IISPSessionStore sessionStore, IOptions<SessionAppSettings> options)
@@ -127,6 +128,11 @@ namespace ispsession.io
             {
                 await context.Response.WriteAsync("The ispsession.io Module should be licensed. Please contact ADC Cure for an updated license at information@adccure.nl");
             }
+            if (Interlocked.Increment(ref _instanceCount) > Helpers.Maxinstances)
+            {
+                Thread.Sleep(500 * (_instanceCount - Helpers.Maxinstances));
+                NativeMethods.OutputDebugStringW(string.Format("LICENSE ERROR max = {0} requested ={1} \r\n", Helpers.Maxinstances, _instanceCount));                
+            }
 #else
             var exp = double.Parse(Helpers.GetMetaData("at"));
             if (DateTime.Today > NativeMethods.FromOADate(exp))
@@ -156,7 +162,10 @@ namespace ispsession.io
                     //this._logger.ErrorClosingTheSession(var_9_257);
                 }
             }
-                    
+#if !Demo
+            Interlocked.Decrement(ref _instanceCount);            
+#endif      
+
         }
 
     }

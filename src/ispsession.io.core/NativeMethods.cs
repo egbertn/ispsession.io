@@ -66,8 +66,8 @@ namespace ispsession.io
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int NetGetJoinInformation([MarshalAs(UnmanagedType.LPWStr)] string server, out IntPtr domain, out NetJoinStatus status);
 
-        //[DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true, CharSet = CharSet.Unicode)]
-        //internal static extern void OutputDebugStringW([MarshalAs(UnmanagedType.LPWStr)] string fmt);
+        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        internal static extern void OutputDebugStringW([MarshalAs(UnmanagedType.LPWStr)] string fmt);
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern bool GetComputerNameExW([MarshalAs(UnmanagedType.U4)] COMPUTER_NAME_FORMAT NameType,

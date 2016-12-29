@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 #else
 [assembly: AssemblyConfiguration("Release")]
 #endif
-[assembly: AssemblyMetadata("at", "42735")]
+[assembly: AssemblyMetadata("at", "42745")]
 [assembly: AssemblyCompany("ADC Cure")]
 [assembly: AssemblyProduct("ISP Session ASP.NET Classic")]
 [assembly: AssemblyVersion("8.5.4")]

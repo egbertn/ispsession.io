@@ -1436,16 +1436,20 @@ namespace ispsession.io
                 giveDnsName ? NativeMethods.COMPUTER_NAME_FORMAT.ComputerNameDnsHostname :
                     NativeMethods.COMPUTER_NAME_FORMAT.ComputerNameNetBIOS, nt4Netbiosname, ref compNameLength) ? nt4Netbiosname.Substring(0, compNameLength) : null;
         }
-        public static unsafe uint GetHashCode2(string value)
+        public unsafe static  uint GetHashCode2(string value)
         {
             if (string.IsNullOrEmpty(value)) return 0;
             var bytes = _encoding.GetBytes(value);
             uint outp;
-            var result = NativeMethods.HashData(bytes, bytes.Length, (void*)&outp, 4);
-            if (result != 0)
+            fixed (byte* ptr=bytes )
             {
-                return 0;
+                var result = NativeMethods.HashData(ptr, bytes.Length, (void*)&outp, 4);
+                if (result != 0)
+                {
+                    return 0;
+                }
             }
+         
             return outp;
         }
 
@@ -1478,8 +1482,56 @@ namespace ispsession.io
             }
             return _cache[key];
         }
-#if !Demo
+        [DebuggerStepThrough]
+        internal static byte[] HexToBytes(string h)
+        {
+            if (string.IsNullOrEmpty(h))
+            {
+                throw new ArgumentNullException(nameof(h), "Id cannot be empty");
+            }
+            var number_of_characters = h.Length;
+            if (number_of_characters != 32)
+            {
+                throw new ArgumentException("Id length must be 32", nameof(h));
+            }
 
+            var bytes = new byte[number_of_characters / 2]; // Initialize our byte array to hold the converted string.
+
+            int write_index = 0;
+
+            for (int read_index = 0; read_index < number_of_characters; read_index++)
+            {
+                byte upper = FromCharacterToByte(h[read_index], read_index, 4);
+                read_index++;
+                byte lower = FromCharacterToByte(h[read_index], read_index);
+
+                bytes[write_index++] = (byte)(upper | lower);
+            }
+            return bytes;
+
+        }
+        //do NOT REMOVE
+        private static byte FromCharacterToByte(char character, int index, int shift = 0)
+        {
+            byte value = (byte)character;
+            if (((0x40 < value) && (0x47 > value)) || ((0x60 < value) && (0x67 > value)))
+            {
+                if (0x40 == (0x40 & value))
+                {
+                    if (0x20 == (0x20 & value))
+                        value = (byte)(((value + 0xA) - 0x61) << shift);
+                    else
+                        value = (byte)(((value + 0xA) - 0x41) << shift);
+                }
+            }
+            else if ((0x29 < value) && (0x40 > value))
+                value = (byte)((value - 0x30) << shift);
+            else
+                throw new InvalidOperationException(string.Format("Character '{0}' at index '{1}' is not valid alphanumeric character.", character, index));
+
+            return value;
+        }
+#if !Demo
         /// <summary>LicentieCheck
         /// do not modify these lines. It is illegal.
         /// position - 

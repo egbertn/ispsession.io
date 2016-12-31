@@ -123,7 +123,7 @@ namespace ispsession.io
                 throw new Exception(
                     "ISP Session requires a Appsetting such as <add key=\"License\" value=\"0245456556560418A91B161F23534007\" />");
             }
-                    Checked = Helpers.LicentieCheck(Helpers.HexToBytes(lic), license);
+            Checked = Helpers.LicentieCheck(Helpers.HexToBytes(lic), license);
             if (!Checked)
             {
                 await context.Response.WriteAsync("The ispsession.io Module should be licensed. Please contact ADC Cure for an updated license at information@adccure.nl");

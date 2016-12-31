@@ -53,12 +53,9 @@ namespace ispsession.io
 
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int DsGetDcNameW(
-            [MarshalAs(UnmanagedType.LPWStr)]
              string ComputerName,
-            [MarshalAs(UnmanagedType.LPWStr)]
             string DomainName,
             [In] IntPtr DomainGuid,
-            [MarshalAs(UnmanagedType.LPWStr)]
             string SiteName,
             [MarshalAs(UnmanagedType.U4)]
             DSGETDCNAME_FLAGS Flags,
@@ -67,19 +64,18 @@ namespace ispsession.io
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int NetGetJoinInformation(string server, out IntPtr domain, out NetJoinStatus status);
         [DllImport("kernel32.dll", SetLastError = false, CharSet = CharSet.Unicode, ExactSpelling = true, ThrowOnUnmappableChar = false)]
-        internal static extern void OutputDebugStringW([MarshalAs(UnmanagedType.LPWStr)] string debugString);
+        internal static extern void OutputDebugStringW(string debugString);
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
-        internal static extern bool GetComputerNameExW([MarshalAs(UnmanagedType.U4)] COMPUTER_NAME_FORMAT NameType,
-           [In] string lpBuffer, ref int lpnSize);
+        internal unsafe static extern bool GetComputerNameExW(COMPUTER_NAME_FORMAT NameType,
+           string lpBuffer, int *lpnSize);
         //[DllImport("kernel32.dll", ExactSpelling = true)]
         //internal static extern IntPtr GlobalLock(IntPtr hMem);
         //[DllImport("kernel32.dll", ExactSpelling = true)]
         //[return: MarshalAs(UnmanagedType.Bool)]
         //internal static extern bool GlobalUnlock(IntPtr hMem);
         [DllImport("Shlwapi.dll", SetLastError = false, ExactSpelling = true)]
-        internal unsafe static extern uint HashData([In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)] 
-                                byte[] pbData, int cbData,
+        internal unsafe static extern uint HashData(byte* pbData, int cbData,
                             void* piet,
                             int outputLen);
         [DllImport("oleaut32.dll", SetLastError = false)]

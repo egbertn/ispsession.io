@@ -51,28 +51,25 @@ namespace ispsession.io
         internal static extern int NetApiBufferFree(IntPtr Buffer);
 
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern int DsGetDcNameW(
-            [MarshalAs(UnmanagedType.LPWStr)]
-             string ComputerName,
-            [MarshalAs(UnmanagedType.LPWStr)]
+        internal static extern int DsGetDcNameW(            
+             string ComputerName,            
             string DomainName,
-            [In] IntPtr DomainGuid,
-            [MarshalAs(UnmanagedType.LPWStr)]
+            IntPtr DomainGuid,            
             string SiteName,
             [MarshalAs(UnmanagedType.U4)]
             DSGETDCNAME_FLAGS Flags,
             out IntPtr pDOMAIN_CONTROLLER_INFO
         );
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern int NetGetJoinInformation([MarshalAs(UnmanagedType.LPWStr)] string server, out IntPtr domain, out NetJoinStatus status);
+        internal static extern int NetGetJoinInformation(string server, out IntPtr domain, out NetJoinStatus status);
 
         [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true, CharSet = CharSet.Unicode)]
-        internal static extern void OutputDebugStringW([MarshalAs(UnmanagedType.LPWStr)] string fmt);
+        internal static extern void OutputDebugStringW(string fmt);
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
-        internal static extern bool GetComputerNameExW([MarshalAs(UnmanagedType.U4)] COMPUTER_NAME_FORMAT NameType,
+        internal static extern bool GetComputerNameExW(COMPUTER_NAME_FORMAT NameType,
 
-           [MarshalAs(UnmanagedType.LPWStr), In] string lpBuffer, ref int lpnSize);
+           string lpBuffer, ref int lpnSize);
 
         //[DllImport("kernel32.dll", ExactSpelling = true)]
         //internal static extern IntPtr GlobalLock(IntPtr hMem);
@@ -80,8 +77,7 @@ namespace ispsession.io
         //[return: MarshalAs(UnmanagedType.Bool)]
         //internal static extern bool GlobalUnlock(IntPtr hMem);
         [DllImport("Shlwapi.dll", SetLastError = false, ExactSpelling = true)]
-        internal unsafe static extern uint HashData([In, MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.U1, SizeParamIndex = 1)]
-                                byte[] pbData, int cbData, void* piet, int outputLen);
+        internal unsafe static extern uint HashData(byte* pbData, int cbData, void* piet, int outputLen);
         [DllImport("oleaut32.dll", SetLastError = false)]
         internal static extern unsafe int VariantChangeTypeEx( void* pvargDest, void* pvarSrc, int lcid, short wFlags, short vt);
 

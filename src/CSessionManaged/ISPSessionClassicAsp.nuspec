@@ -7,8 +7,8 @@
     <authors>ADC Cure</authors>
     <owners>ADC Cure</owners>
 	 <tags>SessionState,Session</tags>
-    <licenseUrl>http://ispsession.io/license</licenseUrl>    
-    <iconUrl>http://ispsession.io/images/Platipus3_Transparant_small.png</iconUrl>
+    <licenseUrl>https://ispsession.io/license</licenseUrl>    
+    <iconUrl>https://ispsession.io/images/Platipus3_Transparant_small.png</iconUrl>
     <summary>
       Classic ASP.NET session state broker. Redis.
       Stunning performance.

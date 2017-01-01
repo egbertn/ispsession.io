@@ -20,8 +20,8 @@
   },
   "packOptions": {
     "files": [ "HowToConfigure_ISP_Session.txt" ],
-    "licenseUrl": "http://ispsession.io/license",
-    "iconUrl": "http://ispsession.io/images/Platipus3_Transparant_small.png",
+    "licenseUrl": "https://ispsession.io/license",
+    "iconUrl": "https://ispsession.io/images/Platipus3_Transparant_small.png",
     "owners": [ "ADC Cure" ],
     "tags": [ "Session", "SessionState" ],
     "releaseNotes": "1.0.12 fixes decimal array persistance and \r\nCurrency (VT_CY) compatibility. Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The purchased assembly, contains extra optimizations, however, the demo performs very well too.",

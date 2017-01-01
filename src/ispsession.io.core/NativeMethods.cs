@@ -47,7 +47,7 @@ namespace ispsession.io
             ComputerNamePhysicalDnsFullyQualified
         }
 
-        [DllImport("Netapi32.dll", SetLastError = true)]
+        [DllImport("Netapi32.dll")]
         internal static extern int NetApiBufferFree(IntPtr Buffer);
 
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
@@ -63,7 +63,7 @@ namespace ispsession.io
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int NetGetJoinInformation(string server, out IntPtr domain, out NetJoinStatus status);
 
-        [DllImport("kernel32.dll", SetLastError = false, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        [DllImport("kernel32.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern void OutputDebugStringW(string fmt);
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
@@ -76,14 +76,14 @@ namespace ispsession.io
         //[DllImport("kernel32.dll", ExactSpelling = true)]
         //[return: MarshalAs(UnmanagedType.Bool)]
         //internal static extern bool GlobalUnlock(IntPtr hMem);
-        [DllImport("Shlwapi.dll", SetLastError = false, ExactSpelling = true)]
+        [DllImport("Shlwapi.dll")]
         internal unsafe static extern uint HashData(byte* pbData, int cbData, void* piet, int outputLen);
-        [DllImport("oleaut32.dll", SetLastError = false)]
+        [DllImport("oleaut32.dll")]
         internal static extern unsafe int VariantChangeTypeEx( void* pvargDest, void* pvarSrc, int lcid, short wFlags, short vt);
 
-        [DllImport("oleaut32.dll", SetLastError = false)]
+        [DllImport("oleaut32.dll")]
         internal unsafe static extern int VariantTimeToSystemTime(double vtime,  _SYSTEMTIME* lpSystemTime);
-        [DllImport("oleaut32.dll", SetLastError = false)]
+        [DllImport("oleaut32.dll")]
         internal static unsafe extern int SystemTimeToVariantTime(_SYSTEMTIME* lpSystemTime, double* OaDate);
 
         [DllImport("ole32.dll", ExactSpelling = true)]

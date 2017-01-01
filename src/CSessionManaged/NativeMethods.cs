@@ -48,7 +48,7 @@ namespace ispsession.io
             ComputerNamePhysicalDnsFullyQualified
         }
          
-        [DllImport("Netapi32.dll", SetLastError = true, ExactSpelling = true)]
+        [DllImport("Netapi32.dll")]
         internal static extern int NetApiBufferFree(IntPtr Buffer);
 
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
@@ -61,9 +61,9 @@ namespace ispsession.io
             DSGETDCNAME_FLAGS Flags,
             out IntPtr pDOMAIN_CONTROLLER_INFO
         );
-        [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
+        [DllImport("Netapi32.dll", ExactSpelling = true, SetLastError = true)]
         internal static extern int NetGetJoinInformation(string server, out IntPtr domain, out NetJoinStatus status);
-        [DllImport("kernel32.dll", SetLastError = false, CharSet = CharSet.Unicode, ExactSpelling = true, ThrowOnUnmappableChar = false)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, ThrowOnUnmappableChar = false)]
         internal static extern void OutputDebugStringW(string debugString);
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
@@ -74,13 +74,13 @@ namespace ispsession.io
         //[DllImport("kernel32.dll", ExactSpelling = true)]
         //[return: MarshalAs(UnmanagedType.Bool)]
         //internal static extern bool GlobalUnlock(IntPtr hMem);
-        [DllImport("Shlwapi.dll", SetLastError = false, ExactSpelling = true)]
+        [DllImport("Shlwapi.dll")]
         internal unsafe static extern uint HashData(byte* pbData, int cbData,
                             void* piet,
                             int outputLen);
-        [DllImport("oleaut32.dll", SetLastError = false)]
+        [DllImport("oleaut32.dll")]
         internal static unsafe extern int VariantTimeToSystemTime(double vtime, _SYSTEMTIME * lpSystemTime);
-        [DllImport("oleaut32.dll", SetLastError = false)]
+        [DllImport("oleaut32.dll")]
         internal static unsafe extern int SystemTimeToVariantTime( _SYSTEMTIME* lpSystemTime, double* OaDate);
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int ReadClassStm(IStream pStm, out Guid clsid);

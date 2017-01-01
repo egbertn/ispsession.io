@@ -108,7 +108,7 @@ namespace ispsession.io
             }
 
         }
-        private bool Checked;
+        private static bool Checked;
         //
         // Event handler for HttpApplication.AcquireRequestState
         //

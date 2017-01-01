@@ -1497,15 +1497,17 @@ namespace ispsession.io
             return _cache[key];
         }
 #if !Demo
-        
-        /// <summary>LicentieCheck
-        /// do not modify these lines. It is illegal.
-        /// position - 
-        /// meaning
-        /// position 1: License
-        /// position 2-5 calculated license
-        /// position 6-9 calculated hash on license (if license type = 4)        
-        /// </summary>                
+
+
+
+        // position - 
+        // meaning
+        // position 1: License
+        // position 2-5 calculated license
+        // position 6-9 calculated hash on license (if license type = 4)                
+        /// <summary>
+        ///  do not modify these lines. It is illegal.
+        /// </summary>
         public static bool LicentieCheck(byte[] license, string licensedfor)
         {
             if (license == null)

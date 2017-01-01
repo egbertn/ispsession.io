@@ -54,7 +54,7 @@ namespace ispsession.io
         internal static readonly TraceSwitch TraceInfo = new TraceSwitch("ISPSession", "ISPsession Trace Switch");
 
         //ADC_ISPSTATE_PROVIDER_SIMPLE, ADC_ISPSTATE_PROVIDER_ENT,ADC_ISPSTATE_PROVIDER_ADV
-        internal static readonly int[] Productid = {22, 23, 24 };
+        internal static readonly int[] Productid = {22, 23, 24,25 };
         internal const string ProductString = "ISP Session 8.5 State Module";
         internal static readonly string  LicString = @"The ispsession.io Module should be licensed. Please contact ADC Cure for an updated license at information @adccure.nl";
         internal static int Maxinstances = 1000;
@@ -845,7 +845,7 @@ namespace ispsession.io
             }
         }
         [DebuggerStepThrough]
-        internal static byte[] HexToBytes(string h)
+        public static byte[] HexToBytes(string h)
         {
             if (string.IsNullOrEmpty(h))
             {
@@ -1558,11 +1558,13 @@ namespace ispsession.io
             TraceInformation("given license {0} calculated license {1} license hash {2}", checkCode, hashcode, checkCode2);
             switch (licenseType)
             {
-                case 23://isp session simple / advanced & ent
+                case 22:
+                case 23:
+                case 24://isp session simple / advanced & ent
                     if (hashcode == checkCode)
                         retVal = true;
                     break;
-                case 24://isp session blk this just checks the GUID, not the given domain name
+                case 25://isp session blk this just checks the GUID, not the given domain name
                     var buf = string.Concat(licenseType.ToString(), checkCode.ToString());
                     if (GetHashCode2(buf) == checkCode2)
                         retVal = true;

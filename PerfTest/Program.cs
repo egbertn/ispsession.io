@@ -59,6 +59,7 @@ namespace PerfTest
             return bytes;
 
         }
+
         //do NOT REMOVE
         private static byte FromCharacterToByte(char character, int index, int shift = 0)
         {
@@ -112,6 +113,9 @@ namespace PerfTest
         }
         static void Main(string[] args)
         {
+            var lic = "17A54C1E52AC296BEF0C6810313B3A39";
+            var license = "WORKGROUP\r\nWIN-85FKBE92TOM";
+            var check = ispsession.io.Helpers.LicentieCheck(ispsession.io.Helpers.HexToBytes(lic), license);
 
             var bts = HexToBytes("01234567890123456789012345678912");
             var buf = new string('\0', 250);

@@ -54,7 +54,7 @@ namespace ispsession.io
 
         internal static readonly TraceSwitch TraceInfo = new TraceSwitch("ISPSession", "ISPsession Trace Switch");        
         //SIMPLE, ADC_ISPSTATE_PROVIDER_ENT,ADC_ISPSTATE_PROVIDER_ADV
-        internal static readonly int[] Productid = { 25,26,27 };
+        internal static readonly int[] Productid = { 25,26,27,28 };
         internal const string ProductString = "ISP Session 9.0 State Provider";
         internal const string MessageString = "The ispsession.io Module expired! We would welcome your order at <a href=\"http://ispsession.io/?page=order\">order here</a>";
         internal static int Maxinstances = 1000;

@@ -54,7 +54,7 @@ namespace ispsession.io
 
         internal static readonly TraceSwitch TraceInfo = new TraceSwitch("ISPSession", "ISPsession Trace Switch");        
         //SIMPLE, ADC_ISPSTATE_PROVIDER_ENT,ADC_ISPSTATE_PROVIDER_ADV
-        internal static readonly int[] Productid = { 25,26,27,28 };
+        internal static readonly int[] Productid = { 26,27,28,29 };
         internal const string ProductString = "ISP Session 9.0 State Provider";
         internal const string MessageString = "The ispsession.io Module expired! We would welcome your order at <a href=\"http://ispsession.io/?page=order\">order here</a>";
         internal static int Maxinstances = 1000;
@@ -1579,7 +1579,7 @@ namespace ispsession.io
 
             lines.Insert(0, ProductString);
             var foundLicensedItem = lines.Exists(x => x == nt4Netbiosname || x == workgroupname || x == cwName);
-            if (!foundLicensedItem && (licenseType != 4 && licenseType != 24))
+            if (!foundLicensedItem && (licenseType != 4 && licenseType != 29))
             {
                 TraceInformation("Could not find licensedItem {0} in allowed licensee {1}", cwName, licensedfor);
                 return false;
@@ -1592,11 +1592,13 @@ namespace ispsession.io
             TraceInformation("given license {0} calculated license {1} license hash {2}", checkCode, hashcode, checkCode2);
             switch (licenseType)
             {
-                case 23://isp session simple / advanced & ent
+                case 27:
+                case 28:
+                case 26://isp session simple / advanced & ent
                     if (hashcode == checkCode)
                         retVal = true;
                     break;
-                case 24://isp session blk this just checks the GUID, not the given domain name
+                case 29://isp session blk this just checks the GUID, not the given domain name
                     var buf = string.Concat(licenseType.ToString(), checkCode.ToString());
                     if (GetHashCode2(buf) == checkCode2)
                         retVal = true;

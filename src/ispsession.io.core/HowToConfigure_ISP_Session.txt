@@ -24,7 +24,7 @@ At the time of writing, Nuget 3.x does not support automating steps below.
     "EnableLogging": 0,
     "LicKeyCore": "F01FB5D0BCA6CE4C8CC773916F281C32",
     "DatabaseConnection": "localhost",
-	"Database": -1
+	"DataBase": -1
   },
 
   2. Open Startup.cs

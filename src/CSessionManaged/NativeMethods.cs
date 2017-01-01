@@ -63,7 +63,7 @@ namespace ispsession.io
         );
         [DllImport("Netapi32.dll", ExactSpelling = true, SetLastError = true)]
         internal static extern int NetGetJoinInformation(string server, out IntPtr domain, out NetJoinStatus status);
-        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true, ThrowOnUnmappableChar = false)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
         internal static extern void OutputDebugStringW(string debugString);
 
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]

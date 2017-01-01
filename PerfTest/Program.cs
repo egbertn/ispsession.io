@@ -115,7 +115,7 @@ namespace PerfTest
         {
             var lic = "17A54C1E52AC296BEF0C6810313B3A39";
             var license = "WORKGROUP\r\nWIN-85FKBE92TOM";
-            var check = ispsession.io.Helpers.LicentieCheck(ispsession.io.Helpers.HexToBytes(lic), license);
+           // var check = ispsession.io.Helpers.LicentieCheck(ispsession.io.Helpers.HexToBytes(lic), license);
 
             var bts = HexToBytes("01234567890123456789012345678912");
             var buf = new string('\0', 250);

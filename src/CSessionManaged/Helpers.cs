@@ -1547,7 +1547,7 @@ namespace ispsession.io
             
             lines.Insert(0, ProductString);
             var foundLicensedItem = Array.Exists(lines.ToArray(), x => x == nt4Netbiosname || x == workgroupname || x == cwName);
-            if (!foundLicensedItem && (licenseType != 4 && licenseType != 24))
+            if (!foundLicensedItem && (licenseType != 4 && licenseType != 25))
             {
                 TraceInformation("Could not find licensedItem {0} in allowed licensee {1}", cwName, licensedfor);
                 return false;

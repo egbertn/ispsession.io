@@ -84,9 +84,11 @@ namespace ispsession.io
         private readonly ISPSessionIDManager _manager;
         private readonly RequestDelegate _next;
         private readonly SessionAppSettings _options;
-        private bool Checked;
+        private static bool Checked;
         private readonly IISPSessionStore _sessionStore;
         private static int _instanceCount;
+        private static readonly object locker = new object();
+        private static bool initDone;
 
         //  private readonly IDataProtector _dataProtector;
         public ISPSessionMiddleWare(RequestDelegate next, IISPSessionStore sessionStore, IOptions<SessionAppSettings> options)
@@ -112,18 +114,25 @@ namespace ispsession.io
             Func<ISPSession, bool> tryEstablishSession = (i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
 
 #if !Demo
-            string license = _options.Lic;
-            var lic = _options.LicKeyCore;
-            if (string.IsNullOrEmpty(license))
+            if (initDone == false)
             {
-                throw new Exception("Ccession.LIC appsetting is missing in web.config");
+                lock (locker)
+                {
+                    initDone = true;
+                    string license = _options.Lic;
+                    var lic = _options.LicKeyCore;
+                    if (string.IsNullOrEmpty(license))
+                    {
+                        throw new Exception("LicKeyCore in section ispsession.io is missing in appsettings.json");
+                    }
+                    if (string.IsNullOrEmpty(lic))
+                    {
+                        throw new Exception(
+                            "Lic in section ispsession.io is missing in appsettings.json");
+                    }
+                    Checked = Helpers.LicentieCheck(Helpers.HexToBytes(lic), license);
+                }
             }
-            if (string.IsNullOrEmpty(lic))
-            {
-                throw new Exception(
-                    "ISP Session requires a Appsetting such as <add key=\"License\" value=\"0245456556560418A91B161F23534007\" />");
-            }
-            Checked = Helpers.LicentieCheck(Helpers.HexToBytes(lic), license);
             if (!Checked)
             {
                 await context.Response.WriteAsync("The ispsession.io Module should be licensed. Please contact ADC Cure for an updated license at information@adccure.nl");

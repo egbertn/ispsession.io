@@ -55,8 +55,10 @@ namespace ispsession.io
         internal static readonly TraceSwitch TraceInfo = new TraceSwitch("ISPSession", "ISPsession Trace Switch");        
         //SIMPLE, ADC_ISPSTATE_PROVIDER_ENT,ADC_ISPSTATE_PROVIDER_ADV
         internal static readonly int[] Productid = { 26,27,28,29 };
-        internal const string ProductString = "ISP Session 9.0 State Provider";
-        internal const string MessageString = "The ispsession.io Module expired! We would welcome your order at <a href=\"http://ispsession.io/?page=order\">order here</a>";
+        internal readonly static string ProductString = "ISP Session 9.0 State Provider";
+        internal readonly static string MessageString = "The ispsession.io Module expired! We would welcome your order at <a href=\"https://ispsession.io/Purchase\">order here</a>";
+        internal readonly static string MessageString2 = @"The ispsession.io Module should be licensed. Please contact ADC Cure for an updated license at information @adccure.nl";
+        internal readonly static string MessageString3 = "LICENSE ERROR max = {0} requested ={1} \r\n";
         internal static int Maxinstances = 1000;
         
         internal static readonly Encoding _encoding = Encoding.UTF8;

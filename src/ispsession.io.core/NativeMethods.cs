@@ -48,7 +48,7 @@ namespace ispsession.io
         }
 
         [DllImport("Netapi32.dll")]
-        internal static extern int NetApiBufferFree(IntPtr Buffer);
+        internal unsafe static extern int NetApiBufferFree(void* Buffer);
 
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int DsGetDcNameW(            
@@ -60,8 +60,8 @@ namespace ispsession.io
             DSGETDCNAME_FLAGS Flags,
             out IntPtr pDOMAIN_CONTROLLER_INFO
         );
-        [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern int NetGetJoinInformation(string server, out IntPtr domain, out NetJoinStatus status);
+        [DllImport("Netapi32.dll")]
+        internal unsafe static extern int NetGetJoinInformation(void* server, char** domain, int* status);
 
         [DllImport("kernel32.dll", ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal static extern void OutputDebugStringW(string fmt);
@@ -147,24 +147,25 @@ namespace ispsession.io
             public string Domain { get; internal set; }
             public string WorkGroup { get; internal set; }
         }
-        internal static JoinInformation GetJoinedDomain()
+        internal unsafe static JoinInformation GetJoinedDomain()
         {
             var retVal = new JoinInformation();
-
-            var pDomain = IntPtr.Zero;
+            int stat;
+            char* pDomain = null;
             try
             {
-                NetJoinStatus status;
-                var result = NetGetJoinInformation(null, out pDomain, out status);
+                
+                var result = NetGetJoinInformation(null, &pDomain, &stat);
+                NetJoinStatus status = (NetJoinStatus)stat;
                 if (result == ErrorSuccess)
                 {
                     switch (status)
                     {
                         case NetJoinStatus.NetSetupDomainName:
-                            retVal.Domain = Marshal.PtrToStringUni(pDomain);
+                            retVal.Domain = new string(pDomain);
                             break;
                         case NetJoinStatus.NetSetupWorkgroupName:
-                            retVal.WorkGroup = Marshal.PtrToStringUni(pDomain);
+                            retVal.WorkGroup = new string(pDomain);
                             break;
                         default:
                             return null; //indicate standalone
@@ -173,12 +174,12 @@ namespace ispsession.io
             }
             finally
             {
-                if (pDomain != IntPtr.Zero) NetApiBufferFree(pDomain);
+                if (pDomain != null) NetApiBufferFree(pDomain);
             }
             return retVal;
         }
 
-        internal static DOMAIN_CONTROLLER_INFO GetDomainInfo()
+        internal unsafe static DOMAIN_CONTROLLER_INFO GetDomainInfo()
         {
             var domainInfo = new DOMAIN_CONTROLLER_INFO();
 
@@ -198,7 +199,7 @@ namespace ispsession.io
             finally
             {
                 if (pDci != IntPtr.Zero)
-                    NetApiBufferFree(pDci);
+                    NetApiBufferFree(pDci.ToPointer());
             }
             return domainInfo;
         }

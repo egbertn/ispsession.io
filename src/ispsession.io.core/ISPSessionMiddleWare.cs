@@ -135,12 +135,12 @@ namespace ispsession.io
             }
             if (!Checked)
             {
-                await context.Response.WriteAsync("The ispsession.io Module should be licensed. Please contact ADC Cure for an updated license at information@adccure.nl");
+                await context.Response.WriteAsync(Helpers.MessageString2);
             }
             if (Interlocked.Increment(ref _instanceCount) > Helpers.Maxinstances)
             {
                 Thread.Sleep(500 * (_instanceCount - Helpers.Maxinstances));
-                NativeMethods.OutputDebugStringW(string.Format("LICENSE ERROR max = {0} requested ={1} \r\n", Helpers.Maxinstances, _instanceCount));                
+                NativeMethods.OutputDebugStringW(string.Format(Helpers.MessageString3, Helpers.Maxinstances, _instanceCount));                
             }
 #else
             var exp = double.Parse(Helpers.GetMetaData("at"));

@@ -26,7 +26,7 @@
     "iconUrl": "https://ispsession.io/images/Platipus3_Transparant_small.png",
     "owners": [ "ADC Cure" ],
     "tags": [ "Session", "SessionState" ],
-    "releaseNotes": "1.0.13 fixes target to netcoreapp instead. Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The purchased assembly, contains extra optimizations, however, the demo performs very well too.",
+    "releaseNotes": "1.0.14 fixes target to netcoreapp instead. Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The purchased assembly, contains extra optimizations, however, the demo performs very well too.",
     "requireLicenseAcceptance": true,
     "summary": "ISP Session is a lean and mean, verstatile and performant Session State broker that functions as a replacement for built in session state management, for classic ASP/classic ASP.NET and AspNetCore. Enables interoperable Sessionstate between those three frameworks. Uses Redis 2.8+ as a backend storage server."
   },
@@ -43,7 +43,7 @@
     "Release": {
       "buildOptions": {
         "keyFile": "..\\adccure.snk",
-        "define": [ "RELEASE", "TRACE", "OPT"],
+        "define": [ "RELEASE", "TRACE", "Demo"],
         "optimize": true,
         "allowUnsafe": true,
         "outputName": "ispsession.io"

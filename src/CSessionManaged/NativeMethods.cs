@@ -49,7 +49,7 @@ namespace ispsession.io
         }
          
         [DllImport("Netapi32.dll")]
-        internal static extern int NetApiBufferFree(IntPtr Buffer);
+        internal unsafe static extern int NetApiBufferFree(void* Buffer);
 
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
         internal static extern int DsGetDcNameW(
@@ -61,8 +61,8 @@ namespace ispsession.io
             DSGETDCNAME_FLAGS Flags,
             out IntPtr pDOMAIN_CONTROLLER_INFO
         );
-        [DllImport("Netapi32.dll", ExactSpelling = true, SetLastError = true)]
-        internal static extern int NetGetJoinInformation(string server, out IntPtr domain, out NetJoinStatus status);
+        [DllImport("Netapi32.dll")]
+        internal unsafe static extern int NetGetJoinInformation(void* server, char** domain, int* status);
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, ExactSpelling = true)]
         internal static extern void OutputDebugStringW(string debugString);
 
@@ -115,7 +115,78 @@ namespace ispsession.io
             NativeMethods.VariantTimeToSystemTime(d, &st);
             return new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
         }
+        const int ErrorSuccess = 0;
+        public sealed class JoinInformation
+        {
+            public string Domain { get; internal set; }
+            public string WorkGroup { get; internal set; }
+        }
+        internal unsafe static JoinInformation GetJoinedDomain()
+        {
+            var retVal = new JoinInformation();
+            int stat;
+            char* pDomain = null;
+            try
+            {
 
+                var result = NetGetJoinInformation(null, &pDomain, &stat);
+                NetJoinStatus status = (NetJoinStatus)stat;
+                if (result == ErrorSuccess)
+                {
+                    switch (status)
+                    {
+                        case NetJoinStatus.NetSetupDomainName:
+                            retVal.Domain = new string(pDomain);
+                            break;
+                        case NetJoinStatus.NetSetupWorkgroupName:
+                            retVal.WorkGroup = new string(pDomain);
+                            break;
+                        default:
+                            return null; //indicate standalone
+                    }
+                }
+            }
+            finally
+            {
+                if (pDomain != null) NetApiBufferFree(pDomain);
+            }
+            return retVal;
+        }
+
+        internal unsafe static DOMAIN_CONTROLLER_INFO GetDomainInfo()
+        {
+            var domainInfo = new DOMAIN_CONTROLLER_INFO();
+
+            var pDci = IntPtr.Zero;
+            // var guidClass = new GuidClass();
+            try
+            {
+                var val = DsGetDcNameW(null, null, IntPtr.Zero, null,
+                  DSGETDCNAME_FLAGS.DS_DIRECTORY_SERVICE_REQUIRED |
+                    DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME, out pDci);
+                //check return value for error
+                if (ErrorSuccess == val)
+                {
+                    domainInfo = Marshal.PtrToStructure<DOMAIN_CONTROLLER_INFO>(pDci);
+                }
+            }
+            finally
+            {
+                if (pDci != IntPtr.Zero)
+                    NetApiBufferFree(pDci.ToPointer());
+            }
+            return domainInfo;
+        }
+        public static unsafe string GetNetBiosName(bool giveDnsName = false)
+        {
+            const int maxComputernameLength = 15;
+            var compNameLength = giveDnsName ? 255 : maxComputernameLength;
+            var nt4Netbiosname = new string('0', compNameLength);
+            compNameLength++;
+            return GetComputerNameExW(
+                giveDnsName ? COMPUTER_NAME_FORMAT.ComputerNameDnsHostname :
+                   COMPUTER_NAME_FORMAT.ComputerNameNetBIOS, nt4Netbiosname, &compNameLength) ? nt4Netbiosname.Substring(0, compNameLength) : null;
+        }
         //[DllImport("ole32.dll", ExactSpelling = true)]
         //internal static extern int GetHGlobalFromStream(IStream pstm, out IntPtr phglobal);
 

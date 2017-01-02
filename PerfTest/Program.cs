@@ -24,6 +24,56 @@ namespace PerfTest
             ComputerNamePhysicalDnsDomain,
             ComputerNamePhysicalDnsFullyQualified
         }
+        internal enum NetJoinStatus
+        {
+            NetSetupUnknownStatus = 0,
+            NetSetupUnjoined,
+            NetSetupWorkgroupName,
+            NetSetupDomainName
+        } // NETSETUP_JOIN_STATUS
+        public sealed class JoinInformation
+        {
+            public string Domain { get; internal set; }
+            public string WorkGroup { get; internal set; }
+        }
+        [DllImport("Netapi32.dll", ExactSpelling = true, SetLastError = true, CharSet = CharSet.Unicode)]
+        internal unsafe static extern int NetGetJoinInformation(string server, char** domain, int* status);
+        const int ErrorSuccess = 0;
+        [DllImport("Netapi32.dll")]
+        internal unsafe static extern int NetApiBufferFree(void* Buffer);
+
+        internal unsafe static JoinInformation GetJoinedDomain()
+        {
+            var retVal = new JoinInformation();
+            int stat;
+            char* pDomain = null;
+            try
+            {
+
+                var result = NetGetJoinInformation(null, &pDomain, &stat);
+                NetJoinStatus status = (NetJoinStatus)stat;
+                if (result == ErrorSuccess)
+                {
+                    switch (status)
+                    {
+                        case NetJoinStatus.NetSetupDomainName:
+                            retVal.Domain = new string(pDomain);
+                            break;
+                        case NetJoinStatus.NetSetupWorkgroupName:
+                            retVal.WorkGroup = new string(pDomain);
+                            break;
+                        default:
+                            return null; //indicate standalone
+                    }
+                }
+            }
+            finally
+            {
+                if (pDomain != null) NetApiBufferFree(pDomain);
+            }
+            return retVal;
+        }
+
         [DllImport("kernel32.dll", SetLastError = true, ExactSpelling = true, CharSet = CharSet.Unicode)]
         internal unsafe static extern bool GetComputerNameExW(COMPUTER_NAME_FORMAT NameType,
                 string lpBuffer, int *lpnSize);
@@ -113,6 +163,7 @@ namespace PerfTest
         }
         static void Main(string[] args)
         {
+            var dom = GetJoinedDomain();
             var lic = "17A54C1E52AC296BEF0C6810313B3A39";
             var license = "WORKGROUP\r\nWIN-85FKBE92TOM";
            // var check = ispsession.io.Helpers.LicentieCheck(ispsession.io.Helpers.HexToBytes(lic), license);

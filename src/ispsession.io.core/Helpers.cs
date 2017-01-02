@@ -1363,96 +1363,7 @@ namespace ispsession.io
                 }
             }
         }
-
-
-        const int ErrorSuccess = 0;
-        public sealed class JoinInformation
-        {
-            public string Domain { get; internal set; }
-            public string WorkGroup { get; internal set; }
-        }
-        public static JoinInformation GetJoinedDomain()
-        {
-            var retVal = new JoinInformation();
-
-            var pDomain = IntPtr.Zero;
-            try
-            {
-                NativeMethods.NetJoinStatus status;
-                var result = NativeMethods.NetGetJoinInformation(null, out pDomain, out status);
-                if (result == ErrorSuccess)
-                {
-                    switch (status)
-                    {
-                        case NativeMethods.NetJoinStatus.NetSetupDomainName:
-                            retVal.Domain = Marshal.PtrToStringUni(pDomain);
-                            break;
-                        case NativeMethods.NetJoinStatus.NetSetupWorkgroupName:
-                            retVal.WorkGroup = Marshal.PtrToStringUni(pDomain);
-                            break;
-                        default:
-                            return null; //indicate standalone
-                    }
-                }
-            }
-            finally
-            {
-                if (pDomain != IntPtr.Zero) NativeMethods.NetApiBufferFree(pDomain);
-            }
-            return retVal;
-        }
-
-        internal static DOMAIN_CONTROLLER_INFO GetDomainInfo()
-        {
-            var domainInfo = new DOMAIN_CONTROLLER_INFO();
-
-            var pDci = IntPtr.Zero;
-            // var guidClass = new GuidClass();
-            try
-            {
-                var val = NativeMethods.DsGetDcNameW(null, null, IntPtr.Zero, null,
-                  NativeMethods.DSGETDCNAME_FLAGS.DS_DIRECTORY_SERVICE_REQUIRED |
-                    NativeMethods.DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME, out pDci);
-                //check return value for error
-                if (ErrorSuccess == val)
-                {
-                    domainInfo = Marshal.PtrToStructure<DOMAIN_CONTROLLER_INFO>(pDci);
-                }
-            }
-            finally
-            {
-                if (pDci != IntPtr.Zero)
-                    NativeMethods.NetApiBufferFree(pDci);
-            }
-            return domainInfo;
-        }
-        public static string GetNetBiosName(bool giveDnsName = false)
-        {
-            const int maxComputernameLength = 15;
-            var compNameLength = giveDnsName ? 255 : maxComputernameLength;
-            var nt4Netbiosname = new string('0', compNameLength);
-            compNameLength++;
-            return NativeMethods.GetComputerNameExW(
-                giveDnsName ? NativeMethods.COMPUTER_NAME_FORMAT.ComputerNameDnsHostname :
-                    NativeMethods.COMPUTER_NAME_FORMAT.ComputerNameNetBIOS, nt4Netbiosname, ref compNameLength) ? nt4Netbiosname.Substring(0, compNameLength) : null;
-        }
-        public unsafe static  uint GetHashCode2(string value)
-        {
-            if (string.IsNullOrEmpty(value)) return 0;
-            var bytes = _encoding.GetBytes(value);
-            uint outp;
-            fixed (byte* ptr=bytes )
-            {
-                var result = NativeMethods.HashData(ptr, bytes.Length, (void*)&outp, 4);
-                if (result != 0)
-                {
-                    return 0;
-                }
-            }
-         
-            return outp;
-        }
-
+      
         private static readonly object l = new object();
         private static Dictionary<string, string> _cache;
         //works only for .NET 45
@@ -1532,6 +1443,23 @@ namespace ispsession.io
             return value;
         }
 #if !Demo
+        public unsafe static uint GetHashCode2(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return 0;
+            var bytes = _encoding.GetBytes(value);
+            uint outp;
+            fixed (byte* ptr = bytes)
+            {
+                var result = NativeMethods.HashData(ptr, bytes.Length, (void*)&outp, 4);
+                if (result != 0)
+                {
+                    return 0;
+                }
+            }
+
+            return outp;
+        }
+
         /// <summary>LicentieCheck
         /// do not modify these lines. It is illegal.
         /// position - 
@@ -1557,12 +1485,12 @@ namespace ispsession.io
                 return false;
             }
 
-            var nt4Netbiosname = GetNetBiosName(); //uppercase
+            var nt4Netbiosname = NativeMethods.GetNetBiosName(); //uppercase
             if (string.IsNullOrEmpty(nt4Netbiosname))
             {
-                nt4Netbiosname = GetNetBiosName(true); //lowercase often
+                nt4Netbiosname = NativeMethods.GetNetBiosName(true); //lowercase often
             }
-            var pdomInfo = GetDomainInfo();
+            var pdomInfo = NativeMethods.GetDomainInfo();
             string cwName = null;
             string workgroupname = null;
             if (!string.IsNullOrEmpty(pdomInfo.DomainName))
@@ -1571,7 +1499,7 @@ namespace ispsession.io
             }
             else
             {
-                var joinInfo = GetJoinedDomain();
+                var joinInfo = NativeMethods.GetJoinedDomain();
                 workgroupname = string.IsNullOrEmpty(joinInfo.WorkGroup) ? joinInfo.Domain : joinInfo.WorkGroup;
             }
             TraceInformation("Names {0} {1}", nt4Netbiosname, cwName);

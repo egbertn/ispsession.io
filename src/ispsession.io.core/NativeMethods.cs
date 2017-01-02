@@ -109,13 +109,13 @@ namespace ispsession.io
             st.wMilliseconds = (short)value.Millisecond;
             
             double d;
-            NativeMethods.SystemTimeToVariantTime(&st, &d);
+            SystemTimeToVariantTime(&st, &d);
             return d;
         }
         internal unsafe static DateTime FromOADate(double d)
         {
             _SYSTEMTIME st ;
-            NativeMethods.VariantTimeToSystemTime(d, &st);
+            VariantTimeToSystemTime(d, &st);
             return  new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
         }
         internal unsafe static long ToOACurrency(this decimal value)
@@ -124,7 +124,7 @@ namespace ispsession.io
             tagVARIANT theDec;
             Buffer.MemoryCopy(&value, &ll, sizeof(decimal), sizeof(decimal));
             ll.wReserved = (ushort)VarEnum.VT_DECIMAL;
-            NativeMethods.VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short)VarEnum.VT_CY);
+            VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short)VarEnum.VT_CY);
             return theDec.llVal;
         }
         internal unsafe static decimal FromOACurrency(long i64)
@@ -134,13 +134,85 @@ namespace ispsession.io
             tagVARIANT ll;
             ll.vt = VarEnum.VT_CY;
             ll.llVal = i64;
-            NativeMethods.VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short) VarEnum.VT_DECIMAL);
+            VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short) VarEnum.VT_DECIMAL);
             //decimal retVal;
             //theDec.wReserved = 0;
            // Buffer.MemoryCopy(&theDec, &retVal, sizeof(decimal), sizeof(decimal));            
             return new decimal(theDec.Lo32, theDec.Mid32, theDec.Hi32, theDec.sign == 0x80, theDec.scale);
 
         }
+        const int ErrorSuccess = 0;
+        internal sealed class JoinInformation
+        {
+            public string Domain { get; internal set; }
+            public string WorkGroup { get; internal set; }
+        }
+        internal static JoinInformation GetJoinedDomain()
+        {
+            var retVal = new JoinInformation();
+
+            var pDomain = IntPtr.Zero;
+            try
+            {
+                NetJoinStatus status;
+                var result = NetGetJoinInformation(null, out pDomain, out status);
+                if (result == ErrorSuccess)
+                {
+                    switch (status)
+                    {
+                        case NetJoinStatus.NetSetupDomainName:
+                            retVal.Domain = Marshal.PtrToStringUni(pDomain);
+                            break;
+                        case NetJoinStatus.NetSetupWorkgroupName:
+                            retVal.WorkGroup = Marshal.PtrToStringUni(pDomain);
+                            break;
+                        default:
+                            return null; //indicate standalone
+                    }
+                }
+            }
+            finally
+            {
+                if (pDomain != IntPtr.Zero) NetApiBufferFree(pDomain);
+            }
+            return retVal;
+        }
+
+        internal static DOMAIN_CONTROLLER_INFO GetDomainInfo()
+        {
+            var domainInfo = new DOMAIN_CONTROLLER_INFO();
+
+            var pDci = IntPtr.Zero;
+            // var guidClass = new GuidClass();
+            try
+            {
+                var val = DsGetDcNameW(null, null, IntPtr.Zero, null,
+                  DSGETDCNAME_FLAGS.DS_DIRECTORY_SERVICE_REQUIRED |
+                    DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME, out pDci);
+                //check return value for error
+                if (ErrorSuccess == val)
+                {
+                    domainInfo = Marshal.PtrToStructure<DOMAIN_CONTROLLER_INFO>(pDci);
+                }
+            }
+            finally
+            {
+                if (pDci != IntPtr.Zero)
+                    NetApiBufferFree(pDci);
+            }
+            return domainInfo;
+        }
+        internal static string GetNetBiosName(bool giveDnsName = false)
+        {
+            const int maxComputernameLength = 15;
+            var compNameLength = giveDnsName ? 255 : maxComputernameLength;
+            var nt4Netbiosname = new string('0', compNameLength);
+            compNameLength++;
+            return GetComputerNameExW(
+                giveDnsName ? COMPUTER_NAME_FORMAT.ComputerNameDnsHostname :
+                    COMPUTER_NAME_FORMAT.ComputerNameNetBIOS, nt4Netbiosname, ref compNameLength) ? nt4Netbiosname.Substring(0, compNameLength) : null;
+        }
+
         //[DllImport("ole32.dll", ExactSpelling = true)]
         //internal static extern int GetHGlobalFromStream(IStream pstm, out IntPtr phglobal);
 

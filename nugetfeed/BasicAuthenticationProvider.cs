@@ -84,7 +84,7 @@ namespace SimpleBasicAuthentication
 
         private static string[] ParseAuthHeader(string authHeader)
         {            
-            if (authHeader == null || authHeader.Length == 0 || !authHeader.StartsWith("Basic"))
+            if (authHeader == null || authHeader.Length == 0 || !authHeader.StartsWith("Basic", StringComparison.CurrentCultureIgnoreCase))
             {
                 return null;
             }

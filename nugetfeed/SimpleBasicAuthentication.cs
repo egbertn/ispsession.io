@@ -13,11 +13,13 @@ namespace SimpleBasicAuthentication
         private void context_AuthenticateRequest(object sender, EventArgs e)
         {
             HttpApplication httpApplication = (HttpApplication)sender;
-            if (!BasicAuthenticationProvider.Authenticate(httpApplication.Context, false))
+            var context = httpApplication.Context;
+            if (!BasicAuthenticationProvider.Authenticate(context, false))
             {
-                httpApplication.Context.Response.Status = "401 Unauthorized";
-                httpApplication.Context.Response.StatusCode = 401;
-                httpApplication.Context.Response.AppendHeader("WWW-Authenticate", "Basic");
+                var Response = context.Response;
+                Response.Status = "401 Unauthorized";
+                Response.StatusCode = 401;
+                Response.AppendHeader("WWW-Authenticate", "Basic");
                 httpApplication.CompleteRequest();
             }
         }

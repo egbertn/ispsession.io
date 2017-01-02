@@ -128,7 +128,7 @@ namespace ispsession.io
             }
             catch (Exception ex)
             {
-                Helpers.TraceError("Fatal SessionGet {0}", ex);
+                StreamManager.TraceError("Fatal SessionGet {0}", ex);
                 throw ex;
             }
             finally
@@ -175,7 +175,7 @@ namespace ispsession.io
             }
             catch (Exception ex)
             {
-                Helpers.TraceError("Fatal SessionSave {0}", ex);
+                StreamManager.TraceError("Fatal SessionSave {0}", ex);
             }
 
         }
@@ -193,7 +193,7 @@ namespace ispsession.io
             }
             catch (Exception ex)
             {
-                Helpers.TraceError("Fatal SessionRemove {0}", ex);
+                StreamManager.TraceError("Fatal SessionRemove {0}", ex);
             }
         }
 
@@ -271,7 +271,7 @@ namespace ispsession.io
             }
             catch (Exception ex)
             {
-                Helpers.TraceError("Fatal SessionInsert {0}", ex);
+                StreamManager.TraceError("Fatal SessionInsert {0}", ex);
             }
         }
     }

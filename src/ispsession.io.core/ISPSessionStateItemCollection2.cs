@@ -111,7 +111,7 @@ namespace ispsession.io
             {
                 if (_dirty == false && value)
                 {
-                    Helpers.TraceInformation("SEtting Session ID {0} dirty", this.SessionID);
+                    StreamManager.TraceInformation("SEtting Session ID {0} dirty", this.SessionID);
                 }
                 _dirty = value;
                 

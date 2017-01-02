@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Globalization;
 using System.Runtime.InteropServices.ComTypes;
-#if NET461 || NET462 || NET463
+#if NET462 || NET463
 using System.Runtime.Serialization.Formatters.Binary;
 #endif
 using System.Reflection;
@@ -21,18 +21,18 @@ namespace ispsession.io
     // we have a member byte[] buffer _memoryBuff
     // future optimization using stackalloc &amp; unsafe code UnsafeStreamn
     // 
-    public class Helpers
+    public class StreamManager
     {
 
         protected byte[] _memoryBuff;
         private int _memSize;
         protected readonly Stream Str;
-        public Helpers()
+        public StreamManager()
         {
             EnsureMemory(0);
             Str = new MemoryStream();
         }
-        public Helpers(Stream stream)
+        public StreamManager(Stream stream)
         {
             EnsureMemory(0);
             Str = stream;
@@ -835,7 +835,7 @@ namespace ispsession.io
                             Str.Write(_memoryBuff, 0, streamLen);//second the blob itself
                             TraceInformation("COM object written bytesize={0}", streamLen);
                         }
-#if NET461 || NET462 || NET463
+#if NET462 || NET463
                         else if (data.GetType().IsSerializable)
                         {
                             
@@ -1104,7 +1104,7 @@ namespace ispsession.io
                     case VarEnum.VT_UI2:
                         return ReadChar();
                     case VarEnum.VT_NULL:
-#if NET461 || NET462 || NET463
+#if NET462 || NET463
                         return System.DBNull.Value;
 #else
                         return DBNull.Value;
@@ -1172,7 +1172,7 @@ namespace ispsession.io
                         }
                         else // it is a .NET serializable object
                         {
-#if NET461 || NET462 || NET463
+#if NET462 || NET463
                             TraceInformation("deser .NET");
                             var bFormatter = new BinaryFormatter();
                             bFormatter.TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded;
@@ -1248,7 +1248,7 @@ namespace ispsession.io
                 return VarEnum.VT_ERROR;
             //            if (typ.IsValueType)
             //              return VarEnum.VT_RECORD; // TimeSpan and such
-#if NET461 || NET462 || NET463
+#if NET462 || NET463
             if (typ.IsImport || typ.IsSerializable) //
                 return VarEnum.VT_UNKNOWN;
 #endif
@@ -1272,7 +1272,7 @@ namespace ispsession.io
                 case VarEnum.VT_BOOL:
                     return typeof(bool);
                 case VarEnum.VT_NULL:
-#if NET461 || NET462 || NET463
+#if NET462 || NET463
                     return typeof(System.DBNull);
 #else
                         return typeof(DBNull);

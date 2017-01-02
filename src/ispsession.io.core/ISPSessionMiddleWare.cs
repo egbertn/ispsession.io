@@ -143,10 +143,10 @@ namespace ispsession.io
                 NativeMethods.OutputDebugStringW(string.Format(Helpers.MessageString3, Helpers.Maxinstances, _instanceCount));                
             }
 #else
-            var exp = double.Parse(Helpers.GetMetaData("at"));
+            var exp = double.Parse(StreamManager.GetMetaData("at"));
             if (DateTime.Today > NativeMethods.FromOADate(exp))
             {
-                await context.Response.WriteAsync(Helpers.MessageString);
+                await context.Response.WriteAsync(StreamManager.MessageString);
             }
 
 #endif

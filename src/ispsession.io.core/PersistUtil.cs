@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
  */
 namespace ispsession.io
 {
-    public sealed class PersistUtil : Helpers
+    public sealed class PersistUtil : StreamManager
     {
         public PersistUtil()
         {

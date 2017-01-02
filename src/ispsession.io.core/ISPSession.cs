@@ -35,8 +35,8 @@ namespace ispsession.io
             }
             if ((settings.EnableLogging & 3)== 3)
             {
-                Helpers.TraceInfo.TraceInfo = true;
-                Helpers.TraceInfo.TraceError = true;
+                StreamManager.TraceInfo.TraceInfo = true;
+                StreamManager.TraceInfo.TraceError = true;
             }
             if (tryEstablish == null)
             {

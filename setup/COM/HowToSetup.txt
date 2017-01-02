@@ -1,7 +1,7 @@
 ISP Session Setup notes.
 
-Date: Dec-21-2016
-Stable build: 8.0.0.137
+Date: 02-01-2017
+Stable build: 8.0.0.143
 Author: Egbert Nierop
 Contact: egbertDOTnieropATadccureDOTnl (replace DOT and AT to get correct email address)
 ============

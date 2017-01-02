@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CookieWeb", "Demo\CookieWeb
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerfTest", "..\PerfTest\PerfTest.csproj", "{A4C37232-E9F5-4EE1-9B50-C03A49C2243B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nugetfeed", "..\nugetfeed\nugetfeed.csproj", "{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -197,6 +199,30 @@ Global
 		{A4C37232-E9F5-4EE1-9B50-C03A49C2243B}.Release|x64.Build.0 = Release|Any CPU
 		{A4C37232-E9F5-4EE1-9B50-C03A49C2243B}.Release|x86.ActiveCfg = Release|Any CPU
 		{A4C37232-E9F5-4EE1-9B50-C03A49C2243B}.Release|x86.Build.0 = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|Lib.ActiveCfg = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|Lib.Build.0 = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|Win32.Build.0 = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|x64.Build.0 = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Debug|x86.Build.0 = Debug|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|Lib.ActiveCfg = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|Lib.Build.0 = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|Win32.ActiveCfg = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|Win32.Build.0 = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|x64.ActiveCfg = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|x64.Build.0 = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|x86.ActiveCfg = Release|Any CPU
+		{47BE62D6-DA3D-4BD0-8ED0-DA0DF7925C42}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

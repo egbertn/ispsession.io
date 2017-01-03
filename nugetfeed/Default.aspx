@@ -1,12 +1,8 @@
-﻿<%@ Page Language="C#" %>
-<%@ Import Namespace="NuGet.Server" %>
-<%@ Import Namespace="NuGet.Server.Infrastructure" %>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-
+﻿<%@ Page Language="C#" %><%@ Import Namespace="NuGet.Server" %><%@ Import Namespace="NuGet.Server.Infrastructure" %><!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head id="Head1" runat="server">
     <title>NuGet Private Repository</title>
-    <style>
+    <style type="text/css">
         body { font-family: Calibri; }
     </style>
 </head>

@@ -116,7 +116,7 @@ namespace ispsession.io
             }
             catch(Exception ex)
             {
-                Helpers.TraceError("Fatal SessionGet {0}", ex);
+                StreamManager.TraceError("Fatal SessionGet {0}", ex);
                 throw ex;
             }
             finally
@@ -139,7 +139,7 @@ namespace ispsession.io
             meta.ZLen = zLen;
             if (zLen == 0 && !state.IsReadOnly)
             {
-                Helpers.TraceError("SessionSave session should not be zero in length");
+                StreamManager.TraceError("SessionSave session should not be zero in length");
             }         
             Array.Resize(ref contents, contLen + meta.SizeofMeta);
             Array.Copy(contents, 0, contents, meta.SizeofMeta, contLen);
@@ -164,7 +164,7 @@ namespace ispsession.io
             }
             catch (Exception ex)
             {
-                Helpers.TraceError("Fatal SessionSave {0}", ex);
+                StreamManager.TraceError("Fatal SessionSave {0}", ex);
             }
 
         }
@@ -182,7 +182,7 @@ namespace ispsession.io
             }
             catch (Exception ex)
             {
-                Helpers.TraceError("Fatal SessionRemove {0}", ex);
+                StreamManager.TraceError("Fatal SessionRemove {0}", ex);
             }
         }
 
@@ -260,7 +260,7 @@ namespace ispsession.io
             }
             catch(Exception ex)
             {
-                Helpers.TraceError("Fatal SessionInsert {0}", ex);
+                StreamManager.TraceError("Fatal SessionInsert {0}", ex);
             }
         }
     }

@@ -47,7 +47,7 @@ namespace ispsession.io
             }
 #endif
             DatabaseConnection = cfg.GetAppValue(ispsession_io_pref + "DataSource", "localhost:6379");
-            Helpers.TraceInformation(@"Cookie ({0}), AppKey({1}), Path({2}), 
+            StreamManager.TraceInformation(@"Cookie ({0}), AppKey({1}), Path({2}), 
                                     Domain({3}), SnifQ({4}), CookieNoSSL({5}), 
                                     CookieExpires({6}), SessionTimeout({7}), Liquid({8}), 
                                     ReEntrance({9}), Compress({10}) , Db {11}

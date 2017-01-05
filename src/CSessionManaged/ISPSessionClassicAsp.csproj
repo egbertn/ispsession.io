@@ -72,7 +72,7 @@
     <Compile Include="ConfigHelper.cs" />
     <Compile Include="CSessionDL.cs" />
     <Compile Include="SessionAppSettings.cs" />
-    <Compile Include="Helpers.cs" />
+    <Compile Include="StreamManager.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="ISPSessionIDManager.cs" />
     <Compile Include="ISPSessionModule.cs" />

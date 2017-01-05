@@ -104,7 +104,7 @@ namespace ispsession.io
             }
             catch (SecurityException)
             {
-                Helpers.TraceError("ISP Sesssion cannot write to EventLog with the current security context {0}", Thread.CurrentPrincipal.Identity.Name);
+                StreamManager.TraceError("ISP Sesssion cannot write to EventLog with the current security context {0}", Thread.CurrentPrincipal.Identity.Name);
             }
 
         }
@@ -122,11 +122,11 @@ namespace ispsession.io
                 return;//no business here
             }
             //TODO: remove license Debug.WriteLine muke!
-            if (Interlocked.Increment(ref _instanceCount) > Helpers.Maxinstances)
+            if (Interlocked.Increment(ref _instanceCount) > StreamManager.Maxinstances)
             {
-                Thread.Sleep(500 * (_instanceCount - Helpers.Maxinstances));
-                NativeMethods.OutputDebugStringW(string.Format("LICENSE ERROR max = {0} requested ={1} \r\n", Helpers.Maxinstances, _instanceCount));
-                ISPSessionModule.WriteToEventLog(new Exception(string.Format(LicenseSpace, _instanceCount, Helpers.Maxinstances)), "instancing");
+                Thread.Sleep(500 * (_instanceCount - StreamManager.Maxinstances));
+                NativeMethods.OutputDebugStringW(string.Format("LICENSE ERROR max = {0} requested ={1} \r\n", StreamManager.Maxinstances, _instanceCount));
+                ISPSessionModule.WriteToEventLog(new Exception(string.Format(LicenseSpace, _instanceCount, StreamManager.Maxinstances)), "instancing");
             }
             //if (DateTime.UtcNow.Second % 6 == 0)
             //{
@@ -149,10 +149,10 @@ namespace ispsession.io
             }
 #else
 
-            var exp = double.Parse(Helpers.GetMetaData("at"));
+            var exp = double.Parse(StreamManager.GetMetaData("at"));
             if (DateTime.Today > DateTime.FromOADate(exp))
             {
-                context.Response.Write(Helpers.LicString);
+                context.Response.Write(StreamManager.LicString);
             }
 
 #endif
@@ -191,7 +191,7 @@ namespace ispsession.io
             }
             else
             {
-                Helpers.TraceInformation("CSessionDL.SessionGet expires({0}), reentrance({1}), liquid({2}), size({3})",
+                StreamManager.TraceInformation("CSessionDL.SessionGet expires({0}), reentrance({1}), liquid({2}), size({3})",
                     sessionItems.Meta.Expires,
                     sessionItems.Meta.ReEntrance,
                     sessionItems.Meta.Liquid,
@@ -243,7 +243,7 @@ namespace ispsession.io
                 return;//no business here
             }
             Interlocked.Decrement(ref _instanceCount);
-            Helpers.TraceInformation(UninitString, _instanceCount);
+            StreamManager.TraceInformation(UninitString, _instanceCount);
 
             // Read the session state from the context
             var stateProvider = (ISPHttpSessionStateContainer)SessionStateUtility.GetHttpSessionStateFromContext(context);
@@ -268,7 +268,7 @@ namespace ispsession.io
                 };
                 CSessionDL.SessionSave(_appSettings, stateProvider, ref meta);
                 var spentTime = (DateTime.UtcNow - stateProvider.StartedAt).TotalMilliseconds;
-                Helpers.TraceInformation("CSessionDL.SessionSave timeOut ({0}), reEntrance({1}), Liquid({2}), size({3}) time({4})",
+                StreamManager.TraceInformation("CSessionDL.SessionSave timeOut ({0}), reEntrance({1}), Liquid({2}), size({3}) time({4})",
                     meta.Expires, meta.ReEntrance, meta.Liquid, meta.ZLen, Math.Ceiling(spentTime));
 
             }

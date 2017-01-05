@@ -11,7 +11,7 @@ using System.Web;
  */
 namespace ispsession.io
 {
-    public sealed class PersistUtil: Helpers
+    public sealed class PersistUtil: StreamManager
     {
         public PersistUtil()
         {

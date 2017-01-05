@@ -48,7 +48,7 @@ namespace ispsession.io
                         var urlCookie = context.Request.QueryString[_settings.CookieName];
                         if (urlCookie != null && Validate(urlCookie))
                         {
-                            Helpers.TraceInformation("GetSessionID found url guid {0}", urlCookie);
+                            StreamManager.TraceInformation("GetSessionID found url guid {0}", urlCookie);
                             cookieText = urlCookie;
                             foundGuidinURL = true;
                         }
@@ -56,7 +56,7 @@ namespace ispsession.io
                 }
                 else
                 {
-                    Helpers.TraceInformation("GetSessionID found cookie guid {0}", cookieValue);
+                    StreamManager.TraceInformation("GetSessionID found cookie guid {0}", cookieValue);
                 }
             }
             
@@ -72,7 +72,7 @@ namespace ispsession.io
                 }
                 else if (_settings.ReEntrance == true && !string.IsNullOrEmpty(cookieText)) //allow to ressurrect a session id, however, the data is gone
                 {
-                    Helpers.TraceInformation("GetSessionID revived session url guid {0}", cookieText);
+                    StreamManager.TraceInformation("GetSessionID revived session url guid {0}", cookieText);
                     return cookieText;
                 }             
                 return null;
@@ -89,7 +89,7 @@ namespace ispsession.io
             }
             else if (_settings.ReEntrance && !string.IsNullOrEmpty(cookieValue))
             {
-                Helpers.TraceInformation("GetSessionID revived session cookie guid {0}", cookieValue);
+                StreamManager.TraceInformation("GetSessionID revived session cookie guid {0}", cookieValue);
                 return cookieValue;
             }
             return null;
@@ -147,7 +147,7 @@ namespace ispsession.io
             redirected = false; //because we do not do HttpCookieMode.UseUri            
             cookieAdded = true;//always added because HttpCookieMode.UseCookies 
             var response = context.Response;
-            Helpers.TraceInformation("SaveSessionID {0}", id);
+            StreamManager.TraceInformation("SaveSessionID {0}", id);
             if (response.HeadersWritten)
             {
                 throw new HttpException("Response was Flushed, cannot save Session Cookie");

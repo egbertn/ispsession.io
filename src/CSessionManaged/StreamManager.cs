@@ -20,18 +20,18 @@ namespace ispsession.io
     // we have a member byte[] buffer _memoryBuff
     // future optimization using stackalloc &amp; unsafe code UnsafeStreamn
     // 
-    public class Helpers
+    public class StreamManager
     {
 
         protected byte[] _memoryBuff;
         private int _memSize;
         protected readonly Stream Str;
-        public Helpers()
+        public StreamManager()
         {
             EnsureMemory(0);
             Str = new MemoryStream();
         }
-        public Helpers(Stream stream)
+        public StreamManager(Stream stream)
         {
             EnsureMemory(0);
             Str = stream;

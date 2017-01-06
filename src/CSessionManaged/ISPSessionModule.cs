@@ -77,7 +77,7 @@ namespace ispsession.io
                         throw new Exception(
                             "ISP Session requires a Appsetting such as <add key=\"License\" value=\"0245456556560418A91B161F23534007\" />");
                     }
-                    Checked = Helpers.LicentieCheck(Helpers.HexToBytes(lic), license);
+                    Checked = StreamManager.LicentieCheck(StreamManager.HexToBytes(lic), license);
 #else
                     Checked = true;
 #endif
@@ -145,7 +145,7 @@ namespace ispsession.io
 #if !Demo
             if (!Checked)
             {
-                HttpContext.Current.Response.Write(Helpers.LicString);
+                HttpContext.Current.Response.Write(StreamManager.LicString);
             }
 #else
 

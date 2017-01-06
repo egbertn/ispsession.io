@@ -130,17 +130,17 @@ namespace ispsession.io
                         throw new Exception(
                             "Lic in section ispsession.io is missing in appsettings.json");
                     }
-                    Checked = Helpers.LicentieCheck(Helpers.HexToBytes(lic), license);
+                    Checked = StreamManager.LicentieCheck(StreamManager.HexToBytes(lic), license);
                 }
             }
             if (!Checked)
             {
-                await context.Response.WriteAsync(Helpers.MessageString2);
+                await context.Response.WriteAsync(StreamManager.MessageString2);
             }
-            if (Interlocked.Increment(ref _instanceCount) > Helpers.Maxinstances)
+            if (Interlocked.Increment(ref _instanceCount) > StreamManager.Maxinstances)
             {
-                Thread.Sleep(500 * (_instanceCount - Helpers.Maxinstances));
-                NativeMethods.OutputDebugStringW(string.Format(Helpers.MessageString3, Helpers.Maxinstances, _instanceCount));                
+                Thread.Sleep(500 * (_instanceCount - StreamManager.Maxinstances));
+                NativeMethods.OutputDebugStringW(string.Format(StreamManager.MessageString3, StreamManager.Maxinstances, _instanceCount));                
             }
 #else
             var exp = double.Parse(StreamManager.GetMetaData("at"));

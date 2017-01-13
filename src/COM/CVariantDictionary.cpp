@@ -7,7 +7,7 @@
 
 STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm) throw()
 {
-	if (pPersistStmInit == NULL || pStm == NULL) 
+	if (pPersistStmInit == nullptr || pStm == nullptr)
 		return E_INVALIDARG;
 	CLSID clsd;
 
@@ -21,14 +21,14 @@ STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm
 
 STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj)
 {
-	if (pStm == NULL || ppvObj == NULL) return E_INVALIDARG;
+	if (pStm == nullptr || ppvObj == nullptr) return E_INVALIDARG;
 	
 	CLSID clsd;
 	CComPtr<IPersistStreamInit> pPersist;
 	HRESULT hr = ReadClassStm(pStm, &clsd);
 	if (hr == S_OK)
 	{
-		hr = pPersist.CoCreateInstance(clsd, NULL, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_NO_CODE_DOWNLOAD);
+		hr = pPersist.CoCreateInstance(clsd, nullptr, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_NO_CODE_DOWNLOAD);
 		if (hr == S_OK)
 		{
 			hr = pPersist->Load(pStm);
@@ -114,7 +114,7 @@ STDMETHODIMP CVariantDictionary::get_Item(VARIANT varKey, VARIANT* pVal) throw()
 	if (pos == _dictionary.end())
 	{
 		pVal->vt = VT_EMPTY;
-		pVal->bstrVal = NULL;
+		pVal->bstrVal = nullptr;
 		return S_OK;
 	}
 
@@ -138,7 +138,7 @@ STDMETHODIMP CVariantDictionary::get_Item(VARIANT varKey, VARIANT* pVal) throw()
 			else
 			{
 				CComQIPtr<IStream> l_pIStr(pos->second.punkVal) ;
-				hr = l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, NULL);
+				hr = l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
 				pos->second.Clear();//remove the IStream, it is not the object itself
 				hr = OleLoadFromStream(l_pIStr, IID_IUnknown, (void**)&pVal->punkVal);
 				bool doPersist2 = false;
@@ -148,7 +148,7 @@ STDMETHODIMP CVariantDictionary::get_Item(VARIANT varKey, VARIANT* pVal) throw()
 					//set the ptr sizeof(CLSID) back because the GetClassId advanced 16 bytes in the stream
 					LARGE_INTEGER dbMove;					
 					dbMove.QuadPart= -(long long)sizeof(CLSID) ;
-					hr = l_pIStr->Seek(dbMove, STREAM_SEEK_CUR, NULL);
+					hr = l_pIStr->Seek(dbMove, STREAM_SEEK_CUR, nullptr);
 					hr = OleLoadFromStream2(l_pIStr, IID_IUnknown, (void**)&pVal->punkVal);
 				}
 				logModule.Write(L"OleLoadFromStream%s %x", doPersist2 ? L"2": L"", hr);
@@ -217,7 +217,7 @@ STDMETHODIMP CVariantDictionary::put_Item(VARIANT varKey, VARIANT newVal) throw(
 	}
 	if (vDeref.vt == VT_DISPATCH)
 	{
-		if (vDeref.pdispVal == NULL) 
+		if (vDeref.pdispVal == nullptr) 
 			hr = E_POINTER;
 		else
 		{
@@ -225,7 +225,7 @@ STDMETHODIMP CVariantDictionary::put_Item(VARIANT varKey, VARIANT newVal) throw(
 			DISPPARAMS  dispParamsNoArgs = {0};
 			if (vDeref.pdispVal->Invoke(DISPID_VALUE, IID_NULL, LOCALE_SYSTEM_DEFAULT,
 					DISPATCH_PROPERTYGET | DISPATCH_METHOD,
-					&dispParamsNoArgs, &varResolved, NULL, NULL) == S_OK) 
+					&dispParamsNoArgs, &varResolved, nullptr, nullptr) == S_OK) 
 			{
 				//recursion...
 				hr = put_Item(varKey, varResolved);
@@ -235,7 +235,7 @@ STDMETHODIMP CVariantDictionary::put_Item(VARIANT varKey, VARIANT newVal) throw(
 	/*else if (vDeref.vt == VT_RECORD || vDeref.vt == VT_USERDEFINED)
 	{
 		hr = E_INVALIDARG;
-		ATL::AtlSetErrorInfo(CLSID_CVariantDictionary, L"user defined types are not supported, convert to byte array before instead", 0, NULL, IID_INWCVariantDictionary, hr, _AtlBaseModule.GetResourceInstance());
+		ATL::AtlSetErrorInfo(CLSID_CVariantDictionary, L"user defined types are not supported, convert to byte array before instead", 0, nullptr, IID_INWCVariantDictionary, hr, _AtlBaseModule.GetResourceInstance());
 			
 	}*/
 	else
@@ -251,7 +251,7 @@ STDMETHODIMP CVariantDictionary::put_Item(VARIANT varKey, VARIANT newVal) throw(
 STDMETHODIMP CVariantDictionary::putref_Item(VARIANT varKey, VARIANT newVal) throw()
 {
 	HRESULT hr = S_OK;
-	VARIANT* valueArray = NULL;
+	VARIANT* valueArray = nullptr;
 	CComVariant keycopy;
 	hr = keycopy.ChangeType(VT_BSTR, &varKey);
 
@@ -289,7 +289,7 @@ STDMETHODIMP CVariantDictionary::putref_Item(VARIANT varKey, VARIANT newVal) thr
 		
 		CComQIPtr<IPersistStream> l_ptestForCapability(vDeref.pdispVal);
 		CComQIPtr<IPersistStreamInit> l_ptestForCapability2(vDeref.pdispVal);
-		if (l_ptestForCapability == NULL && l_ptestForCapability2 == NULL)
+		if (l_ptestForCapability == nullptr && l_ptestForCapability2 == nullptr)
 		{
 			hr = E_NOINTERFACE;
 		}
@@ -346,7 +346,7 @@ STDMETHODIMP CVariantDictionary::_NewEnum(IUnknown** pVal) throw()
 	HRESULT hr = S_OK;
 	ULONG size = _dictionary.size();
 	SAFEARRAY * psaKeyEnum = ::SafeArrayCreateVector(VT_BSTR, 0, size);
-	if (psaKeyEnum == NULL)
+	if (psaKeyEnum == nullptr)
 			return E_OUTOFMEMORY;
 	
 
@@ -427,7 +427,7 @@ STDMETHODIMP CVariantDictionary::LocalLoad(IStream* pStream, const DWORD lSize) 
 	INT cx = 0;
 	CComVariant varTemp;
 	if (lSize == 0) return E_INVALIDARG;
-	if (pStream == NULL) return hr;
+	if (pStream == nullptr) return hr;
 	INT m_lVDictElements = 0;
 	logModule.Write(L"Loading from stream");	
 	
@@ -458,7 +458,7 @@ STDMETHODIMP CVariantDictionary::LocalLoad(IStream* pStream, const DWORD lSize) 
 		{
 			for (cx = m_lVDictElements - 1; cx >= 0 && hr == S_OK; cx--)
 			{
-				BSTR key = NULL;
+				BSTR key = nullptr;
 				VARIANT val = { 0 };
 				hr = ReadProperty(pStream, &key, &val);
 				CComBSTR k;
@@ -496,8 +496,8 @@ STDMETHODIMP CVariantDictionary::WriteProperty(IStream *pStream, const BSTR strP
 		pStream->Seek(SEEK_NULL, STREAM_SEEK_CUR, &keepPointer);
 
 		//reserve space
-		hr = pStream->Write(&bogus, sizeof(DWORD), NULL);
-		hr = pStream->Write(&vtype, sizeof(VARTYPE), NULL);
+		hr = pStream->Write(&bogus, sizeof(DWORD), nullptr);
+		hr = pStream->Write(&vtype, sizeof(VARTYPE), nullptr);
 		hr = WriteValue(pStream, TheVal, vtype, strPropName);
 		
 		//get current position again but after having written the data (WriteValue)
@@ -508,11 +508,11 @@ STDMETHODIMP CVariantDictionary::WriteProperty(IStream *pStream, const BSTR strP
 		LARGE_INTEGER kp;
 		kp.LowPart = keepPointer.LowPart;
 		kp.HighPart = 0;		
-		pStream->Seek(kp, STREAM_SEEK_SET, NULL);
-		pStream->Write(&curPos.LowPart, sizeof(DWORD), NULL);
+		pStream->Seek(kp, STREAM_SEEK_SET, nullptr);
+		pStream->Write(&curPos.LowPart, sizeof(DWORD), nullptr);
 
 		//restore where we were		
-		pStream->Seek(curPos, STREAM_SEEK_SET, NULL);
+		pStream->Seek(curPos, STREAM_SEEK_SET, nullptr);
 	}
 	logModule.Write(L"WriteProperty propname=%s, type=%d, result=%x", strPropName, vtype, hr);	
 /*    ' 1- Len4 PropName var
@@ -542,8 +542,8 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 		ElSize = 0;
 
 	HRESULT hr = S_OK;
-	PVOID psadata = NULL;
-	SAFEARRAY *psa = NULL;
+	PVOID psadata = nullptr;
+	SAFEARRAY *psa = nullptr;
 
 	if ((vtype & VT_ARRAY) == VT_ARRAY) 
 	{
@@ -570,7 +570,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 		descriptor.type = vtype;
 		descriptor.ElemSize = ElSize;
 		descriptor.Dims = cDims;
-		hr = pStream->Write(&descriptor, sizeof(ARRAY_DESCRIPTOR), NULL);
+		hr = pStream->Write(&descriptor, sizeof(ARRAY_DESCRIPTOR), nullptr);
       	
 		VARTYPE vcopy = vtype & ~VT_ARRAY;
 		if (vcopy == VARENUM::VT_UNKNOWN || vcopy == VARENUM::VT_ERROR || vcopy == VARENUM::VT_VARIANT)
@@ -581,9 +581,9 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 		}
 		else //todo jagged array??
 		{
-			WriteString(pStream, NULL);
+			WriteString(pStream, nullptr);
 		}
-		if (psa == NULL)//even if it is a null array, we need to write System.Object
+		if (psa == nullptr)//even if it is a null array, we need to write System.Object
 		{
 			goto exit;
 		}
@@ -599,7 +599,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			hr = ::SafeArrayGetLBound(psa, cx, &bounds[1]);
 			hr = ::SafeArrayGetUBound(psa, cx, &bounds[0]); 
 			bounds[0] = bounds[0] - bounds[1] + 1;
-            hr = pStream->Write(bounds, sizeof(SAFEARRAYBOUND), NULL);
+            hr = pStream->Write(bounds, sizeof(SAFEARRAYBOUND), nullptr);
 			psaBound[cx - 1].lLbound = bounds[1];
 			psaBound[cx - 1].cElements = bounds[0];
 			lMemSize *= bounds[0];	
@@ -621,7 +621,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 				hr = ::SafeArrayAccessData(psa, &psadata);
 				if (hr == S_OK) 
 				{
-					hr = pStream->Write (psadata, lMemSize, NULL);
+					hr = pStream->Write (psadata, lMemSize, nullptr);
 					::SafeArrayUnaccessData(psa);
 				}
 			}
@@ -662,7 +662,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			// the VARIANT allocation area is contigious, but on Windows X64, 
 			// each element is 24 in size, instead of 16! So, the carry over indice 
 			// in combination with SafeArrayPtrOfIndex built had to be made
-			if  (lElements > 0 && psa != NULL) 
+			if  (lElements > 0 && psa != nullptr) 
 			{
 				
 				CComHeapPtr<LONG> rgIndices;
@@ -682,7 +682,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 					if (rgIndices[dimPointer] < 
 						(LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound)
 					{
-						VARIANT* pVar = NULL; 
+						VARIANT* pVar = nullptr; 
 						//logModule.Write(L"Indices %d,%d,%d", rgIndices[0], rgIndices[1], rgIndices[2]);
 						hr = SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
 						if (FAILED(hr))
@@ -692,7 +692,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 							return hr;
 						}						
 						vtype = pVar->vt;
-						hr = pStream->Write (&vtype, sizeof(VARTYPE), NULL);		
+						hr = pStream->Write (&vtype, sizeof(VARTYPE), nullptr);		
 						//----- recursive call ----- keep an eye on this
 						hr = WriteValue(pStream, pVar, vtype, strKeyName);
 
@@ -730,9 +730,9 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 		}        
 		else
 		{
-            if (psa == NULL)
-                //handle NULL pointer array
-                hr = pStream->Write(&psa, sizeof(NULL), NULL);
+            if (psa == nullptr)
+                //handle nullptr pointer array
+                hr = pStream->Write(&psa, sizeof(nullptr), nullptr);
             else
                 hr = E_INVALIDARG;         
 		}
@@ -768,7 +768,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			//		//prepare our own structure for persistence
 			//		wire_UDT nfo = {0};
 			//		
-			//		if (pRecordInfo == NULL)
+			//		if (pRecordInfo == nullptr)
 			//			hr = E_POINTER;
 			//		// get the recordsize
 			//		if (hr == S_OK) 
@@ -779,7 +779,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			//				IID_IRecordInfo,
 			//				TheVal->pRecInfo,
 			//				MSHCTX_NOSHAREDMEM,
-			//				NULL,
+			//				nullptr,
 			//				MSHLFLAGS_NORMAL);
 
 			//			logModule.Write(L"GetMarshalSizeMax %x %d", hr, nfo.ifaceSize);
@@ -790,13 +790,13 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			//			nfo.clSize =
 			//			nfo.ifaceSize = 0;
 			//		}
-			//		pStream->Write(&nfo, sizeof(wire_UDT), NULL);
+			//		pStream->Write(&nfo, sizeof(wire_UDT), nullptr);
 			//		
 			//		if (hr == S_OK)
 			//		{
 			//			HGLOBAL hglob = GlobalAlloc(GMEM_MOVEABLE, nfo.ifaceSize);
 			//			CComPtr<IStream> pstream;
-			//			if (hglob != NULL)
+			//			if (hglob != nullptr)
 			//				hr = CreateStreamOnHGlobal(hglob, TRUE, &pstream);
 			//			else hr = E_OUTOFMEMORY;
 			//			if (hr == S_OK)
@@ -804,12 +804,12 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			//					IID_IRecordInfo, 
 			//					pRecordInfo, 
 			//					MSHCTX_NOSHAREDMEM, 
-			//					NULL,
+			//					nullptr,
 			//					MSHLFLAGS_NORMAL);						
 			//			//copy to main stream
 			//			if (hr == S_OK) 
 			//			{
-			//				pStream->Write(GlobalLock(hglob), nfo.ifaceSize, NULL);
+			//				pStream->Write(GlobalLock(hglob), nfo.ifaceSize, nullptr);
 			//				GlobalUnlock(hglob);
 			//			}
 			//		}
@@ -817,7 +817,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			//		logModule.Write(L"CoMarshalInterface %x", hr);
 			//		// now copy the raw record data
 			//		if (hr == S_OK)
-			//			hr = pStream->Write(TheVal->pvRecord, nfo.clSize, NULL);
+			//			hr = pStream->Write(TheVal->pvRecord, nfo.clSize, nullptr);
 			//		
 			//	}	
 			//	cBytes=0;
@@ -825,7 +825,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			case VT_DECIMAL:
 				//correct because decimal eats the whole variant !
 				cBytes = sizeof(DECIMAL);
-				hr = pStream->Write(TheVal, cBytes, NULL);
+				hr = pStream->Write(TheVal, cBytes, nullptr);
 				break;
 			case VT_BSTR:
 
@@ -844,15 +844,15 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 				if (!isSerialized)
 				{
 					CComQIPtr<IPersistStream> pPersist(TheVal->punkVal);
-					hr = CreateStreamOnHGlobal(NULL, TRUE, &l_pIStr);
+					hr = CreateStreamOnHGlobal(nullptr, TRUE, &l_pIStr);
 					bool noPersist2 = false;
 					if (hr == S_OK)
 					{
-						if (pPersist == NULL)
+						if (pPersist == nullptr)
 						{
 							noPersist2 = true;
 							CComQIPtr<IPersistStreamInit> pPersist2(TheVal->punkVal);
-							if (pPersist2 == NULL)
+							if (pPersist2 == nullptr)
 							{
 								hr = E_NOINTERFACE;
 							}
@@ -880,10 +880,10 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 					hr = l_pIStr->Stat(&pstatstg, STATFLAG_NONAME);
 					cBytes = pstatstg.cbSize.LowPart;
 					logModule.Write(L"Streamsize %d", cBytes);
-					hr = pStream->Write(&cBytes, sizeof(pstatstg.cbSize.LowPart), NULL);
+					hr = pStream->Write(&cBytes, sizeof(pstatstg.cbSize.LowPart), nullptr);
 					// copy the persisted object as bytestream to the main stream		
-					l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, NULL);
-					hr = l_pIStr->CopyTo(pStream, pstatstg.cbSize, NULL, NULL);
+					l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
+					hr = l_pIStr->CopyTo(pStream, pstatstg.cbSize, nullptr, nullptr);
 					if (FAILED(hr))
 					{
 						logModule.Write(L"FATAL: cannot copy stream %x", hr);
@@ -893,7 +893,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 				{
 					// indicate zero bytes
 					cBytes = 0;
-					pStream->Write (&cBytes, sizeof(DWORD), NULL);
+					pStream->Write (&cBytes, sizeof(DWORD), nullptr);
 				}
 				
 				break;
@@ -903,7 +903,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 		}
 exit: // sorry
 		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL)
-			pStream->Write(&TheVal->bVal, cBytes, NULL);
+			pStream->Write(&TheVal->bVal, cBytes, nullptr);
 		logModule.Write(L"Simple variant size=%d", cBytes);
 	}
 
@@ -923,11 +923,11 @@ STDMETHODIMP CVariantDictionary::ReadProperty(IStream* pStream, _Inout_ BSTR *st
 			//assign sufficient space divide by 2 since the size is written using bytes instead of chars (unicode)
 		// read next offset this offset pointer is written en read but not
 		// used currently
-		DWORD nextOffset = NULL;
-		hr = pStream->Read(&nextOffset, sizeof(nextOffset), NULL);
+		DWORD nextOffset = 0;
+		hr = pStream->Read(&nextOffset, sizeof(nextOffset), nullptr);
 
 		VARTYPE vtype;
-		hr = pStream->Read (&vtype, sizeof(VARTYPE), NULL);
+		hr = pStream->Read (&vtype, sizeof(VARTYPE), nullptr);
 		//if (vtype == (VT_ARRAY | VT_UNKNOWN) || vtype == (VT_ARRAY | VT_ERROR))
 		//{			
 		//	ULARGE_INTEGER curPos = { 0 };
@@ -968,13 +968,13 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 	::VariantClear(TheValue);
 	ZeroMemory(TheValue, sizeof(VARIANT));
 	
-	PVOID psadata= NULL;
+	PVOID psadata= nullptr;
 	HRESULT hr = S_OK;
 	INT els = 0;
 	if ((vtype & VT_ARRAY) == VT_ARRAY)
 	{
 		ARRAY_DESCRIPTOR descriptor;
-		pStream->Read(&descriptor, sizeof(ARRAY_DESCRIPTOR), NULL);
+		pStream->Read(&descriptor, sizeof(ARRAY_DESCRIPTOR), nullptr);
 		vtype = descriptor.type;
 		ElSize = descriptor.ElemSize;
 		cDims = descriptor.Dims;
@@ -1022,7 +1022,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 		//int bx=cDims;
 		for (LONG cx = 0; cx < cDims; cx++)// cDims - 1; cx != 0; cx--)
 		{
-			if ( pStream->Read (&safebound[cx], sizeof(SAFEARRAYBOUND), NULL)== S_OK)
+			if ( pStream->Read (&safebound[cx], sizeof(SAFEARRAYBOUND), nullptr)== S_OK)
 			{
 				lMemSize *= safebound[cx].cElements;
 			}
@@ -1030,7 +1030,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 		}
 		auto psa = ::SafeArrayCreate(vtype, cDims, safebound);		
 		
-		if (psa == NULL) 
+		if (psa == nullptr) 
 		{
 			goto exit;			
 		}
@@ -1047,7 +1047,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 			hr = ::SafeArrayAccessData(psa, &psadata);
 			if (hr == S_OK) 
 			{
-				pStream->Read(psadata, lMemSize, NULL);
+				pStream->Read(psadata, lMemSize, nullptr);
 				::SafeArrayUnaccessData(psa);
 			}
 		}
@@ -1109,7 +1109,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 					if (hr == S_OK)
 					{
 						vtype = pVar->vt;							
-						hr = pStream->Read(&vtype, sizeof(VARTYPE), NULL);			
+						hr = pStream->Read(&vtype, sizeof(VARTYPE), nullptr);			
 						if (hr == S_OK) 
 							//----- recursive call ----- keep an eye on this
 							hr = ReadValue(pStream, pVar, vtype);
@@ -1172,26 +1172,26 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 				break;
 			case VT_DECIMAL:				
 				cBytes = sizeof(DECIMAL);
-				hr = pStream->Read(TheValue, cBytes, NULL);
+				hr = pStream->Read(TheValue, cBytes, nullptr);
 				break;
 			//case VT_RECORD: // can happen within .NET
 			//	{
 			//		wire_UDT nfo;
-			//		hr = pStream->Read(&nfo, sizeof(wire_UDT), NULL);
+			//		hr = pStream->Read(&nfo, sizeof(wire_UDT), nullptr);
 			//		
 			//		if (nfo.ifaceSize != 0) 
 			//		{
 			//			HGLOBAL hglob = GlobalAlloc(GMEM_MOVEABLE, nfo.ifaceSize);
-			//			if (hglob != NULL )
+			//			if (hglob != nullptr )
 			//			{
 			//				logModule.Write(L"stream size=%d, recordsize %d", nfo.ifaceSize, nfo.clSize);
-			//				hr = pStream->Read(GlobalLock(hglob), nfo.ifaceSize, NULL);												
+			//				hr = pStream->Read(GlobalLock(hglob), nfo.ifaceSize, nullptr);												
 			//				GlobalUnlock(hglob);
 			//				IStream*pTemp;
 			//				hr = CreateStreamOnHGlobal(hglob, TRUE, &pTemp);
 			//				if (hr == S_OK)
 			//				{
-			//					TheValue->pRecInfo = NULL;
+			//					TheValue->pRecInfo = nullptr;
 			//					hr = CoUnmarshalInterface(pTemp, 
 			//						IID_IRecordInfo, 
 			//						(void**)&TheValue->pRecInfo);
@@ -1206,12 +1206,12 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 			//		{
 			//			logModule.Write(L"pRecInfo->RecordCreate");
 			//			TheValue->pvRecord = TheValue->pRecInfo->RecordCreate();				
-			//			hr = pStream->Read(TheValue->pvRecord, nfo.clSize, NULL);
+			//			hr = pStream->Read(TheValue->pvRecord, nfo.clSize, nullptr);
 			//		}
 			//		//if error skip to next variable
 			//		else
 			//		{
-			//			//hr = pStream->Seek(nfo.clSize, STREAM_SEEK_CUR, NULL);
+			//			//hr = pStream->Seek(nfo.clSize, STREAM_SEEK_CUR, nullptr);
 			//			goto error;
 			//		}
 			//	}
@@ -1225,11 +1225,11 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 			case VT_UNKNOWN:
 			{
 				//Puts the IID_IStream interface as a type of the TheValue->punkVal
-				hr = pStream->Read (&cBytes, sizeof(cBytes), NULL);
+				hr = pStream->Read (&cBytes, sizeof(cBytes), nullptr);
 				if (cBytes > 0 && SUCCEEDED(hr))
 				{
 					HGLOBAL hGlob = ::GlobalAlloc(GMEM_MOVEABLE, cBytes);
-					hr = pStream->Read (::GlobalLock(hGlob), cBytes, NULL);
+					hr = pStream->Read (::GlobalLock(hGlob), cBytes, nullptr);
 					::GlobalUnlock(hGlob);
 					IStream * pTemp;
 					hr = ::CreateStreamOnHGlobal(hGlob, TRUE, &pTemp);
@@ -1258,7 +1258,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 		exit:
 		logModule.Write(L"Done variant type=%d, size=%d", vtype, cBytes);
 		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL) 
-			hr = pStream->Read(&TheValue->bVal, cBytes, NULL);
+			hr = pStream->Read(&TheValue->bVal, cBytes, nullptr);
 	}
 error:
 	if (FAILED(hr)) 	
@@ -1309,7 +1309,7 @@ STDMETHODIMP CVariantDictionary::LocalContents(DWORD * lSize, IStream **pSequent
 
 		LARGE_INTEGER li;
 		li.QuadPart = 0;
-		hr = (*pSequentialStream)->Seek(li, STREAM_SEEK_SET, NULL);
+		hr = (*pSequentialStream)->Seek(li, STREAM_SEEK_SET, nullptr);
 	}
 
 	//(*pSequentialStream)->Release();
@@ -1397,11 +1397,11 @@ STDMETHODIMP CVariantDictionary::Persist(VARIANT vKey) throw()
 		{
 			pos->second = true;			
 			CComPtr<IStream> l_pIStr;
-			hr = CreateStreamOnHGlobal(NULL, TRUE, &l_pIStr);					
+			hr = CreateStreamOnHGlobal(nullptr, TRUE, &l_pIStr);					
 			CComQIPtr<IPersistStream> pPersist(f->second.punkVal);
 			
 			bool doPersist = false;
-			if (pPersist == NULL)
+			if (pPersist == nullptr)
 			{
 				CComQIPtr<IPersistStreamInit> pPersist2(f->second.punkVal);
 				doPersist = true;
@@ -1414,7 +1414,7 @@ STDMETHODIMP CVariantDictionary::Persist(VARIANT vKey) throw()
 			logModule.Write(L"OleSaveToStream%s %x", doPersist? L"2" : L"0", hr);
 			//clear the unpersisted object
 			f->second.ClearToZero();
-			if (l_pIStr != NULL)
+			if (l_pIStr != nullptr)
 			{
 				//f->second = l_pIStr;
 				l_pIStr.QueryInterface(&f->second.punkVal);
@@ -1460,7 +1460,7 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 	// lTempSize must be + 1 because of the terminating 0!
 	if (lTempSize > 0)
 	{
-		UINT byteswritten = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, NULL, 0, NULL, NULL);
+		UINT byteswritten = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, nullptr, 0, nullptr, nullptr);
 		if (byteswritten == 0)
 			hr = ATL::AtlHresultFromLastError();
 		else
@@ -1473,17 +1473,17 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 				if (FAILED(hr))
 				{
 					test = 0;
-					pStream->Write(&test, sizeof(UINT), NULL);
+					pStream->Write(&test, sizeof(UINT), nullptr);
 					return hr;
 				}
 			}
-			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti, byteswritten, NULL, NULL);
+			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti, byteswritten, nullptr, nullptr);
 			if (test > 0)
 			{
 				test--; //exclude terminating zero
-				hr = pStream->Write(&test, sizeof(UINT), NULL);
+				hr = pStream->Write(&test, sizeof(UINT), nullptr);
 				if (hr == S_OK)
-					hr = pStream->Write(m_lpstrMulti, test, NULL);
+					hr = pStream->Write(m_lpstrMulti, test, nullptr);
 				logModule.Write(L"WriteString Bytes %d", test);
 			}
 		}
@@ -1491,7 +1491,7 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 	else //empty string
 	{
 		test = 0; 
-		hr = pStream->Write(&test, sizeof(UINT), NULL);
+		hr = pStream->Write(&test, sizeof(UINT), nullptr);
 	}
 	return hr;
 }
@@ -1504,7 +1504,7 @@ STDMETHODIMP STDMETHODCALLTYPE CVariantDictionary::ReadString(IStream *pStream, 
 	HRESULT hr = S_OK;
 	UINT lTempSize = 0;
 	// size excludes the terminating zero!
-	hr = pStream->Read(&lTempSize, sizeof(UINT), NULL);
+	hr = pStream->Read(&lTempSize, sizeof(UINT), nullptr);
 	if (hr == S_OK)
 	{
 		//TODO: find how vbNullString is written to the native Session
@@ -1512,7 +1512,7 @@ STDMETHODIMP STDMETHODCALLTYPE CVariantDictionary::ReadString(IStream *pStream, 
 		ATLASSERT(lTempSize < 1000000);
 		if (lTempSize == 0)
 		{
-			::SysReAllocStringLen(retval, NULL, (UINT) 0);
+			::SysReAllocStringLen(retval, nullptr, (UINT) 0);
 			logModule.Write(L"ReadString empty");
 		}
 		else if (lTempSize > 0) 
@@ -1526,14 +1526,14 @@ STDMETHODIMP STDMETHODCALLTYPE CVariantDictionary::ReadString(IStream *pStream, 
 			}	
 			if (hr == S_OK)
 			{
-				hr = pStream->Read(m_lpstrMulti, lTempSize, NULL);
+				hr = pStream->Read(m_lpstrMulti, lTempSize, nullptr);
 				//because we specify the exact length, writtenbytes is excluding the terminating 0
-				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti, lTempSize, NULL, NULL);	
+				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti, lTempSize, nullptr, 0);	
 				if (writtenbytes == 0)
 					hr = ATL::AtlHresultFromLastError();
 				else
 				{
-					if (::SysReAllocStringLen(retval, NULL, writtenbytes) != FALSE)
+					if (::SysReAllocStringLen(retval, nullptr, writtenbytes) != FALSE)
 						::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti, lTempSize, *retval, writtenbytes);
 					else
 						hr = E_OUTOFMEMORY;

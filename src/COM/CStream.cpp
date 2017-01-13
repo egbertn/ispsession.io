@@ -25,11 +25,11 @@ void CStream::FinalRelease() throw()
 STDMETHODIMP CStream::Read(void* pv, ULONG cb, ULONG *pcbRead) throw()
 {
 	// Check parameters.
-	if (pcbRead != NULL)
+	if (pcbRead != nullptr)
 	{
 		*pcbRead = 0;
 	}
-	if (pv == NULL)
+	if (pv == nullptr)
 	{
 		return STG_E_INVALIDPOINTER;
 	}
@@ -53,7 +53,7 @@ STDMETHODIMP CStream::Read(void* pv, ULONG cb, ULONG *pcbRead) throw()
 	m_iWritePos.QuadPart += cBytesRead;
 
 	// Return bytes read to caller.
-	if (pcbRead != NULL)
+	if (pcbRead != nullptr)
 	{
 		*pcbRead = cBytesRead;
 	}
@@ -64,11 +64,11 @@ STDMETHODIMP CStream::Read(void* pv, ULONG cb, ULONG *pcbRead) throw()
 STDMETHODIMP CStream::Write(const void* pv, ULONG cb, ULONG *pcbWritten) throw()
 {
 	// Check parameters.
-	if (pv == NULL)
+	if (pv == nullptr)
 	{
 		return STG_E_INVALIDPOINTER;
 	}
-	if (pcbWritten != NULL)
+	if (pcbWritten != nullptr)
 	{
 		*pcbWritten = 0;
 	}
@@ -104,7 +104,7 @@ STDMETHODIMP CStream::Write(const void* pv, ULONG cb, ULONG *pcbWritten) throw()
 	m_iWritePos.QuadPart += cb;
 
 	// Return bytes written to caller.
-	if (pcbWritten != NULL)
+	if (pcbWritten != nullptr)
 	{
 		*pcbWritten = cb;
 	}
@@ -147,7 +147,7 @@ STDMETHODIMP CStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGE
 
 		}		
 	}
-	if (plibNewPosition != NULL)
+	if (plibNewPosition != nullptr)
 	{
 		plibNewPosition->QuadPart = m_iWritePos.QuadPart;
 	}
@@ -161,7 +161,7 @@ STDMETHODIMP CStream::SetSize(ULARGE_INTEGER libNewSize)  throw()
 	li = libNewSize;
 	
 	m_ulLength.QuadPart = MEMALIGN_32(li.QuadPart);
-	bool result = m_alloc.m_pData == NULL ? 
+	bool result = m_alloc.m_pData == nullptr ? 
 		m_alloc.AllocateBytes((size_t)m_ulLength.QuadPart) :
 		m_alloc.ReallocateBytes((size_t)m_ulLength.QuadPart);
 	
@@ -200,7 +200,7 @@ STDMETHODIMP CStream::UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD)  throw
 }
 STDMETHODIMP CStream::Stat(STATSTG *pStatstg, DWORD) throw()
 {
-	if (pStatstg == NULL)
+	if (pStatstg == nullptr)
 	{
 		return E_INVALIDARG;
 	}
@@ -218,7 +218,7 @@ STDMETHODIMP CStream::Clone(IStream **) throw()
 //	//logModule.Write(L"get_Pointer");
 //	//TODO:
 //	*pointer = m_alloc.m_pData;
-//	return *pointer == NULL ? E_POINTER : S_OK;
+//	return *pointer == nullptr ? E_POINTER : S_OK;
 //}
 //STDMETHODIMP CStream::put_Pointer(PBYTE pointer) throw()
 //{

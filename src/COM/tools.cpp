@@ -199,6 +199,12 @@ STDMETHODIMP ReadDllConfig(BSTR * strConstruct, LONG *lTimeOutSetting, /*BOOL *h
 		OutputDebugStringA("Severe error, CSession.dll.Config not found, therefore exiting\r\n");
 		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
 	}
+	key.SetLength(512);
+	auto stored = ::GetEnvironmentVariableW(*strConstruct, key, 512);
+	if (stored > 0)
+	{
+		SysReAllocStringLen(strConstruct, key, stored);
+	}
 	key = L"ispsession_io:SessionTimeout";
 	val.Attach(config.AppSettings(key, L"20"));
 	if (val.Length() > 0 && val.IsNumeric())

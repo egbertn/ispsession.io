@@ -166,7 +166,9 @@ public:
 		std::string pw;
 		std::wstring database;
 		int databaseNo = 0;
-		auto passwordPos = std::find_if(arr.begin(), arr.end(), [](const std::wstring& str) { return str.find(L"password") == 0; });
+		auto passwordPos = std::find_if(arr.begin(), arr.end(), [](const std::wstring& str) { 
+			return str.find(L"password") == 0; }
+		);
 		std::vector<std::wstring> arr2;
 		if (passwordPos != arr.end())
 		{
@@ -176,7 +178,9 @@ public:
 			arr2.clear();
 		}
 		
-		auto databasePos = std::find_if(arr.begin(), arr.end(), [](const std::wstring& str) { return str.find(L"database") == 0; });
+		auto databasePos = std::find_if(arr.begin(), arr.end(), [](const std::wstring& str) { 
+			return str.find(L"database") == 0 || str.find(L"defaultDatabase") == 0; }
+		);
 		if (databasePos != arr.end())
 		{
 			split(*databasePos, '=', arr2);

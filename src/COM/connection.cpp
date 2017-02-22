@@ -6,7 +6,7 @@
 
 using namespace redis3m;
 
-connection::connection(const std::string& host, const unsigned port)
+connection::connection(const std::string& host, const unsigned port/*, const std::string& password*/)
 {
     c = redisConnect(host.c_str(), port);
     if (c->err != REDIS_OK)
@@ -14,6 +14,21 @@ connection::connection(const std::string& host, const unsigned port)
         redisFree(c);
         throw unable_to_connect();
     }
+	//if (!password.empty())
+	//{
+	//	redisReply *reply = (redisReply*)redisCommand(c, "AUTH %s", password.c_str());
+	//	auto status = false; 
+	//	if (reply != nullptr)
+	//	{
+	//		status = reply->type == REDIS_REPLY_STRING;
+	//		freeReplyObject(reply);
+	//	}		
+
+	//	if (status == false)
+	//	{
+	//		throw unable_to_connect("authentication error");
+	//	}
+	//}
 }
 
 connection::connection(const std::string& path)

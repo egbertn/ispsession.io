@@ -33,10 +33,18 @@ connection::ptr_t simple_pool::get()
             ret = connection::create(_host, _port);
         //}
         // Setup connections selecting db
-        if (_database != 0)
-        {
-            ret->run(command("SELECT") << _database);
-        }
+			if (!_password.empty())
+			{
+				auto response = ret->run(command("AUTH") << _password );
+				if (response.type() == reply::type_t::_ERROR)
+				{					
+					ret.reset();
+				}
+			}
+			if (_database != 0 && ret)
+			{
+				auto response = ret->run(command("SELECT") << _database);
+			}
     }
 	_access_mutex.Leave();
     return ret;
@@ -54,10 +62,11 @@ void simple_pool::put(connection::ptr_t conn)
     }
 }
 
-simple_pool::simple_pool(const std::string &host, unsigned int port):
+simple_pool::simple_pool(const std::string &host, unsigned int port, const std::string& password):
     _host(host),
     _port(port),
-    _database(0)
+    _database(0),
+	_password(password)
 {
 
 }

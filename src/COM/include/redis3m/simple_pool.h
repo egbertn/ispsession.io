@@ -24,9 +24,9 @@ public:
     typedef std::shared_ptr<simple_pool> ptr_t;
     REDIS3M_EXCEPTION(too_much_retries)
 
-    static inline ptr_t create(const std::string& host="localhost", unsigned int port=6379)
+    static inline ptr_t create(const std::string& host="localhost", unsigned int port=6379, const std::string& password=nullptr)
     {
-        return ptr_t(new simple_pool(host, port));
+        return ptr_t(new simple_pool(host, port, password));
     }
     
     static inline ptr_t create_unix(const std::string& path)
@@ -85,10 +85,11 @@ public:
 
 private:
     simple_pool(const std::string& path);
-    simple_pool(const std::string& host, unsigned int port);
+    simple_pool(const std::string& host, unsigned int port, const std::string& password);
 
     std::string _path;
     std::string _host;
+	std::string _password;
     unsigned int _port;
     unsigned int _database;
 };

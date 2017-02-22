@@ -8,7 +8,7 @@
 #include "CStream.h"
 #include <sstream>
 #include <vector>
-
+#include <string>
 #include <algorithm> 
 #include <functional> 
 #include <cctype>
@@ -64,18 +64,39 @@ public:
 		std::not1(std::ptr_fun<int, int>(std::isspace))));
 	return s;
 }
-
+ std::string& __stdcall ltrim(std::string &s) {
+	 s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+		 std::not1(std::ptr_fun<int, int>(std::isspace))));
+	 return s;
+ }
 // trim from end
  std::wstring& __stdcall rtrim(std::wstring &s) {
 	s.erase(std::find_if(s.rbegin(), s.rend(),
 		std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 	return s;
 }
+ std::string& __stdcall rtrim(std::string &s) {
+	 s.erase(std::find_if(s.rbegin(), s.rend(),
+		 std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+	 return s;
+ }
 
 // trim from both ends
  std::wstring& __stdcall trim(std::wstring &s) {
 	return ltrim(rtrim(s));
 }
+ std::string& __stdcall trim(std::string &s) {
+	 return ltrim(rtrim(s));
+ }
+ void split(const std::string &s, char delim, std::vector<std::string> &elems)
+ {
+	 std::stringstream ss;
+	 ss.str(s);
+	 std::string item;
+	 while (std::getline(ss, item, delim)) {
+		 elems.push_back(trim(item));
+	 }
+ }
 void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elems) 
 {
 	std::wstringstream ss;
@@ -140,8 +161,28 @@ public:
 	{
 		logModule.Write(L"Connection string %s", constructor.c_str());
 		std::vector<std::wstring> arr;
-		split(constructor, ',', arr);
+		split(constructor, L',', arr);
 		const auto arrSize = arr.size();
+		std::string pw;
+		std::wstring database;
+		int databaseNo = 0;
+		auto passwordPos = std::find_if(arr.begin(), arr.end(), [](const std::wstring& str) { return str.find(L"password") == 0; });
+		std::vector<std::wstring> arr2;
+		if (passwordPos != arr.end())
+		{
+			split(*passwordPos, '=', arr2);
+			trim(arr2.at(1));
+			pw.assign(arr2.at(1).begin(), arr2.at(1).end());
+			arr2.clear();
+		}
+		
+		auto databasePos = std::find_if(arr.begin(), arr.end(), [](const std::wstring& str) { return str.find(L"database") == 0; });
+		if (databasePos != arr.end())
+		{
+			split(*databasePos, '=', arr2);
+			trim(arr2.at(1));			
+			databaseNo = std::stoi(arr2.at(1));
+		}
 		if (arrSize > 0)
 		{
 			std::vector<std::wstring> portandhost;
@@ -160,7 +201,12 @@ public:
 				try
 				{
 					//convert wstring to string by using begin() and end(), pointing at char*
-					retVal = simple_pool::create(std::string(host.begin(), host.end()), portParsed);
+					retVal = simple_pool::create(std::string(host.begin(), host.end()), portParsed, pw);
+					if (databaseNo > 0)
+					{
+						logModule.Write(L"Set Database to %d", databaseNo);
+						retVal->set_database(databaseNo);
+					}
 					return true;
 				}
 				catch (too_much_retries ex)

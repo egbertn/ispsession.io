@@ -976,7 +976,7 @@ STDMETHODIMP NWCSession::put_Readonly(VARIANT_BOOL newVal)  throw()
 // Inits database
 STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 {
-    if (bErrState == TRUE) return S_OK;
+    if (bErrState == TRUE) return E_FAIL;
 	
     HRESULT hr = S_OK;
 	

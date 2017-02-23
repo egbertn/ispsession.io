@@ -38,12 +38,17 @@ connection::ptr_t simple_pool::get()
 				auto response = ret->run(command("AUTH") << _password );
 				if (response.type() == reply::type_t::_ERROR)
 				{					
+					logModule.Write(L"AUTH failed %s", response.str());
 					ret.reset();
 				}
 			}
 			if (_database != 0 && ret)
 			{
 				auto response = ret->run(command("SELECT") << _database);
+				if (response.type() == reply::type_t::_ERROR)
+				{
+					logModule.Write(L"SELECT database %s", response.str());
+				}
 			}
     }
 	_access_mutex.Leave();

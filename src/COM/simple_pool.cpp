@@ -35,16 +35,16 @@ connection::ptr_t simple_pool::get()
         // Setup connections selecting db
 			if (!_password.empty())
 			{
-				auto response = ret->run(command("AUTH") << _password );
+				auto response = ret->run(command("AUTH") (_password ));
 				if (response.type() == reply::type_t::_ERROR)
 				{					
-					logModule.Write(L"AUTH failed %s", response.str());
+					logModule.Write(L"AUTH failed");
 					ret.reset();
 				}
 			}
-			if (_database != 0 && ret)
+			if (_database != 0 && ret != connection::ptr_t())
 			{
-				auto response = ret->run(command("SELECT") << _database);
+				auto response = ret->run(command("SELECT")( _database));
 				if (response.type() == reply::type_t::_ERROR)
 				{
 					logModule.Write(L"SELECT database %s", response.str());

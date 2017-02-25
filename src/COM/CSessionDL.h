@@ -88,23 +88,41 @@ public:
  std::string& __stdcall trim(std::string &s) {
 	 return ltrim(rtrim(s));
  }
- void split(const std::string &s, char delim, std::vector<std::string> &elems)
- {
-	 std::stringstream ss;
-	 ss.str(s);
-	 std::string item;
-	 while (std::getline(ss, item, delim)) {
-		 elems.push_back(trim(item));
-	 }
- }
-void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elems) 
+ //void split(const std::string &s, char delim, std::vector<std::string> &elems, int maxCount = 0)
+ //{
+	// std::stringstream ss;
+	// ss.str(s);
+	// std::string item;
+	// int maxC = 0;
+	// while ((std::getline(ss, item, delim) && (maxCount == 0 || (maxC++<maxCount)))) {
+	//	 elems.push_back(trim(item));
+	// }
+ //}
+ void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elems, int maxCount = 0)
 {
-	std::wstringstream ss;
-	ss.str(s);
-	std::wstring item;
-	while (std::getline(ss, item, delim)) {
-		elems.push_back(trim(item));
+	if (s.empty())
+	{
+		return;
 	}
+	auto n = std::count(s.begin(), s.end(), delim);
+	if (maxCount > 0 && maxCount > n)
+	{
+		n = maxCount;
+	}
+	//elems.resize(n);
+	if (n == 0)
+	{
+		elems.push_back(s);
+		return;
+	}
+	size_t pos = 0;
+	for (int x = 0; x <= n; x++)
+	{
+		auto newPos = s.find(delim, pos);
+		elems.push_back(trim(newPos != std::string::npos && (x < maxCount || maxCount == 0) ? s.substr(pos, newPos - pos) : s.substr(pos)));
+		pos = newPos + 1;
+	}
+
 }
 //todo: fire and forget? Nice improvement
 // binary data like this "$6\r\nfoobar\r\n" (without the quotes). The bytes need no encoding or escaping.
@@ -172,7 +190,7 @@ public:
 		std::vector<std::wstring> arr2;
 		if (passwordPos != arr.end())
 		{
-			split(*passwordPos, '=', arr2);
+			split(*passwordPos, '=', arr2, 1);
 			trim(arr2.at(1));
 			pw.assign(arr2.at(1).begin(), arr2.at(1).end());
 			arr2.clear();
@@ -423,6 +441,11 @@ public:
 		ansi.append(skey);
 
 		auto conn = pool->get();
+		if (conn == redis3m::connection::ptr_t())
+		{ 
+			pool->put(conn);
+			return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
+		}
 		auto repl = conn->run(command("GET")(ansi));
 
 	

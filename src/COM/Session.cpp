@@ -994,6 +994,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 		if (FAILED(hr))
 		{
 			logModule.Write(L"db: pgetSession.OpenRowset(g_dc) %x", hr);
+			this->bErrState = TRUE;
 			ReportComError2(hr, location);
 			goto error;
 		}		

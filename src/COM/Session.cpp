@@ -17,7 +17,7 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) throw()
 	HRESULT hr = aspsvc->QueryInterface(&m_pictx);
 	if (FAILED(hr))
 	{
-		this->Error(L"Could not get ASP Scripting context", __uuidof(IScriptingContext), hr);
+		this->Error(L"Could not get ASP Scripting context", this->GetObjectCLSID(), hr);
 		return hr;
 	}
 	if (FAILED(m_pictx->get_Request(&m_piRequest))) return E_FAIL;
@@ -337,6 +337,7 @@ STDMETHODIMP NWCSession::Initialize() throw()
 	if (FAILED(hr))
 	{
 		ReportComError2(hr, L"Session Activate");
+		Error(L"Session Activate", this->GetObjectCLSID(), hr);
 		bErrState = TRUE;
 	}
 	return hr;
@@ -963,7 +964,7 @@ STDMETHODIMP NWCSession::put_Readonly(VARIANT_BOOL newVal)  throw()
 		if (isDirty == TRUE && newVal == VARIANT_TRUE)
 		{
 			hr = E_FAIL;
-			Error(L"Session is already modified", __uuidof(ISessionObject), hr);
+			Error(L"Session is already modified", this->GetObjectCLSID(), hr);
 			return hr;
 		}
 		hr = m_piVarDict->put_Readonly(newVal);

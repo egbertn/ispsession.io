@@ -441,10 +441,10 @@ public:
 		ansi.append(skey);
 
 		auto conn = pool->get();
-		if (conn == redis3m::connection::ptr_t())
+		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
 		{ 
-			pool->put(conn);
-			return HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED);
+			
+			return E_ACCESSDENIED;
 		}
 		auto repl = conn->run(command("GET")(ansi));
 

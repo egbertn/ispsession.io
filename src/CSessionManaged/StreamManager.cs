@@ -850,12 +850,12 @@ namespace ispsession.io
         {
             if (string.IsNullOrEmpty(h))
             {
-                throw new ArgumentNullException(nameof(h), "Id cannot be empty");
+                throw new ArgumentNullException("h", "Id cannot be empty");
             }
             var number_of_characters = h.Length;
             if (number_of_characters != 32)
             {
-                throw new ArgumentException("Id length must be 32",nameof(h));
+                throw new ArgumentException("Id length must be 32","h");
             }
             
             var bytes = new byte[number_of_characters / 2]; // Initialize our byte array to hold the converted string.

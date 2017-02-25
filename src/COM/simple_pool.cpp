@@ -38,7 +38,7 @@ connection::ptr_t simple_pool::get()
 				auto response = ret->run(command("AUTH") << _password );
 				if (response.type() == reply::type_t::_ERROR)
 				{					
-					logModule.Write(L"AUTH failed");
+					logModule.Write(L"AUTH failed %s", response.str());
 					ret.reset();
 				}
 			}

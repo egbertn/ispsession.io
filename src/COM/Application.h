@@ -3,6 +3,7 @@
 #include "CSession.h"
 #include "message.h"
 #include "CVariantDictionary.h"
+#include "tools.h"
 
 class ATL_NO_VTABLE NWCApplication :
 	public CComObjectRootEx<CComMultiThreadModel>,
@@ -22,6 +23,7 @@ public:
 	END_COM_MAP()
 	HRESULT FinalConstruct() throw()
 	{
+		m_OnStartPageCalled = FALSE;
 
 	}
 	void FinalRelease() throw()
@@ -31,7 +33,16 @@ public:
 private:
 	CComPtr<IScriptingContext> m_pScriptContext;
 	CComObject<CVariantDictionary> *m_piVarDict;
+	CComPtr<IRequest> m_piRequest;
+	CComPtr<IResponse> m_piResponse;
+	CComPtr<IServer> m_piServer;
+
 	GUID m_AppKey;
+	BOOL m_OnStartPageCalled ;
+
+	STDMETHODIMP OnStartPage(IUnknown* pctx);
+	STDMETHODIMP OnEndPage();
+
 public:
 	STDMETHODIMP get_Value(BSTR bstrValue, VARIANT* pvar);
 	STDMETHODIMP put_Value(BSTR bstrValue, VARIANT var);

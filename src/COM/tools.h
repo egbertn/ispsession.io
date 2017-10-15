@@ -2,6 +2,27 @@
 // April, 26 2009 added because of a code clean up
 
 #pragma once
+#include <sstream>
+#include <vector>
+#include <string>
+#include <algorithm> 
+#include <functional> 
+#include <cctype>
+#include <locale>
+
+std::wstring& __stdcall ltrim(std::wstring &s);
+std::string& __stdcall ltrim(std::string &s);
+// trim from end
+std::wstring& __stdcall rtrim(std::wstring &s);
+std::string& __stdcall rtrim(std::string &s);
+
+// trim from both ends
+std::wstring& __stdcall trim(std::wstring &s);
+std::string& __stdcall trim(std::string &s);
+
+void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elems, int maxCount = 0);
+
+
 
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName);
 void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[], int els);

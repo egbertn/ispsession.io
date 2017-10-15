@@ -6,13 +6,7 @@
 #include "tools.h"
 #include "CSession.h"
 #include "CStream.h"
-#include <sstream>
-#include <vector>
-#include <string>
-#include <algorithm> 
-#include <functional> 
-#include <cctype>
-#include <locale>
+
 
 //initializes from SystemTime
 struct DBTIMESTAMP 
@@ -59,71 +53,6 @@ public:
 
 };
 // trim from start
- std::wstring& __stdcall ltrim(std::wstring &s) {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-		std::not1(std::ptr_fun<int, int>(std::isspace))));
-	return s;
-}
- std::string& __stdcall ltrim(std::string &s) {
-	 s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-		 std::not1(std::ptr_fun<int, int>(std::isspace))));
-	 return s;
- }
-// trim from end
- std::wstring& __stdcall rtrim(std::wstring &s) {
-	s.erase(std::find_if(s.rbegin(), s.rend(),
-		std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	return s;
-}
- std::string& __stdcall rtrim(std::string &s) {
-	 s.erase(std::find_if(s.rbegin(), s.rend(),
-		 std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
-	 return s;
- }
-
-// trim from both ends
- std::wstring& __stdcall trim(std::wstring &s) {
-	return ltrim(rtrim(s));
-}
- std::string& __stdcall trim(std::string &s) {
-	 return ltrim(rtrim(s));
- }
- //void split(const std::string &s, char delim, std::vector<std::string> &elems, int maxCount = 0)
- //{
-	// std::stringstream ss;
-	// ss.str(s);
-	// std::string item;
-	// int maxC = 0;
-	// while ((std::getline(ss, item, delim) && (maxCount == 0 || (maxC++<maxCount)))) {
-	//	 elems.push_back(trim(item));
-	// }
- //}
- void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elems, int maxCount = 0)
-{
-	if (s.empty())
-	{
-		return;
-	}
-	auto n = std::count(s.begin(), s.end(), delim);
-	if (maxCount > 0 && maxCount > n)
-	{
-		n = maxCount;
-	}
-	//elems.resize(n);
-	if (n == 0)
-	{
-		elems.push_back(s);
-		return;
-	}
-	size_t pos = 0;
-	for (int x = 0; x <= n; x++)
-	{
-		auto newPos = s.find(delim, pos);
-		elems.push_back(trim(newPos != std::string::npos && (x < maxCount || maxCount == 0) ? s.substr(pos, newPos - pos) : s.substr(pos)));
-		pos = newPos + 1;
-	}
-
-}
 //todo: fire and forget? Nice improvement
 // binary data like this "$6\r\nfoobar\r\n" (without the quotes). The bytes need no encoding or escaping.
 // however, all strings are binary safe so escaping it as 'binary' is not necessary

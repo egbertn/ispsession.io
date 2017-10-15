@@ -368,6 +368,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Application.cpp" />
     <ClCompile Include="CVariantDictionary.cpp" />
     <ClCompile Include="ADCLogModule.cpp" />
     <ClCompile Include="bstrnocache.cpp">
@@ -478,6 +479,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Application.rgs" />
     <None Include="CSession.config">
       <SubType>Designer</SubType>
     </None>
@@ -503,6 +505,7 @@
     <Midl Include="CSession.idl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Application.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ADCLogModule.h" />
     <ClInclude Include="bstrnocache.h" />

@@ -4,7 +4,7 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Thu Dec 29 14:41:09 2016
+/* at Sun Oct 15 12:17:32 2017
  */
 /* Compiler settings for CSession.idl:
     Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
@@ -73,6 +73,13 @@ typedef interface INWCSession INWCSession;
 #endif 	/* __INWCSession_FWD_DEFINED__ */
 
 
+#ifndef __INWCApplicationObject_FWD_DEFINED__
+#define __INWCApplicationObject_FWD_DEFINED__
+typedef interface INWCApplicationObject INWCApplicationObject;
+
+#endif 	/* __INWCApplicationObject_FWD_DEFINED__ */
+
+
 #ifndef __CVariantDictionary_FWD_DEFINED__
 #define __CVariantDictionary_FWD_DEFINED__
 
@@ -95,6 +102,18 @@ typedef struct NWCSession NWCSession;
 #endif /* __cplusplus */
 
 #endif 	/* __NWCSession_FWD_DEFINED__ */
+
+
+#ifndef __NWCApplication_FWD_DEFINED__
+#define __NWCApplication_FWD_DEFINED__
+
+#ifdef __cplusplus
+typedef class NWCApplication NWCApplication;
+#else
+typedef struct NWCApplication NWCApplication;
+#endif /* __cplusplus */
+
+#endif 	/* __NWCApplication_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -1266,6 +1285,198 @@ EXTERN_C const IID IID_INWCSession;
 #endif 	/* __INWCSession_INTERFACE_DEFINED__ */
 
 
+#ifndef __INWCApplicationObject_INTERFACE_DEFINED__
+#define __INWCApplicationObject_INTERFACE_DEFINED__
+
+/* interface INWCApplicationObject */
+/* [unique][oleautomation][dual][uuid][object] */ 
+
+
+EXTERN_C const IID IID_INWCApplicationObject;
+
+#if defined(__cplusplus) && !defined(CINTERFACE)
+    
+    MIDL_INTERFACE("D97A6DA0-A866-11cf-83AE-10A0C90C2BD9")
+    INWCApplicationObject : public IDispatch
+    {
+    public:
+        virtual /* [id][propget] */ HRESULT STDMETHODCALLTYPE get_Value( 
+            /* [in] */ BSTR bstrValue,
+            /* [retval][out] */ VARIANT *pvar) = 0;
+        
+        virtual /* [id][propput] */ HRESULT STDMETHODCALLTYPE put_Value( 
+            /* [in] */ BSTR bstrValue,
+            /* [in] */ VARIANT var) = 0;
+        
+        virtual /* [id][propputref] */ HRESULT STDMETHODCALLTYPE putref_Value( 
+            /* [in] */ BSTR bstrValue,
+            /* [in] */ VARIANT var) = 0;
+        
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Lock( void) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE UnLock( void) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_StaticObjects( 
+            /* [retval][out] */ INWCVariantDictionary **ppProperties) = 0;
+        
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Contents( 
+            /* [retval][out] */ INWCVariantDictionary **ppProperties) = 0;
+        
+    };
+    
+    
+#else 	/* C style interface */
+
+    typedef struct INWCApplicationObjectVtbl
+    {
+        BEGIN_INTERFACE
+        
+        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
+            INWCApplicationObject * This,
+            /* [in] */ REFIID riid,
+            /* [annotation][iid_is][out] */ 
+            _COM_Outptr_  void **ppvObject);
+        
+        ULONG ( STDMETHODCALLTYPE *AddRef )( 
+            INWCApplicationObject * This);
+        
+        ULONG ( STDMETHODCALLTYPE *Release )( 
+            INWCApplicationObject * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
+            INWCApplicationObject * This,
+            /* [out] */ UINT *pctinfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
+            INWCApplicationObject * This,
+            /* [in] */ UINT iTInfo,
+            /* [in] */ LCID lcid,
+            /* [out] */ ITypeInfo **ppTInfo);
+        
+        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
+            INWCApplicationObject * This,
+            /* [in] */ REFIID riid,
+            /* [size_is][in] */ LPOLESTR *rgszNames,
+            /* [range][in] */ UINT cNames,
+            /* [in] */ LCID lcid,
+            /* [size_is][out] */ DISPID *rgDispId);
+        
+        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
+            INWCApplicationObject * This,
+            /* [annotation][in] */ 
+            _In_  DISPID dispIdMember,
+            /* [annotation][in] */ 
+            _In_  REFIID riid,
+            /* [annotation][in] */ 
+            _In_  LCID lcid,
+            /* [annotation][in] */ 
+            _In_  WORD wFlags,
+            /* [annotation][out][in] */ 
+            _In_  DISPPARAMS *pDispParams,
+            /* [annotation][out] */ 
+            _Out_opt_  VARIANT *pVarResult,
+            /* [annotation][out] */ 
+            _Out_opt_  EXCEPINFO *pExcepInfo,
+            /* [annotation][out] */ 
+            _Out_opt_  UINT *puArgErr);
+        
+        /* [id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Value )( 
+            INWCApplicationObject * This,
+            /* [in] */ BSTR bstrValue,
+            /* [retval][out] */ VARIANT *pvar);
+        
+        /* [id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Value )( 
+            INWCApplicationObject * This,
+            /* [in] */ BSTR bstrValue,
+            /* [in] */ VARIANT var);
+        
+        /* [id][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Value )( 
+            INWCApplicationObject * This,
+            /* [in] */ BSTR bstrValue,
+            /* [in] */ VARIANT var);
+        
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Lock )( 
+            INWCApplicationObject * This);
+        
+        HRESULT ( STDMETHODCALLTYPE *UnLock )( 
+            INWCApplicationObject * This);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_StaticObjects )( 
+            INWCApplicationObject * This,
+            /* [retval][out] */ INWCVariantDictionary **ppProperties);
+        
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Contents )( 
+            INWCApplicationObject * This,
+            /* [retval][out] */ INWCVariantDictionary **ppProperties);
+        
+        END_INTERFACE
+    } INWCApplicationObjectVtbl;
+
+    interface INWCApplicationObject
+    {
+        CONST_VTBL struct INWCApplicationObjectVtbl *lpVtbl;
+    };
+
+    
+
+#ifdef COBJMACROS
+
+
+#define INWCApplicationObject_QueryInterface(This,riid,ppvObject)	\
+    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
+
+#define INWCApplicationObject_AddRef(This)	\
+    ( (This)->lpVtbl -> AddRef(This) ) 
+
+#define INWCApplicationObject_Release(This)	\
+    ( (This)->lpVtbl -> Release(This) ) 
+
+
+#define INWCApplicationObject_GetTypeInfoCount(This,pctinfo)	\
+    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
+
+#define INWCApplicationObject_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
+    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
+
+#define INWCApplicationObject_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
+    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
+
+#define INWCApplicationObject_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
+    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
+
+
+#define INWCApplicationObject_get_Value(This,bstrValue,pvar)	\
+    ( (This)->lpVtbl -> get_Value(This,bstrValue,pvar) ) 
+
+#define INWCApplicationObject_put_Value(This,bstrValue,var)	\
+    ( (This)->lpVtbl -> put_Value(This,bstrValue,var) ) 
+
+#define INWCApplicationObject_putref_Value(This,bstrValue,var)	\
+    ( (This)->lpVtbl -> putref_Value(This,bstrValue,var) ) 
+
+#define INWCApplicationObject_Lock(This)	\
+    ( (This)->lpVtbl -> Lock(This) ) 
+
+#define INWCApplicationObject_UnLock(This)	\
+    ( (This)->lpVtbl -> UnLock(This) ) 
+
+#define INWCApplicationObject_get_StaticObjects(This,ppProperties)	\
+    ( (This)->lpVtbl -> get_StaticObjects(This,ppProperties) ) 
+
+#define INWCApplicationObject_get_Contents(This,ppProperties)	\
+    ( (This)->lpVtbl -> get_Contents(This,ppProperties) ) 
+
+#endif /* COBJMACROS */
+
+
+#endif 	/* C style interface */
+
+
+
+
+#endif 	/* __INWCApplicationObject_INTERFACE_DEFINED__ */
+
+
 
 #ifndef __ISPCSession_LIBRARY_DEFINED__
 #define __ISPCSession_LIBRARY_DEFINED__
@@ -1290,6 +1501,14 @@ EXTERN_C const CLSID CLSID_NWCSession;
 
 class DECLSPEC_UUID("D64ABC73-3B0E-4E85-92CD-215B03CAC996")
 NWCSession;
+#endif
+
+EXTERN_C const CLSID CLSID_NWCApplication;
+
+#ifdef __cplusplus
+
+class DECLSPEC_UUID("D64ABC73-3B0E-4E85-92CD-215B03CAC998")
+NWCApplication;
 #endif
 #endif /* __ISPCSession_LIBRARY_DEFINED__ */
 

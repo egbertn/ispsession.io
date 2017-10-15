@@ -129,8 +129,24 @@ interface INWCSession : IDispatch
 
 };
 
+[
+	object,
+	uuid(D97A6DA0-A866-11cf-83AE-10A0C90C2BD9),
+	dual,
+	oleautomation,
+	pointer_default(unique)
 
-
+]
+interface INWCApplicationObject : IDispatch
+{
+	[propget, id(0)] HRESULT Value([in] BSTR bstrValue, [out, retval] VARIANT* pvar);
+	[propput, id(0)] HRESULT Value([in] BSTR bstrValue, [in] VARIANT var);
+	[propputref, id(0)] HRESULT Value([in] BSTR bstrValue, [in] VARIANT var);
+	[helpstring("Locks the application object for unique access. Carefull, this potentially locks down your website")] HRESULT Lock();
+	HRESULT UnLock();
+	[propget] HRESULT StaticObjects([out, retval] INWCVariantDictionary **ppProperties);
+	[propget] HRESULT Contents([out, retval] INWCVariantDictionary **ppProperties);
+};
 
 [ version(1.0), uuid(A51465F8-E60A-4645-8DFE-F0F1DE91DC80), helpstring("CSession 1.0 Type Library") ]
 library ISPCSession
@@ -155,7 +171,7 @@ library ISPCSession
 		aggregatable,
 		version(1.0),
 		uuid(D64ABC73-3B0E-4E85-92CD-215B03CAC996),		
-		helpstring("Classic ASP Session replacement & ASP.NET compatibility layer")
+		helpstring("Classic ASP Session replacement")
 	] 
 
 	coclass NWCSession 
@@ -163,5 +179,14 @@ library ISPCSession
 		interface INWCSession;
 	};
 
-	
+	[
+		aggregatable,
+		version(1.0),
+		uuid(D64ABC73-3B0E-4E85-92CD-215B03CAC998),
+		helpstring("Classic ASP Application replacement object")
+	]
+	coclass NWCApplication
+	{
+		interface INWCApplicationObject;
+	};
 }

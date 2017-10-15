@@ -7,7 +7,7 @@
 #define Demo
 // defines for ISP Session tiny edition
 //#define AppKeyNULL
-#define EXPIREAT (42824L) // ie: 30/03/2017
+#define EXPIREAT (43038) // ie: 30/oct/2017
 #define MAXINSTANCES 1000
 #define STRICT
 #define UNICODE

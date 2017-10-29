@@ -3,6 +3,7 @@
 #include "CSession.h"
 #include "message.h"
 #include "CVariantDictionary.h"
+#include <atlsync.h>
 #include "tools.h"
 
 class ATL_NO_VTABLE NWCApplication :
@@ -21,13 +22,24 @@ public:
 		COM_INTERFACE_ENTRY(IDispatch)
 		COM_INTERFACE_ENTRY(ISupportErrorInfo)
 	END_COM_MAP()
+
 	HRESULT FinalConstruct() throw()
 	{
 		m_OnStartPageCalled = FALSE;
-
+		HRESULT hr = S_OK;
+		//early creation not in initialize!
+		if (CComObject<CVariantDictionary>::CreateInstance(&m_piVarDict) == S_OK)
+		{
+			// refcount becomes 1 ...
+			hr = m_piVarDict->AddRef();
+		}
 	}
 	void FinalRelease() throw()
 	{
+		m_piResponse.Release();
+		m_piServer.Release();
+		m_piRequest.Release();
+		m_pScriptContext.Release();
 
 	}
 private:
@@ -36,20 +48,25 @@ private:
 	CComPtr<IRequest> m_piRequest;
 	CComPtr<IResponse> m_piResponse;
 	CComPtr<IServer> m_piServer;
+	CMutex m_hMutex;
 
 	GUID m_AppKey;
 	BOOL m_OnStartPageCalled ;
 
 	STDMETHODIMP OnStartPage(IUnknown* pctx);
 	STDMETHODIMP OnEndPage();
+	STDMETHODIMP ReadConfigFromWebConfig();
+	STDMETHODIMP InitializeDataSource();
 
 public:
-	STDMETHODIMP get_Value(BSTR bstrValue, VARIANT* pvar);
-	STDMETHODIMP put_Value(BSTR bstrValue, VARIANT var);
-	STDMETHODIMP putref_Value(BSTR bstrValue, VARIANT var);
-	STDMETHODIMP Lock();
-	STDMETHODIMP UnLock();
-	STDMETHODIMP StaticObjects(INWCVariantDictionary **ppProperties);
-	STDMETHODIMP Contents( INWCVariantDictionary **ppProperties);
+	STDMETHOD (get_Value)(BSTR bstrValue, VARIANT* pvar);
+	STDMETHOD( put_Value)(BSTR bstrValue, VARIANT var);
+	STDMETHOD( putref_Value)(BSTR bstrValue, VARIANT var);
+	STDMETHOD( Lock)();
+	STDMETHOD( UnLock)();
+	STDMETHOD( get_StaticObjects)(INWCVariantDictionary **ppProperties);
+	STDMETHOD( get_Contents)( INWCVariantDictionary **ppProperties);
 
 };
+
+OBJECT_ENTRY_AUTO(CLSID_NWCApplication, NWCApplication)

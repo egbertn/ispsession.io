@@ -5,6 +5,7 @@
 #include "application.h"
 #include "CStream.h"
 #include "tools.h"
+
 STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 {
 	logModule.Write(L"OnStartPage");
@@ -28,7 +29,7 @@ STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 	}
 
 	m_OnStartPageCalled = TRUE;
-	hr = Initialize();
+	hr = InitializeDataSource();
 	
 	if (hr == S_FALSE)
 	{
@@ -44,23 +45,56 @@ STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 	return hr;
 
 }
-STDMETHODIMP NWCApplication::get_Value(BSTR bstrValue, VARIANT* pvar) throw()
+STDMETHODIMP NWCApplication::get_Value(BSTR vkey, VARIANT* pVal) throw()
 {
-	return S_OK;
+	HRESULT hr = S_OK;
+	if (m_piVarDict != nullptr)
+	{
+		VARIANT vtemp = { 0 };
+		vtemp.vt = VT_BSTR;
+		vtemp.bstrVal = vkey;
+		hr = m_piVarDict->get_Item(vtemp, pVal);
+	}
+	else
+		hr = E_POINTER;
+	return hr;
 }
 
-STDMETHODIMP NWCApplication::put_Value(BSTR bstrValue, VARIANT var) throw()
+STDMETHODIMP NWCApplication::put_Value(BSTR vkey, VARIANT newVal) throw()
 {
-	return S_OK;
+	HRESULT hr = S_OK;
+	if (m_piVarDict != nullptr)
+	{
+		VARIANT vtemp = { 0 };
+		vtemp.vt = VT_BSTR;
+		vtemp.bstrVal = vkey;
+		hr = m_piVarDict->put_Item(vtemp, newVal);
+	}
+	else
+		hr = E_POINTER;
+	return hr;
 }
 
-STDMETHODIMP NWCApplication::putref_Value(BSTR bstrValue, VARIANT var) throw()
+STDMETHODIMP NWCApplication::putref_Value(BSTR vkey, VARIANT newVal) throw()
 {
-	return S_OK;
+	HRESULT hr = S_OK;
+	if (m_piVarDict != nullptr)
+	{
+		VARIANT vtemp = { 0 };
+		vtemp.vt = VT_BSTR;
+		vtemp.bstrVal = vkey;
+		hr = m_piVarDict->putref_Item(vtemp, newVal);
+	}
+	else
+		hr = E_FAIL;
+	return hr;
 }
 
 STDMETHODIMP NWCApplication::Lock() throw()
 {//will perform a PUT [Guid]:lock 1 command to redis 2.2+
+	CComBSTR appKey(m_AppKey);
+	//m_hMutex = ATL::CMutex(NULL, FALSE, appKey);
+	//DWORD result = ::WaitForSingleObject(m_hMutex, 5000);
 	return S_OK;
 }
 
@@ -70,12 +104,85 @@ STDMETHODIMP NWCApplication::UnLock() throw()
 	return S_OK;
 }
 
-STDMETHODIMP NWCApplication::StaticObjects(INWCVariantDictionary **ppProperties) throw()
+STDMETHODIMP NWCApplication::get_StaticObjects(INWCVariantDictionary **ppProperties) throw()
 {
 	this->Error(L"Static objects are not supported by this component", CLSID_NWCApplication, E_NOTIMPL);
 	return E_NOTIMPL;
 }
-STDMETHODIMP NWCApplication::Contents(INWCVariantDictionary **ppProperties) throw()
+STDMETHODIMP NWCApplication::get_Contents(INWCVariantDictionary **ppProperties) throw()
+{
+	return S_OK;
+}
+
+STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
+{
+	HRESULT hr = S_OK;
+	CComBSTR retVal, configFile(L"/web.Config");
+	///traverse back to root if necessary, note, UNC paths are not advisable
+	CComBSTR root;
+	bool exists = false;
+	hr = m_piServer->MapPath(configFile, &root);
+	configFile.Insert(0, L".");
+	//IIS Setting 'enable parent paths' must be enabled
+	for (;;)
+	{
+		retVal.Empty();
+		hr = m_piServer->MapPath(configFile, &retVal);
+		if (FAILED(hr))
+		{
+			break;
+		}
+		if ((exists = FileExists(retVal)) == true)
+		{
+			break;
+		}
+		logModule.Write(L"logic %s, phys %s", configFile, retVal);
+		//avoid going beyond the root of this IIS website
+		if (CComBSTR::Compare(retVal, root, true, false, false) == 0)
+		{
+			break;
+		}
+		if (configFile.StartsWith(L"./"))
+		{
+			configFile.Remove(0, 2);
+		}
+		configFile.Insert(0, L"../");
+	}
+	if (exists == FALSE)
+	{
+		exists = FileExists(root);
+		if (exists == TRUE)
+		{//last resort
+			retVal.Attach(root.Detach());
+			hr = S_OK;
+		}
+	}
+	if (exists == FALSE || FAILED(hr))
+	{
+		logModule.Write(L"Application: searched web.Config up to: (%s) none found %x", retVal, hr);
+		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+	}
+	ConfigurationManager config(retVal);
+	const PWSTR prefix = L"ispsession_io:";
+
+	CComBSTR bstrProp = L"APP_KEY";
+	bstrProp.Insert(0, prefix);
+	bstrProp.Attach(config.AppSettings(bstrProp));
+	if (bstrProp.Length() > 0)
+	{
+		logModule.Write(L"AppKey: (%s)", bstrProp);
+	}
+
+#ifndef AppKeyNULL 
+	if (setstring(reinterpret_cast<PUCHAR>(&m_AppKey), bstrProp) == FALSE)
+		// we could do it without appkey it becomes GUID_NULL
+		ZeroMemory(&m_AppKey, sizeof(GUID));
+#endif	
+
+
+	return hr;
+}
+STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 {
 	return S_OK;
 }

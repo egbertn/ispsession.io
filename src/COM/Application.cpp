@@ -6,6 +6,7 @@
 #include "CStream.h"
 #include "tools.h"
 
+
 STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 {
 	logModule.Write(L"OnStartPage");
@@ -92,15 +93,21 @@ STDMETHODIMP NWCApplication::putref_Value(BSTR vkey, VARIANT newVal) throw()
 
 STDMETHODIMP NWCApplication::Lock() throw()
 {//will perform a PUT [Guid]:lock 1 command to redis 2.2+
+	
+	
+	CComBSTR appkey(m_AppKey);
+	CComBSTR bytesAppKey;
+	bytesAppKey.Attach(appkey.ToByteString());
+	//https://github.com/jacket-code/redlock-cpp/blob/master/LockExample.cpp
+	//dlm->Lock((PSTR)bytesAppKey, 100000, myLock);
 	CComBSTR appKey(m_AppKey);
-	//m_hMutex = ATL::CMutex(NULL, FALSE, appKey);
-	//DWORD result = ::WaitForSingleObject(m_hMutex, 5000);
-	return S_OK;
+
+	return S_OK;	
 }
 
 STDMETHODIMP NWCApplication::UnLock() throw()
 {
-	//perform a PUT [Guid]:lock 0 command
+	
 	return S_OK;
 }
 
@@ -184,5 +191,7 @@ STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
 }
 STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 {
+	int port = 5578;
+	dlm->AddServerUrl("", port); //TODO: get con string
 	return S_OK;
 }

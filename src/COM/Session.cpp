@@ -1302,22 +1302,27 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookie) throw()
 	return hr;
 }
 /*/////
- * Creates a new GUID, better than CoCreateGUID
+ * Creates a new GUID, using rand_s and RtlGenRandom
  *////////
 STDMETHODIMP NWCSession::NewGuid(GUID *val) throw ()
 {
-	
-	HCRYPTPROV hprovider = 0;
-	HRESULT hr = S_OK;
-	if (::CryptAcquireContext(&hprovider, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT) == FALSE) 
-		hr = ATL::AtlHresultFromLastError();
-	else
+	auto max = sizeof(GUID) / sizeof(int);
+	auto  guidAccessor = reinterpret_cast<PINT>(val);
+	for (int i = 0; i < max; i++) 
 	{
-		if (::CryptGenRandom(hprovider, sizeof(GUID), reinterpret_cast<PBYTE>(val)) == FALSE )
-			hr = ATL::AtlHresultFromLastError();    
-		::CryptReleaseContext (hprovider, 0);
+		unsigned int number;
+
+		if (rand_s(&number) == 0)
+		{			
+			guidAccessor[i] = number;			
+		}
+		else
+		{
+			return E_FAIL;
+		}
 	}
-	return hr;
+
+	return S_OK;
 }
 
 

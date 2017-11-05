@@ -5,7 +5,7 @@
 #include "CVariantDictionary.h"
 #include <atlsync.h>
 #include "tools.h"
-
+#include "CRedLock.h"
 class ATL_NO_VTABLE NWCApplication :
 	public CComObjectRootEx<CComMultiThreadModel>,
 	public CComCoClass<NWCApplication, &CLSID_NWCApplication>,
@@ -33,6 +33,8 @@ public:
 			// refcount becomes 1 ...
 			hr = m_piVarDict->AddRef();
 		}
+		dlm = new CRedLock();
+		return hr;
 	}
 	void FinalRelease() throw()
 	{
@@ -40,6 +42,7 @@ public:
 		m_piServer.Release();
 		m_piRequest.Release();
 		m_pScriptContext.Release();
+		delete dlm;
 
 	}
 private:
@@ -48,7 +51,8 @@ private:
 	CComPtr<IRequest> m_piRequest;
 	CComPtr<IResponse> m_piResponse;
 	CComPtr<IServer> m_piServer;
-	CMutex m_hMutex;
+	CRedLock  * dlm;
+	CLock my_lock;
 
 	GUID m_AppKey;
 	BOOL m_OnStartPageCalled ;

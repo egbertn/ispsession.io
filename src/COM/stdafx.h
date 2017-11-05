@@ -20,7 +20,7 @@
 #define VC_EXTRALEAN 
 #define _ATL_FREE_THREADED
 #define _ATL_NO_AUTOMATIC_NAMESPACE
-
+#define _CRT_RAND_S
 // turn on to get full tracing in the Debug window
 
 #include <atlbase.h> 
@@ -84,7 +84,7 @@ using namespace redis3m;
 #define ERROR_READONLY  L"Session is set readonly"
 #define ERROR_INPUT  L"Expecting string input"
 
-
+#define STATIC_GETOPT
 
 #define FreeVariant(var) ::VariantClear(var); ZeroMemory(var, sizeof(VARIANT));
 #define CHECK_ERR(err, msg) { \

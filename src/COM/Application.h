@@ -25,13 +25,31 @@ public:
 
 	HRESULT FinalConstruct() throw()
 	{
+		PCWSTR location = L"FinalConsturct";
 		m_OnStartPageCalled = FALSE;
+		m_bErrState = FALSE;
 		HRESULT hr = S_OK;
 		//early creation not in initialize!
 		if (CComObject<CVariantDictionary>::CreateInstance(&m_piVarDict) == S_OK)
 		{
 			// refcount becomes 1 ...
 			hr = m_piVarDict->AddRef();
+		}
+		int doLogging = 0;
+		hr = ReadConfigFromWebConfig();
+
+		if (SUCCEEDED(hr))
+		{
+			auto success = CSessionDL::OpenDBConnection(std::wstring(m_strConstruct), pool);
+			if (!success)
+			{
+				hr = E_FAIL;
+			}
+		}
+		if (FAILED(hr))
+		{
+			ReportComError2(hr, location);
+			m_bErrState = TRUE;
 		}
 		dlm = new CRedLock();
 		return hr;
@@ -53,7 +71,10 @@ private:
 	CComPtr<IServer> m_piServer;
 	CRedLock  * dlm;
 	CLock my_lock;
-
+	CComBSTR m_strConstruct;
+	//redis connection pool
+	simple_pool::ptr_t pool;
+	BOOL m_bErrState;
 	GUID m_AppKey;
 	BOOL m_OnStartPageCalled ;
 

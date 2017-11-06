@@ -96,8 +96,104 @@ public:
         return hr;
     }
 };
+class _ApplicationAccessor
+{
+public:
+	_ApplicationAccessor() :
+		IsNULL(FALSE),
+		m_blobLength(0),		
+		m_pStream(NULL)
+	{
+		
+		memset(m_timest, 0, sizeof(DBTIMESTAMP));
+	}
+
+	BOOL IsNULL;
+	LONG m_blobLength;
+	BYTE m_timest[8];
+	DBTIMESTAMP m_LastUpdated;
+	CComObject<CStream>  *m_pStream;
+	
+
+};
+class CApplicationDL:
+	public _ApplicationAccessor
+{
+public:
+	static HRESULT __stdcall ApplicationSave(const simple_pool::ptr_t &pool,
+		PUCHAR appKey,
+		IStream * pStream,
+		LONG zLenPar,
+		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
+		//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
+		LONG totalRequestTime
+		)
+	{
+	}
+
+    HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const PUCHAR appKey )
+	{
+		auto appkey = HexStringFromMemory(appKey, sizeof(GUID));		
+
+		std::string ansi;
+		ansi.reserve(sizeof(GUID) * 2 + 1);
+		ansi.append(appkey);
+
+		auto conn = pool->get();
+		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
+		{
+			return E_ACCESSDENIED;
+		}
+		auto repl = conn->run(command("GET")(ansi));
 
 
+		auto result = S_OK;
+		switch (repl.type())
+		{
+		case reply::type_t::NIL:
+			result = S_FALSE;
+			m_blobLength = 0;
+			IsNULL = TRUE;
+			break;
+		case reply::type_t::STATUS:
+		case reply::type_t::_ERROR:
+			m_blobLength = 0;
+			logModule.Write(L"ApplicationGet failed because %s", std::wstring(repl.str().begin(), repl.str().end()).c_str());
+			result = E_FAIL;
+			break;
+		case reply::type_t::STRING:
+
+			int buf = 0x1000;
+			std::string str = repl.str();
+			m_blobLength = repl.strlen();
+			PersistMetaData meta;
+			//against all sanity. But justified, we do not modify the string, just read from it
+			memcpy(&meta, (void*)str.data(), meta.sizeofMeta);
+			m_LastUpdated = meta.m_LastUpdated;
+			
+			int baseX = meta.sizeofMeta;
+		
+			IsNULL = m_blobLength == meta.sizeofMeta ? TRUE : FALSE;
+			if (IsNULL == FALSE)
+			{
+				CComObject<CStream>::CreateInstance(&m_pStream);
+				m_pStream->AddRef();
+				//start blobLength = 128
+				for (int x = m_blobLength - baseX; x > 0; x -= buf)
+				{	//if 128 > 0x1000 ? buf : m_blobLength = 128
+					ULONG BytesToWrite = (x > buf ? buf : x);
+					m_pStream->Write((void*)&str.data()[baseX], BytesToWrite, NULL);
+					baseX += BytesToWrite;
+				}
+				LARGE_INTEGER nl = { 0 };
+				m_pStream->Seek(nl, STREAM_SEEK::STREAM_SEEK_SET, NULL);
+			}
+			break;
+		}
+		pool->put(conn);
+		return result;
+	}	
+};
 
 class  CSessionDL
 {

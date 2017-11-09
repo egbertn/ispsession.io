@@ -28,21 +28,21 @@ STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 	{
 		return hr;
 	}
-
-	m_OnStartPageCalled = TRUE;
-	hr = InitializeDataSource();
 	
-	if (hr == S_FALSE)
+	hr = InitializeDataSource();
+	m_OnStartPageCalled = TRUE;
+
+	if (FAILED(hr))
 	{
 		m_piResponse->Write(CComVariant(L"Application: Redis Server is not running."));
 		hr = E_FAIL;
 	}
-#ifndef Demo
-	if (licenseOK == false)
-	{
-		m_piResponse->Write(CComVariant(L"The license for this server is invalid. Please contact ADC Cure for an updated license at information@adccure.nl"));
-	}
-#endif
+//#ifndef Demo
+//	if (licenseOK == false)
+//	{
+//		m_piResponse->Write(CComVariant(L"The license for this server is invalid. Please contact ADC Cure for an updated license at information@adccure.nl"));
+//	}
+//#endif
 	return hr;
 
 }
@@ -59,24 +59,22 @@ STDMETHODIMP NWCApplication::PersistApplication() throw()
 	{
 		return S_OK;
 	}
-	logModule.Write(L"PersistApplication %d", m_bErrState);
+	BOOL blnIsDirty;
+	hr = m_piVarDict->isDirty(&blnIsDirty);
+	logModule.Write(L"PersistApplication err=%d, dirty=%d", m_bErrState, blnIsDirty);
 	
 	DWORD lSize = 0;
-	BOOL blnIsDirty;
-	m_piVarDict->isDirty(&blnIsDirty);
-	CComPtr<IStream> pStream;
 
-	if (blnIsDirty == TRUE )
+	if (blnIsDirty == TRUE)
 	{
+		CComPtr<IStream> pStream;
 		hr = m_piVarDict->LocalContents(&lSize, &pStream);
+		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
+		hr = CApplicationDL::ApplicationSave(pool, (PUCHAR)&m_AppKey, pStream, lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);
+		logModule.Write(L"CApplicationDL::ApplicationSave  size(%d) time(%d), hr(%x)", lSize, totalRequestTimeMS, hr);
+		pStream.Release();
+
 	}
-	/* calculate the number of MS that have expired since m_startSessionRequest*/
-
-	auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
-	hr = CApplicationDL::ApplicationSave(pool, (PUCHAR)&m_AppKey, pStream, lSize, m_dbTimeStamp,(LONG) totalRequestTimeMS);
-	logModule.Write(L"CApplicationDL::ApplicationSave  size(%d) time(%d), hr(%x)", lSize, totalRequestTimeMS, hr);
-	pStream.Release();
-
 	
 	return hr;
 }

@@ -15,6 +15,7 @@ class ATL_NO_VTABLE NWCApplication :
 
 {
 public:
+	DECLARE_OBJECT_DESCRIPTION("Classic ASP Application replacment by ADC Cure")
 	DECLARE_REGISTRY_RESOURCEID(IDR_APPLICATION)
 	DECLARE_PROTECT_FINAL_CONSTRUCT();
 
@@ -36,8 +37,8 @@ public:
 			// refcount becomes 1 ...
 			hr = m_piVarDict->AddRef();
 		}
-		int doLogging = 0;
-		hr = ReadConfigFromWebConfig();
+	
+	     hr = ReadDllConfig(&m_strConstruct, NULL, &m_doLogging, NULL, NULL);
 
 		
 		if (FAILED(hr))
@@ -70,17 +71,19 @@ private:
 	simple_pool::ptr_t pool;
 	BYTE m_dbTimeStamp[8];
 	BOOL m_bErrState;
+	BOOL m_doLogging;
 	GUID m_AppKey;
 	BOOL m_OnStartPageCalled ;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 
-	STDMETHODIMP OnStartPage(IUnknown* pctx);
-	STDMETHODIMP OnEndPage();
 	STDMETHODIMP ReadConfigFromWebConfig();
 	STDMETHODIMP InitializeDataSource();
 	STDMETHODIMP PersistApplication();
 
 public:
+	STDMETHOD (OnStartPage)(IUnknown* pctx);
+	STDMETHOD (OnEndPage)();
+
 	STDMETHOD (get_Value)(BSTR bstrValue, VARIANT* pvar);
 	STDMETHOD( put_Value)(BSTR bstrValue, VARIANT var);
 	STDMETHOD( putref_Value)(BSTR bstrValue, VARIANT var);

@@ -337,7 +337,7 @@ sds CRedLock::GetUniqueLockId()
 	//获取20byte的随机数据
 	auto retVal = sdsempty();
 	auto max = 20 / sizeof(unsigned int);
-	for (int i = 0; i < max; i++) 
+	for (unsigned int i = 0; i < max; i++) 
 	{
 		unsigned int number;
 		if (rand_s(&number) == 0)

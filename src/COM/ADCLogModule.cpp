@@ -46,7 +46,7 @@ bool LoggingModule::HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask = (FILE_
 		return false;
 	}
 	
-	return (accessRights & (mask) == (mask));
+	return (accessRights & mask) == mask;
 }
 void LoggingModule::set_Logging(int enable) throw()
 { 

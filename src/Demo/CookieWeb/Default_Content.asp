@@ -32,8 +32,8 @@ Driedim Array(0,1,0) = <%=driedimg(0,1,0) %>
     End If%>
 Session("a0") =<%=Session("a0")%><br/>
 Session("a2") = <%=Session("a2")%><br/>
-Session("CountRefresh") = <%=Session("CountRefresh")%>
-
+Session("CountRefresh") = <%=Session("CountRefresh")%><br/>
+Cache("Count") = <%=Cache("count")%>
 <br/><%
 
 dim a()

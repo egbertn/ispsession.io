@@ -7,7 +7,7 @@
 #define Demo
 // defines for ISP Session tiny edition
 //#define AppKeyNULL
-#define EXPIREAT (43038) // ie: 30/oct/2017
+#define EXPIREAT (43069) // ie: 30/oct/2017
 #define MAXINSTANCES 1000
 #define STRICT
 #define UNICODE
@@ -84,7 +84,7 @@ using namespace redis3m;
 #define ERROR_READONLY  L"Session is set readonly"
 #define ERROR_INPUT  L"Expecting string input"
 
-#define STATIC_GETOPT
+
 
 #define FreeVariant(var) ::VariantClear(var); ZeroMemory(var, sizeof(VARIANT));
 #define CHECK_ERR(err, msg) { \

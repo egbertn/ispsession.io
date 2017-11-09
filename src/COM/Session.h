@@ -22,7 +22,7 @@ class ATL_NO_VTABLE NWCSession :
 	
 {
 public:
-	//DECLARE_OBJECT_DESCRIPTION(L"CSession for ASP/ASP.NET by ADC Cure")
+	DECLARE_OBJECT_DESCRIPTION("Session object replacement over Redis, for classic ASP ADC Cure")
 	DECLARE_REGISTRY_RESOURCEID(IDR_SESSION)
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 	

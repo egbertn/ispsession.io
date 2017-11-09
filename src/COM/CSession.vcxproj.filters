@@ -88,13 +88,13 @@
     <ClCompile Include="sds.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="getopt.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CRedLock.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ConfigurationManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="getopt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

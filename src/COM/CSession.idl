@@ -139,10 +139,14 @@ interface INWCSession : IDispatch
 ]
 interface INWCApplicationObject : IDispatch
 {
+	//called internally by IIS when used with Server.CreateObject
+	HRESULT OnStartPage([in] IUnknown* p);
+	HRESULT OnEndPage();
+	//end iis
 	[propget, id(0)] HRESULT Value([in] BSTR bstrValue, [out, retval] VARIANT* pvar);
 	[propput, id(0)] HRESULT Value([in] BSTR bstrValue, [in] VARIANT var);
 	[propputref, id(0)] HRESULT Value([in] BSTR bstrValue, [in] VARIANT var);
-	[helpstring("Locks the application object for unique access. Carefull, this potentially locks down your website")] HRESULT Lock();
+	[helpstring("Locks the application object for unique access.")] HRESULT Lock();
 	HRESULT UnLock();
 	[propget] HRESULT StaticObjects([out, retval] INWCVariantDictionary **ppProperties);
 	[propget] HRESULT Contents([out, retval] INWCVariantDictionary **ppDictionary);

@@ -5,9 +5,13 @@ Public Session
 On Error Resume Next
 ' Note, we require Server.CreateObject.
 Set Session = Server.CreateObject("NWCTools.CSession")
-
+Set Cache = Server.CreateObject("NWCTools.CApplication")
+Cache("count") = Cache("count") + 1
 'Session.Initialize Request, Response, Server, Application
-If Err.Number <> 0 Then
+if Err.Number = &H80020009 Then
+   Response.Write "Access to Redis is denied, Check your password"
+   Response.End
+elseIf Err.Number <> 0 Then
 	Response.Write "During ISP Session initializiation an error occurred: 0x" 
 	Response.Write Hex(Err.Number)
 	'too vague

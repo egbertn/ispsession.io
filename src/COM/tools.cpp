@@ -271,11 +271,13 @@ STDMETHODIMP ReadDllConfig(BSTR * strConstruct, LONG *lTimeOutSetting, /*BOOL *h
 	{
 		SysReAllocStringLen(strConstruct, key, stored);
 	}
-	key = L"ispsession_io:SessionTimeout";
-	val.Attach(config.AppSettings(key, L"20"));
-	if (val.Length() > 0 && val.IsNumeric())
-		*lTimeOutSetting = val.ToLong();
-
+	if (lTimeOutSetting != nullptr)
+	{
+		key = L"ispsession_io:SessionTimeout";
+		val.Attach(config.AppSettings(key, L"20"));
+		if (val.Length() > 0 && val.IsNumeric())
+			*lTimeOutSetting = val.ToLong();
+	}
 	/*if (hashSessionID!= NULL)
 	{
 		key = L"HASH_SESSIONID";
@@ -352,7 +354,7 @@ std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) throw()
 	}
 	std::string retVal;
 	retVal.reserve(len * 2);	
-	for (UINT cx = 0; cx < len; cx++)
+	for (INT cx = 0; cx < len; cx++)
 	{
 		auto btByte = bytes[cx];
 		auto btByte2 = btByte & 15;

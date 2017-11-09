@@ -165,7 +165,6 @@ public:
 
 		std::string buf;
 		PersistMetaDataApp meta;
-		std::string strBuf;
 	
 		buf.append((PCSTR)&meta, meta.sizeofMeta);
 		//write binary safe string
@@ -176,7 +175,7 @@ public:
 			didRead += read2;
 			if (read2 > 0)
 			{
-				strBuf.append((PCSTR)bytes, (size_t)read2);
+				buf.append((PCSTR)bytes, (size_t)read2);
 			}
 		} while (hr == S_OK && didRead < read);
 		hr = S_OK; //reset S_FALSE to S_OK

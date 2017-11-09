@@ -1176,7 +1176,7 @@ STDMETHODIMP NWCSession::PersistSession(void) throw()
 				blnLiquid, 
 				blnLiquid == FALSE && blnWasLiquid == FALSE ? nullptr : &guid, 
 				pStream,
-				lSize, m_dbTimeStamp, totalRequestTimeMS);
+				lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);
 		logModule.Write(L"CSessionDL.SessionSave timeOut (%d), reEntrance(%d), Liquid(%d), size(%d) time(%d), hr(%x)", lngTimeout, blnReEntrance, blnLiquid, lSize, totalRequestTimeMS, hr);
 		pStream.Release();
 	
@@ -1304,7 +1304,7 @@ STDMETHODIMP NWCSession::NewGuid(GUID *val) throw ()
 {
 	auto max = sizeof(GUID) / sizeof(int);
 	auto  guidAccessor = reinterpret_cast<PINT>(val);
-	for (int i = 0; i < max; i++) 
+	for (UINT i = 0; i < max; i++) 
 	{
 		unsigned int number;
 

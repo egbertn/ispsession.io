@@ -325,7 +325,7 @@ STDMETHODIMP CVariantDictionary::get_Key(VARIANT VarKey, VARIANT* pVal) throw()
 	
 	if (SUCCEEDED(hr))
 	{
-		INT KeyIndex = KeyCopy.intVal;
+		auto KeyIndex = KeyCopy.uintVal;
 
 		if ((KeyIndex < 1) || (KeyIndex > _dictionary.size() + 1))		
 			hr = E_INVALIDARG;
@@ -1260,7 +1260,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL) 
 			hr = pStream->Read(&TheValue->bVal, cBytes, nullptr);
 	}
-error:
+//error:
 	if (FAILED(hr)) 	
 	{
 		VariantClear(TheValue);

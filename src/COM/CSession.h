@@ -4,11 +4,11 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Sun Oct 15 12:17:32 2017
+/* at Thu Nov 09 22:22:14 2017
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
-    protocol : dce , ms_ext, app_config, c_ext, robust
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
+    protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -683,7 +683,7 @@ EXTERN_C const IID IID_ISessionObject2;
             /* [retval][out] */ IVariantDictionary2 **ppTaggedObjects) = 0;
         
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Contents2( 
-            /* [retval][out] */ IVariantDictionary2 **ppProperties) = 0;
+            /* [retval][out] */ IVariantDictionary2 **ppDictionary) = 0;
         
     };
     
@@ -783,7 +783,7 @@ EXTERN_C const IID IID_ISessionObject2;
         
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Contents2 )( 
             ISessionObject2 * This,
-            /* [retval][out] */ IVariantDictionary2 **ppProperties);
+            /* [retval][out] */ IVariantDictionary2 **ppDictionary);
         
         END_INTERFACE
     } ISessionObject2Vtbl;
@@ -853,8 +853,8 @@ EXTERN_C const IID IID_ISessionObject2;
 #define ISessionObject2_get_StaticObjects2(This,ppTaggedObjects)	\
     ( (This)->lpVtbl -> get_StaticObjects2(This,ppTaggedObjects) ) 
 
-#define ISessionObject2_get_Contents2(This,ppProperties)	\
-    ( (This)->lpVtbl -> get_Contents2(This,ppProperties) ) 
+#define ISessionObject2_get_Contents2(This,ppDictionary)	\
+    ( (This)->lpVtbl -> get_Contents2(This,ppDictionary) ) 
 
 #endif /* COBJMACROS */
 
@@ -1300,6 +1300,11 @@ EXTERN_C const IID IID_INWCApplicationObject;
     INWCApplicationObject : public IDispatch
     {
     public:
+        virtual HRESULT STDMETHODCALLTYPE OnStartPage( 
+            /* [in] */ IUnknown *p) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE OnEndPage( void) = 0;
+        
         virtual /* [id][propget] */ HRESULT STDMETHODCALLTYPE get_Value( 
             /* [in] */ BSTR bstrValue,
             /* [retval][out] */ VARIANT *pvar) = 0;
@@ -1320,7 +1325,7 @@ EXTERN_C const IID IID_INWCApplicationObject;
             /* [retval][out] */ INWCVariantDictionary **ppProperties) = 0;
         
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Contents( 
-            /* [retval][out] */ INWCVariantDictionary **ppProperties) = 0;
+            /* [retval][out] */ INWCVariantDictionary **ppDictionary) = 0;
         
     };
     
@@ -1380,6 +1385,13 @@ EXTERN_C const IID IID_INWCApplicationObject;
             /* [annotation][out] */ 
             _Out_opt_  UINT *puArgErr);
         
+        HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
+            INWCApplicationObject * This,
+            /* [in] */ IUnknown *p);
+        
+        HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
+            INWCApplicationObject * This);
+        
         /* [id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Value )( 
             INWCApplicationObject * This,
             /* [in] */ BSTR bstrValue,
@@ -1407,7 +1419,7 @@ EXTERN_C const IID IID_INWCApplicationObject;
         
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Contents )( 
             INWCApplicationObject * This,
-            /* [retval][out] */ INWCVariantDictionary **ppProperties);
+            /* [retval][out] */ INWCVariantDictionary **ppDictionary);
         
         END_INTERFACE
     } INWCApplicationObjectVtbl;
@@ -1445,6 +1457,12 @@ EXTERN_C const IID IID_INWCApplicationObject;
     ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
 
 
+#define INWCApplicationObject_OnStartPage(This,p)	\
+    ( (This)->lpVtbl -> OnStartPage(This,p) ) 
+
+#define INWCApplicationObject_OnEndPage(This)	\
+    ( (This)->lpVtbl -> OnEndPage(This) ) 
+
 #define INWCApplicationObject_get_Value(This,bstrValue,pvar)	\
     ( (This)->lpVtbl -> get_Value(This,bstrValue,pvar) ) 
 
@@ -1463,8 +1481,8 @@ EXTERN_C const IID IID_INWCApplicationObject;
 #define INWCApplicationObject_get_StaticObjects(This,ppProperties)	\
     ( (This)->lpVtbl -> get_StaticObjects(This,ppProperties) ) 
 
-#define INWCApplicationObject_get_Contents(This,ppProperties)	\
-    ( (This)->lpVtbl -> get_Contents(This,ppProperties) ) 
+#define INWCApplicationObject_get_Contents(This,ppDictionary)	\
+    ( (This)->lpVtbl -> get_Contents(This,ppDictionary) ) 
 
 #endif /* COBJMACROS */
 

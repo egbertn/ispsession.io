@@ -2,11 +2,11 @@
 // Copyright ADC Cure 2014
 #include "stdafx.h"
 #include "CSessionDL.h"
-#include "config.h"
+#include "ConfigurationManager.h"
 #include "session.h"
 #include "CStream.h"
 #include "tools.h"
-
+#include <chrono>
 //TODO: consider optimistic locking http://www.redis.io/topics/transactions
 
 // will be called if from asp Server.CreateObject is used
@@ -224,7 +224,7 @@ STDMETHODIMP NWCSession::Initialize() throw()
 	HRESULT hr = S_OK;
 	CComVariant vitem;
 	CComBSTR bstrProp;
-	::GetSystemTimeAsFileTime(&m_startSessionRequest);
+	m_startSessionRequest = std::chrono::system_clock::now();
 	
 	#ifdef Demo 
 	CComBSTR strTemp;
@@ -1082,7 +1082,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 					cseqs->Write(buf, read, nullptr);
 				}
 			} while (read != 0 && hr == S_OK);
-			RELEASE(pgetSession.m_pStream)
+			
 			hr = S_OK;
 			LARGE_INTEGER nl = { 0 };
 			cseqs->Seek(nl, STREAM_SEEK_SET, nullptr);
@@ -1168,12 +1168,8 @@ STDMETHODIMP NWCSession::PersistSession(void) throw()
 			hr = m_piVarDict->LocalContents(&lSize, &pStream);
 		}
 		/* calculate the number of MS that have expired since m_startSessionRequest*/
-		FILETIME endTime;
- 		::GetSystemTimeAsFileTime(&endTime);
-		ULARGE_INTEGER start, end;
-		memcpy(&start, &m_startSessionRequest, sizeof(FILETIME));
-		memcpy(&end, &endTime, sizeof(FILETIME));
-		LONG totalRequestTimeMS = (LONG) (end.QuadPart - start.QuadPart) / 10000;
+		
+		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::system_clock::now() - m_startSessionRequest).count();
 		hr = CSessionDL::SessionSave(pool, (PUCHAR)&btAppKey, (PUCHAR)&oldGuid,
 				lngTimeout, 
 				blnReEntrance, 

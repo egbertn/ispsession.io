@@ -43,9 +43,6 @@
     <ClCompile Include="CSession_i.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="config.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -95,6 +92,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CRedLock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConfigurationManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -154,9 +154,6 @@
     <ClInclude Include="CSession.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -206,6 +203,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\..\Users\gastweb\Downloads\getopt_mb_uni_vc10\getopt_mb_uni_vc10\getopt_mb_uni_vc10\getopt.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConfigurationManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

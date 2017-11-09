@@ -155,7 +155,7 @@ private:
 	CComPtr<IScriptingContext> m_pictx;
 
 	bool m_OnStartPageCalled;
-	FILETIME m_startSessionRequest;
+	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 
 	//redis connection pool
 	simple_pool::ptr_t pool;

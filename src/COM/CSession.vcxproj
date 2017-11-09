@@ -394,7 +394,7 @@
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="config.cpp" />
+    <ClCompile Include="ConfigurationManager.cpp" />
     <ClCompile Include="connection.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -522,7 +522,7 @@
     <ClInclude Include="bstrnocache.h" />
     <ClInclude Include="CComBSTR2.h" />
     <ClInclude Include="CEnum.h" />
-    <ClInclude Include="config.h" />
+    <ClInclude Include="ConfigurationManager.h" />
     <ClInclude Include="CSessionDL.h" />
     <ClInclude Include="CVariantDictionary.h" />
     <ClInclude Include="include\redis3m\patterns\model.h" />

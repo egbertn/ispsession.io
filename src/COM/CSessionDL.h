@@ -32,6 +32,21 @@ struct DBTIMESTAMP
 	USHORT second;
 	ULONG  fraction;
 };
+struct PersistMetaDataApp
+{
+public:
+	PersistMetaDataApp() :
+		sizeofMeta(sizeof(PersistMetaDataApp)),
+		m_Expires(525600)	
+
+	{
+		memset(&m_LastUpdated, sizeof(DBTIMESTAMP), 0);
+	}
+	LONG sizeofMeta; //4
+	DBTIMESTAMP m_LastUpdated; //20
+	LONG m_Expires; //525600 = one year in minutes
+
+};
 struct PersistMetaData
 {
 public:
@@ -123,12 +138,57 @@ public:
 	static HRESULT __stdcall ApplicationSave(const simple_pool::ptr_t &pool,
 		PUCHAR appKey,
 		IStream * pStream,
-		LONG zLenPar,
+		LONG Expires,
 		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
 		//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
 		LONG totalRequestTime
 		)
 	{
+		const UINT bufLen = 0x1000;
+		unsigned char bytes[bufLen];
+		ULONG read2 = 0;
+		ULONG didRead = 0;
+		if (pStream == nullptr || appKey == nullptr)
+		{
+			return E_POINTER;
+		}
+		
+		STATSTG statst = { 0 };
+		pStream->Stat(&statst, STATFLAG_NONAME);
+		auto read = statst.cbSize.LowPart;
+		auto appkey = HexStringFromMemory((PBYTE)appKey, sizeof(GUID));
+		
+		std::string ansi;
+		ansi.reserve(sizeof(GUID) * 2 + 1);
+		ansi.append(appkey);
+	
+
+		std::string buf;
+		PersistMetaDataApp meta;
+		std::string strBuf;
+	
+		buf.append((PCSTR)&meta, meta.sizeofMeta);
+		//write binary safe string
+		HRESULT hr = S_OK;
+		do
+		{
+			hr = pStream->Read(bytes, bufLen, &read2);
+			didRead += read2;
+			if (read2 > 0)
+			{
+				strBuf.append((PCSTR)bytes, (size_t)read2);
+			}
+		} while (hr == S_OK && didRead < read);
+		hr = S_OK; //reset S_FALSE to S_OK
+		auto conn = pool->get();
+		auto reply = conn->run(command("SET")(ansi)(buf)("EX")(Expires * 60));
+
+		pool->put(conn);
+		//std::wstring wstr = s2ws(ansi); //TODO: must all be ansi
+		logModule.Write(L"insert %s", std::wstring(ansi.begin(), ansi.end()).c_str());
+
+	   hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
+		return hr;
 	}
 
     HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const PUCHAR appKey )
@@ -182,17 +242,26 @@ public:
 				for (int x = m_blobLength - baseX; x > 0; x -= buf)
 				{	//if 128 > 0x1000 ? buf : m_blobLength = 128
 					ULONG BytesToWrite = (x > buf ? buf : x);
-					m_pStream->Write((void*)&str.data()[baseX], BytesToWrite, NULL);
+					m_pStream->Write((void*)&str.data()[baseX], BytesToWrite, nullptr);
 					baseX += BytesToWrite;
 				}
 				LARGE_INTEGER nl = { 0 };
-				m_pStream->Seek(nl, STREAM_SEEK::STREAM_SEEK_SET, NULL);
+				m_pStream->Seek(nl, STREAM_SEEK::STREAM_SEEK_SET, nullptr);
 			}
 			break;
 		}
 		pool->put(conn);
 		return result;
 	}	
+	//destructor
+	~CApplicationDL()
+	{
+		if (m_pStream != nullptr)
+		{
+			m_pStream->Release();
+			m_pStream = nullptr;
+		}
+	}
 };
 
 class  CSessionDL
@@ -300,7 +369,7 @@ public:
 
 		auto c = pool->get();
 		//newguid? Then rename the key
-		if (guidNewPar != NULL)
+		if (guidNewPar != nullptr)
 		{
 			//old			
 			auto newKey = HexStringFromMemory((PUCHAR)guidNewPar, sizeof(GUID));
@@ -315,7 +384,7 @@ public:
 			ansi.assign(newKey);
 		}
 		// in fact, is not dirty, set only Expire (ping the session)
-		if (pStream == NULL)
+		if (pStream == nullptr)
 		{
 			auto reply = c->run(command("EXPIRE")(ansi)(ExpiresPar * 60L)); // http://www.redis.io/commands/expire is in seconds
 
@@ -511,16 +580,24 @@ public:
 				for (int x = m_blobLength - baseX; x > 0; x -= buf)
 				{	//if 128 > 0x1000 ? buf : m_blobLength = 128
 					ULONG BytesToWrite = (x > buf ? buf : x);						
-					m_pStream->Write((void*)&str.data()[baseX], BytesToWrite, NULL);
+					m_pStream->Write((void*)&str.data()[baseX], BytesToWrite, nullptr);
 					baseX += BytesToWrite;
 				}
 				LARGE_INTEGER nl = { 0 };
-				m_pStream->Seek(nl, STREAM_SEEK::STREAM_SEEK_SET, NULL);
+				m_pStream->Seek(nl, STREAM_SEEK::STREAM_SEEK_SET, nullptr);
 			}
 			break;
 		}		
 		pool->put(conn);
         return result;
+	}
+	~CpSessionGet()
+	{
+		if (m_pStream != nullptr)
+		{
+			m_pStream->Release();
+			m_pStream = nullptr;
+		}
 	}
 	
 };

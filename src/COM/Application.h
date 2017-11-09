@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "CSession.h"
 #include "message.h"
+#include <chrono>
 #include "CVariantDictionary.h"
 #include <atlsync.h>
 #include "tools.h"
@@ -38,20 +39,13 @@ public:
 		int doLogging = 0;
 		hr = ReadConfigFromWebConfig();
 
-		if (SUCCEEDED(hr))
-		{
-			auto success = CSessionDL::OpenDBConnection(std::wstring(m_strConstruct), pool);
-			if (!success)
-			{
-				hr = E_FAIL;
-			}
-		}
+		
 		if (FAILED(hr))
 		{
 			ReportComError2(hr, location);
 			m_bErrState = TRUE;
 		}
-		dlm = new CRedLock();
+		
 		return hr;
 	}
 	void FinalRelease() throw()
@@ -74,14 +68,17 @@ private:
 	CComBSTR m_strConstruct;
 	//redis connection pool
 	simple_pool::ptr_t pool;
+	BYTE m_dbTimeStamp[8];
 	BOOL m_bErrState;
 	GUID m_AppKey;
 	BOOL m_OnStartPageCalled ;
+	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 
 	STDMETHODIMP OnStartPage(IUnknown* pctx);
 	STDMETHODIMP OnEndPage();
 	STDMETHODIMP ReadConfigFromWebConfig();
 	STDMETHODIMP InitializeDataSource();
+	STDMETHODIMP PersistApplication();
 
 public:
 	STDMETHOD (get_Value)(BSTR bstrValue, VARIANT* pvar);

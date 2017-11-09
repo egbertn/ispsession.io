@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <string>
 #include "tools.h"
-#include "config.h"
+#include "ConfigurationManager.h"
 
 std::wstring& __stdcall ltrim(std::wstring &s) {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(),

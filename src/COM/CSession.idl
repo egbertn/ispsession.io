@@ -73,7 +73,7 @@ interface IVariantDictionary2 : IUnknown
     [propget] HRESULT LCID2([out, retval] LONG* plvar);
     [propput] HRESULT LCID2([in] LONG plvar);
     [propget] HRESULT StaticObjects2([out, retval] IVariantDictionary2** ppTaggedObjects);
-    [propget] HRESULT Contents2([out, retval] IVariantDictionary2** ppProperties);
+    [propget] HRESULT Contents2([out, retval] IVariantDictionary2** ppDictionary);
 };
 
 	//our extended ISession definition
@@ -145,7 +145,7 @@ interface INWCApplicationObject : IDispatch
 	[helpstring("Locks the application object for unique access. Carefull, this potentially locks down your website")] HRESULT Lock();
 	HRESULT UnLock();
 	[propget] HRESULT StaticObjects([out, retval] INWCVariantDictionary **ppProperties);
-	[propget] HRESULT Contents([out, retval] INWCVariantDictionary **ppProperties);
+	[propget] HRESULT Contents([out, retval] INWCVariantDictionary **ppDictionary);
 };
 
 [ version(1.0), uuid(A51465F8-E60A-4645-8DFE-F0F1DE91DC80), helpstring("CSession 1.0 Type Library") ]

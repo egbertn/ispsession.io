@@ -1,7 +1,7 @@
 #include "stdafx.h"
 //TODO: 15-10-2017 make a REAL headerfile for CSessionDL because the split functions are not included at all in secundary includes.
 #include "CSessionDL.h"
-#include "config.h"
+#include "ConfigurationManager.h"
 #include "application.h"
 #include "CStream.h"
 #include "tools.h"
@@ -9,7 +9,7 @@
 
 STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 {
-	logModule.Write(L"OnStartPage");
+	logModule.Write(L"Application:OnStartPage");
 	if (aspsvc == nullptr)
 	{
 		return E_POINTER;
@@ -34,7 +34,7 @@ STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 	
 	if (hr == S_FALSE)
 	{
-		m_piResponse->Write(CComVariant(L"Redis Server is not running."));
+		m_piResponse->Write(CComVariant(L"Application: Redis Server is not running."));
 		hr = E_FAIL;
 	}
 #ifndef Demo
@@ -45,6 +45,40 @@ STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 #endif
 	return hr;
 
+}
+STDMETHODIMP NWCApplication::OnEndPage() throw()
+{
+	HRESULT hr = PersistApplication();
+	logModule.Write(L"Application:OnEndPage");
+	return hr;
+}
+STDMETHODIMP NWCApplication::PersistApplication() throw()
+{
+	HRESULT hr = S_OK;
+	if (m_bErrState == TRUE)
+	{
+		return S_OK;
+	}
+	logModule.Write(L"PersistApplication %d", m_bErrState);
+	
+	DWORD lSize = 0;
+	BOOL blnIsDirty;
+	m_piVarDict->isDirty(&blnIsDirty);
+	CComPtr<IStream> pStream;
+
+	if (blnIsDirty == TRUE )
+	{
+		hr = m_piVarDict->LocalContents(&lSize, &pStream);
+	}
+	/* calculate the number of MS that have expired since m_startSessionRequest*/
+
+	auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
+	hr = CApplicationDL::ApplicationSave(pool, (PUCHAR)&m_AppKey, pStream, lSize, m_dbTimeStamp,(LONG) totalRequestTimeMS);
+	logModule.Write(L"CApplicationDL::ApplicationSave  size(%d) time(%d), hr(%x)", lSize, totalRequestTimeMS, hr);
+	pStream.Release();
+
+	
+	return hr;
 }
 STDMETHODIMP NWCApplication::get_Value(BSTR vkey, VARIANT* pVal) throw()
 {
@@ -111,14 +145,21 @@ STDMETHODIMP NWCApplication::UnLock() throw()
 	return S_OK;
 }
 
-STDMETHODIMP NWCApplication::get_StaticObjects(INWCVariantDictionary **ppProperties) throw()
+STDMETHODIMP NWCApplication::get_StaticObjects(INWCVariantDictionary **) throw()
 {
 	this->Error(L"Static objects are not supported by this component", CLSID_NWCApplication, E_NOTIMPL);
 	return E_NOTIMPL;
 }
-STDMETHODIMP NWCApplication::get_Contents(INWCVariantDictionary **ppProperties) throw()
+STDMETHODIMP NWCApplication::get_Contents(INWCVariantDictionary **ppVal) throw()
 {
-	return S_OK;
+	INWCVariantDictionary* ptr;
+	HRESULT hr = get_Contents(&ptr);
+	if (hr == S_OK)
+	{
+		hr = ptr->QueryInterface(ppVal);
+		ptr->Release();
+	}
+	return hr;
 }
 
 STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
@@ -189,9 +230,61 @@ STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
 
 	return hr;
 }
+// Opens a DB Connection and initialises the Dictionary with the binary contents
 STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 {
+	PCWSTR location = L"InitializeDataSource";
 	int port = 5578;
-	dlm->AddServerUrl("", port); //TODO: get con string
-	return S_OK;
+	HRESULT hr = S_OK;
+	//dlm->AddServerUrl("", port); //TODO: get con string
+	m_startSessionRequest = std::chrono::system_clock::now();
+	if (SUCCEEDED(hr))
+	{
+		auto success = CSessionDL::OpenDBConnection(std::wstring(m_strConstruct), pool);
+		if (!success)
+		{
+			hr = E_FAIL;
+		}
+	}
+	if (FAILED(hr))
+	{
+		ReportComError2(hr, location);
+		m_bErrState = TRUE;
+	}
+	dlm = new CRedLock();
+	CApplicationDL applicationDl;
+	hr = applicationDl.ApplicationGet(pool, (PUCHAR)&m_AppKey);
+	if (SUCCEEDED(hr))
+	{
+	//	((PLONGLONG)(&m_dbTimeStamp)) = (LONGLONG)(applicationDl.m_LastUpdated);
+	}
+	if (SUCCEEDED(hr) && applicationDl.IsNULL == FALSE && applicationDl.m_blobLength > 0)
+	{
+		CComObject<CStream>* cseqs;
+		CComObject<CStream>::CreateInstance(&cseqs);
+		cseqs->AddRef();
+		const INT bufSize = 0x1000;
+		ULONG read = 0;
+		BYTE buf[bufSize]; //stack memory
+		hr = S_OK;
+		do
+		{
+			hr = applicationDl.m_pStream->Read(buf, bufSize, &read);
+			if (read > 0)
+			{
+				cseqs->Write(buf, read, nullptr);
+			}
+		} while (read != 0 && hr == S_OK);
+
+		hr = S_OK;
+		LARGE_INTEGER nl = { 0 };
+		cseqs->Seek(nl, STREAM_SEEK_SET, nullptr);
+		hr = m_piVarDict->LocalLoad(cseqs, applicationDl.m_blobLength);
+		if (FAILED(hr))
+		{
+			logModule.Write(L"loading Application failed %x", hr);
+		}
+		cseqs->Release();
+	}
+	return hr;
 }

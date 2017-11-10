@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "tools.h"
 #include <ctime>
+#include <chrono>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include "ConfigurationManager.h"
@@ -99,8 +100,7 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 	auto memResult = ::difftime(curT, _ftLastCheck);
 	if (memResult != 0.0F)
 	{
-		DWORD start = ::GetTickCount();
-	
+		auto start = std::chrono::system_clock::now();
 		HRESULT hr = S_OK;
 		
 		CComPtr<IStream> pStream;
@@ -199,7 +199,7 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 		{
 			_xmlReader->SetInput(NULL);
 		}
-		logModule.Write(L"Parsing config... took %dms", ::GetTickCount() - start);
+		logModule.Write(L"Parsing config... took %dms", std::chrono::duration_cast<std::chrono::milliseconds> ( std::chrono::system_clock::now() - start));
 		//fs->Release();
 		return S_FALSE;
 		

@@ -190,11 +190,7 @@ public:
 		else
 		{
 			unsigned int copyLen = ByteLength();
-			BSTR retVal = ::SysAllocStringByteLen(NULL, copyLen);
-			if (copyLen > 0 && retVal != NULL)
-			{
-				Checked::memcpy_s(retVal, copyLen, m_str, copyLen);
-			}
+			BSTR retVal = ::SysAllocStringByteLen((char*)m_str, copyLen);			
 			return retVal;
 		}
 	
@@ -319,10 +315,11 @@ public:
 		
 		return hr;
 	}
-	// original string john smith
-	// merge with west at position 6
-	// result john westh
-	// won't extend string length!
+	/// <summary>original string john smith
+	///  merge with west at position 6
+	/// result john westh
+	/// won't extend string length!
+	/// </summary>
 	void __stdcall MergeString(_In_ unsigned int startIndex, _In_ const BSTR value) throw()
 	{
 
@@ -382,7 +379,8 @@ private:
 	}
 	static STDMETHODIMP  _SetLength(_Inout_ BSTR * str, _In_ unsigned int length) throw()
 	{
-		return ::SysReAllocStringLen(str, NULL, length) == FALSE ? E_OUTOFMEMORY : S_OK;	
+		return ::SysReAllocStringLen(str, NULL, length) == FALSE ? E_OUTOFMEMORY : S_OK;
+		
 	}
 public:
 	int __stdcall TokenCount(_In_ PCWSTR find, _In_ bool caseInsensitive) throw()
@@ -513,8 +511,7 @@ public:
 					x += exprLen;				
 				}				
 			}			
-			SAFEARRAYBOUND rgsa = {found + 1, 0};			
-			retval = ::SafeArrayCreate(VT_BSTR, 1, &rgsa); 
+			retval = ::SafeArrayCreateVector(VT_BSTR, 0, found + 1); 
 			if (retval == NULL)
 				return retval;
 			
@@ -561,7 +558,7 @@ public:
 	/// Joins a SAFEARRAY to a single BSTR
 	/// </summary>	
 	/// <example>
-	/// CComSafeArray<BSTR> myArray;	
+	/// CComSafeArray&lt;BSTR&gt; myArray;	
 	/// myArray.Add(CComBSTR2(L"John"));
 	/// myArray.Add(CComBSTR2(L"Smith"));
 	/// CComBSTR2 joined;
@@ -575,7 +572,7 @@ public:
 		if (psa != NULL && psa != NULL)
 		{
 			VARTYPE vt = VT_EMPTY;
-			unsigned int delLen = ::SysStringLen(delimiter);
+			unsigned int delLen = ::SysStringByteLen(delimiter);
 			UINT dims = ::SafeArrayGetDim(psa);
 			hr = ::SafeArrayGetVartype(psa, &vt);
 			if (vt != VT_BSTR || dims != 1) 
@@ -597,11 +594,11 @@ public:
 			while(els != 0)
 			{
 				if (paBSTR[--els] != NULL)
-					totalLen += ::SysStringLen(paBSTR[els]);
+					totalLen += ::SysStringByteLen(paBSTR[els]);
 				if (els != 0)
 					totalLen += delLen;
 			}
-			hr = _SetLength(&retval, totalLen);
+			hr = _SetByteLength(&retval, totalLen);
 			if (FAILED(hr))
 			{
 				::SafeArrayUnaccessData(psa);
@@ -617,14 +614,14 @@ public:
 					els--;
 					if (paBSTR[curel] != NULL)
 					{
-						unsigned int curLen = ::SysStringLen(paBSTR[curel]);
-						Checked::wmemcpy_s(retval + totalLen, curLen, paBSTR[curel], curLen);
+						unsigned int curLen = ::SysStringByteLen(paBSTR[curel]);
+						Checked::memcpy_s(((PSTR)retval) + totalLen, curLen, paBSTR[curel], curLen);
 						totalLen += curLen;
 					}
 					curel++;
-					if (els != 0 && delLen != 0)
+					if (delLen != 0 && curel < elements)
 					{
-						Checked::wmemcpy_s(retval + totalLen, delLen, delimiter, delLen);
+						Checked::memcpy_s(((PSTR)retval) + totalLen, delLen, delimiter, delLen);
 						totalLen += delLen;
 					}					
 				}

@@ -4,95 +4,8 @@
 #include "CStream.h"
 #include <map>
 #include "cvariantdictionary.h"
+#include "tools.h"
 
-STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm) throw()
-{
-	if (pPersistStmInit == nullptr || pStm == nullptr)
-		return E_INVALIDARG;
-	CLSID clsd;
-
-	HRESULT hr = pPersistStmInit->GetClassID(&clsd);
-	if (hr == S_OK)
-		hr = WriteClassStm(pStm, clsd);
-	if (hr == S_OK)
-		hr = pPersistStmInit->Save(pStm, TRUE);
-	return hr;
-}
-
-STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj)
-{
-	if (pStm == nullptr || ppvObj == nullptr) return E_INVALIDARG;
-	
-	CLSID clsd;
-	CComPtr<IPersistStreamInit> pPersist;
-	HRESULT hr = ReadClassStm(pStm, &clsd);
-	if (hr == S_OK)
-	{
-		hr = pPersist.CoCreateInstance(clsd, nullptr, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_NO_CODE_DOWNLOAD);
-		if (hr == S_OK)
-		{
-			hr = pPersist->Load(pStm);
-			if (hr == S_OK) 
-			{
-				hr = pPersist->QueryInterface(iidInterface, ppvObj);
-			}
-				
-		}
-	}
-	return hr;
-}
-
-//IVariantDictionary compatiblity with 
-	STDMETHODIMP CVariantDictionary::GetTypeInfoCount2(UINT * pctInfo) throw()
-	{
-		//why would somebody with C++ do IDispatch on this?? Anyway, to be sure.
-		// by convention, IDispatch is done on the default interface
-		return this->GetTypeInfoCount(pctInfo);
-	}
-	STDMETHODIMP CVariantDictionary::GetTypeInfo2(UINT itinfo, LCID lcid, ITypeInfo ** pptinfo) throw()
-	{
-		return this->GetTypeInfo(itinfo, lcid, pptinfo);
-	}
-	STDMETHODIMP CVariantDictionary::GetIDsOfNames2 ( REFIID riid ,LPOLESTR * rgszNames,UINT cNames,LCID lcid,DISPID * dispid) throw()
-	{
-		return this->GetIDsOfNames(riid, rgszNames, cNames, lcid, dispid);
-	}
-	STDMETHODIMP CVariantDictionary::Invoke2(DISPID dispid,REFIID refid ,LCID lcid,WORD wflags ,DISPPARAMS * dispparams,VARIANT * pvarResult,EXCEPINFO * exceptInfo,UINT * puargErr) throw()
-	{
-		return this->Invoke(dispid, refid, lcid, wflags, dispparams, pvarResult, exceptInfo, puargErr);
-	}
-	STDMETHODIMP CVariantDictionary::get_Item2(VARIANT VarKey, VARIANT *pvar) throw()
-	{
-		return get_Item(VarKey, pvar);
-	}
-    STDMETHODIMP CVariantDictionary::put_Item2(VARIANT VarKey,VARIANT pvar) throw()
-	{
-		return put_Item(VarKey, pvar);
-	}
-    STDMETHODIMP CVariantDictionary::putref_Item2(VARIANT VarKey, VARIANT pvar) throw()
-	{
-		return putref_Item(VarKey, pvar);
-	}
-    STDMETHODIMP CVariantDictionary::get_Key2(VARIANT VarKey, VARIANT *pvar) throw()
-	{
-		return get_Key(VarKey, pvar);
-	}
-	STDMETHODIMP CVariantDictionary::get_Count2(int *cStrRet) throw()
-	{
-		return get_Count(cStrRet);
-	}
-	STDMETHODIMP CVariantDictionary::get__NewEnum2(IUnknown **ppEnumReturn) throw()
-	{
-		return _NewEnum(ppEnumReturn);
-	}
-    STDMETHODIMP CVariantDictionary::Remove2(VARIANT VarKey) throw()
-	{
-		return Remove(VarKey);
-	}
-	STDMETHODIMP CVariantDictionary::RemoveAll2( void) throw()
-	{
-		return RemoveAll();
-	}
 
 
 // CVariantDictionary
@@ -334,7 +247,7 @@ STDMETHODIMP CVariantDictionary::get_Key(VARIANT VarKey, VARIANT* pVal) throw()
 		{
 			if (++ct == KeyIndex)
 			{
-				return CComVariant(idx->first).Detach(pVal);				
+				return idx->first.CopyTo(pVal);
 			}
 		}
 	}
@@ -344,7 +257,7 @@ STDMETHODIMP CVariantDictionary::get_Key(VARIANT VarKey, VARIANT* pVal) throw()
 STDMETHODIMP CVariantDictionary::_NewEnum(IUnknown** pVal) throw()
 {
 	HRESULT hr = S_OK;
-	ULONG size = _dictionary.size();
+	ULONG size = (ULONG)_dictionary.size();
 	SAFEARRAY * psaKeyEnum = ::SafeArrayCreateVector(VT_BSTR, 0, size);
 	if (psaKeyEnum == nullptr)
 			return E_OUTOFMEMORY;
@@ -531,6 +444,8 @@ STDMETHODIMP CVariantDictionary::WriteProperty(IStream *pStream, const BSTR strP
 */
 	return hr;
 }
+
+
 // Writes a Variant, including complex types to the memory stream
 STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 	const VARIANT* TheVal,  VARTYPE vtype, const BSTR strKeyName) throw()
@@ -1174,49 +1089,6 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 				cBytes = sizeof(DECIMAL);
 				hr = pStream->Read(TheValue, cBytes, nullptr);
 				break;
-			//case VT_RECORD: // can happen within .NET
-			//	{
-			//		wire_UDT nfo;
-			//		hr = pStream->Read(&nfo, sizeof(wire_UDT), nullptr);
-			//		
-			//		if (nfo.ifaceSize != 0) 
-			//		{
-			//			HGLOBAL hglob = GlobalAlloc(GMEM_MOVEABLE, nfo.ifaceSize);
-			//			if (hglob != nullptr )
-			//			{
-			//				logModule.Write(L"stream size=%d, recordsize %d", nfo.ifaceSize, nfo.clSize);
-			//				hr = pStream->Read(GlobalLock(hglob), nfo.ifaceSize, nullptr);												
-			//				GlobalUnlock(hglob);
-			//				IStream*pTemp;
-			//				hr = CreateStreamOnHGlobal(hglob, TRUE, &pTemp);
-			//				if (hr == S_OK)
-			//				{
-			//					TheValue->pRecInfo = nullptr;
-			//					hr = CoUnmarshalInterface(pTemp, 
-			//						IID_IRecordInfo, 
-			//						(void**)&TheValue->pRecInfo);
-			//					pTemp->Release();
-			//				}
-			//				logModule.Write(L"CoUnmarshalInterface %x", hr);
-			//			}
-			//		}
-
-			//		//allocate memory -not- using our own memory allocator!
-			//		if (hr == S_OK) 
-			//		{
-			//			logModule.Write(L"pRecInfo->RecordCreate");
-			//			TheValue->pvRecord = TheValue->pRecInfo->RecordCreate();				
-			//			hr = pStream->Read(TheValue->pvRecord, nfo.clSize, nullptr);
-			//		}
-			//		//if error skip to next variable
-			//		else
-			//		{
-			//			//hr = pStream->Seek(nfo.clSize, STREAM_SEEK_CUR, nullptr);
-			//			goto error;
-			//		}
-			//	}
-			//	cBytes = 0;
-			//	break;
 			case VT_BSTR:
 				hr = ReadString(pStream, &TheValue->bstrVal);
 				cBytes = SysStringByteLen(TheValue->bstrVal);
@@ -1286,7 +1158,7 @@ STDMETHODIMP CVariantDictionary::LocalContents(DWORD * lSize, IStream **pSequent
 	
 	if (hr == S_OK)
 	{		
-		INT m_lVDictElements = _dictionary.size();
+		INT m_lVDictElements = (LONG)_dictionary.size();
 		logModule.Write(L"LocalContents Elements %d", m_lVDictElements);
 		cVarTemp.vt = VT_I4;
 		cVarTemp.intVal = m_lVDictElements;
@@ -1329,7 +1201,7 @@ STDMETHODIMP CVariantDictionary::get_Exists(VARIANT vKey, VARIANT_BOOL* pVal) th
 	}
 	return hr;
 }
-STDMETHODIMP CVariantDictionary::get_VarType(VARIANT vKey, SHORT *vType) throw()
+STDMETHODIMP CVariantDictionary::get_VarType(VARIANT vKey, VARTYPE *vType) throw()
 {
 	
 	CComVariant keycopy;
@@ -1347,16 +1219,6 @@ STDMETHODIMP CVariantDictionary::get_VarType(VARIANT vKey, SHORT *vType) throw()
 		*vType = pos->second.vt;
 	}
 	return hr;
-}
-STDMETHODIMP CVariantDictionary::get_CaseSensitive(VARIANT_BOOL* ) throw()
-{
-	return E_NOTIMPL;
-}
-
-STDMETHODIMP CVariantDictionary::put_CaseSensitive(VARIANT_BOOL ) throw()
-{
-	
-	return E_NOTIMPL;
 }
 
 
@@ -1550,3 +1412,4 @@ STDMETHODIMP STDMETHODCALLTYPE CVariantDictionary::ReadString(IStream *pStream, 
 	} //read size OK
 	return hr;
 }
+

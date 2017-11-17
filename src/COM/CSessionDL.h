@@ -137,7 +137,7 @@ class CApplicationDL:
 public:
 	static HRESULT __stdcall ApplicationSave(const simple_pool::ptr_t &pool,
 		PUCHAR appKey,
-		IStream * pStream,
+		IApplicationCache* pDictionary,
 		LONG Expires,
 		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
 		//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
@@ -148,51 +148,94 @@ public:
 		unsigned char bytes[bufLen];
 		ULONG read2 = 0;
 		ULONG didRead = 0;
-		if (pStream == nullptr || appKey == nullptr)
+		if (pDictionary == nullptr || appKey == nullptr)
 		{
 			return E_POINTER;
 		}
 		
-		STATSTG statst = { 0 };
-		pStream->Stat(&statst, STATFLAG_NONAME);
-		auto read = statst.cbSize.LowPart;
+		
 		auto appkey = HexStringFromMemory((PBYTE)appKey, sizeof(GUID));
 		
-		std::string ansi;
-		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(appkey);
-	
-
-		std::string buf;
-		PersistMetaDataApp meta;
-	
-		buf.append((PCSTR)&meta, meta.sizeofMeta);
+		std::string ansi, buf;
+		ansi.append(appkey);	
+		
 		//write binary safe string
 		HRESULT hr = S_OK;
-		do
+
+		CComObject<CStream>* cseqs;
+		CComObject<CStream>::CreateInstance(&cseqs);
+		ULARGE_INTEGER ul;
+		ul.QuadPart = 128;
+		IStream* pSequentialStream  = nullptr;
+		cseqs->SetSize(ul);
+		cseqs->QueryInterface(IID_IStream, (void**)pSequentialStream);//refcount==1
+		int keyCount;
+		pDictionary->get_Count(&keyCount);//1 based
+		
+	
+		command rediscommand("MSET");
+		command redisSAdd("SADD");
+		redisSAdd << ansi; //SADD appkey 
+		
+		for (auto key = 1; key <= keyCount; key++)
 		{
-			hr = pStream->Read(bytes, bufLen, &read2);
-			didRead += read2;
-			if (read2 > 0)
+			CComVariant vkeyStr ;
+			CComVariant vval;
+
+			CComBSTR vkey;
+			
+			hr = pDictionary->get_Key(key, &vkey);
+			hr = pDictionary->get_Value(vkey, &vval);
+			auto vt = vval.vt;
+			CComBSTR conKey, ansiBstr;
+			vkeyStr.Detach(&conKey);
+			ansiBstr.Attach(conKey.ToByteString());
+			ansi.assign((PCHAR)ansiBstr.m_str, ansiBstr.ByteLength());
+		
+			//hr = pDictionary->WriteValue(pSequentialStream, &vval, vt, conKey);
+			//reset stream to position 0
+			LARGE_INTEGER li;
+			li.QuadPart = 0L;
+			hr = pSequentialStream->Seek(li, STREAM_SEEK_SET, nullptr);
+			didRead = 0;
+			do
 			{
-				buf.append((PCSTR)bytes, (size_t)read2);
-			}
-		} while (hr == S_OK && didRead < read);
+				hr = pSequentialStream->Read(bytes, bufLen, &read2);
+				didRead += read2;
+				if (read2 > 0)
+				{
+					buf.append((PCSTR)bytes, (size_t)read2);
+				}
+			} while (hr == S_OK);
+			rediscommand << ansi << buf;
+			redisSAdd << ansi;
+			buf.clear();
+
+			ULARGE_INTEGER newSize;
+			newSize.QuadPart = 0L;
+			pSequentialStream->SetSize(newSize);
+		};
+
 		hr = S_OK; //reset S_FALSE to S_OK
 		auto conn = pool->get();
-		auto reply = conn->run(command("SET")(ansi)(buf)("EX")(Expires * 60));
-
+	
+		auto reply = conn->run(rediscommand);
+		hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
+		if (hr == S_OK)
+		{
+			reply = conn->run(redisSAdd);
+			hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
+		}
 		pool->put(conn);
-		//std::wstring wstr = s2ws(ansi); //TODO: must all be ansi
-		logModule.Write(L"insert %s", std::wstring(ansi.begin(), ansi.end()).c_str());
+		
 
-	   hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
+	   
 		return hr;
 	}
 
-    HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const PUCHAR appKey )
+	HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const PUCHAR appKey)
 	{
-		auto appkey = HexStringFromMemory(appKey, sizeof(GUID));		
+		auto appkey = HexStringFromMemory(appKey, sizeof(GUID));
 
 		std::string ansi;
 		ansi.reserve(sizeof(GUID) * 2 + 1);
@@ -203,51 +246,57 @@ public:
 		{
 			return E_ACCESSDENIED;
 		}
-		auto repl = conn->run(command("GET")(ansi));
-
-
 		auto result = S_OK;
-		switch (repl.type())
+		auto repl = conn->run(command("SMEMBERS")(ansi));
+		auto mget = command("MGET");
+		if (repl.type() == reply::type_t::ARRAY)
 		{
-		case reply::type_t::NIL:
-			result = S_FALSE;
-			m_blobLength = 0;
-			IsNULL = TRUE;
-			break;
-		case reply::type_t::STATUS:
-		case reply::type_t::_ERROR:
-			m_blobLength = 0;
-			logModule.Write(L"ApplicationGet failed because %s", std::wstring(repl.str().begin(), repl.str().end()).c_str());
-			result = E_FAIL;
-			break;
-		case reply::type_t::STRING:
-
-			int buf = 0x1000;
-			std::string str = repl.str();
-			m_blobLength = repl.strlen();
-			PersistMetaData meta;
-			//against all sanity. But justified, we do not modify the string, just read from it
-			memcpy(&meta, (void*)str.data(), meta.sizeofMeta);
-			m_LastUpdated = meta.m_LastUpdated;
-			
-			int baseX = meta.sizeofMeta;
-		
-			IsNULL = m_blobLength == meta.sizeofMeta ? TRUE : FALSE;
-			if (IsNULL == FALSE)
+			auto keys = repl.elements();			
+			for (auto it = keys.begin(); it != keys.end(); ++it)
 			{
-				CComObject<CStream>::CreateInstance(&m_pStream);
-				m_pStream->AddRef();
-				//start blobLength = 128
-				for (int x = m_blobLength - baseX; x > 0; x -= buf)
-				{	//if 128 > 0x1000 ? buf : m_blobLength = 128
-					ULONG BytesToWrite = (x > buf ? buf : x);
-					m_pStream->Write((void*)&str.data()[baseX], BytesToWrite, nullptr);
-					baseX += BytesToWrite;
-				}
-				LARGE_INTEGER nl = { 0 };
-				m_pStream->Seek(nl, STREAM_SEEK::STREAM_SEEK_SET, nullptr);
+				mget << it->str() ;//should be string, always, its a key
 			}
-			break;
+
+			switch (repl.type())
+			{
+			case reply::type_t::NIL:
+				result = S_FALSE;
+				m_blobLength = 0;
+				IsNULL = TRUE;
+				break;
+			case reply::type_t::STATUS:
+			case reply::type_t::_ERROR:
+				m_blobLength = 0;
+				logModule.Write(L"ApplicationGet failed because %s", std::wstring(repl.str().begin(), repl.str().end()).c_str());
+				result = E_FAIL;
+				break;
+			case reply::type_t::STRING:
+
+				int buf = 0x1000;
+				std::string str = repl.str();
+				m_blobLength = repl.strlen();
+				
+				
+
+				
+
+				
+				//if (IsNULL == FALSE)
+				//{
+				//	CComObject<CStream>::CreateInstance(&m_pStream);
+				//	m_pStream->AddRef();
+				//	//start blobLength = 128
+				//	for (int x = m_blobLength - baseX; x > 0; x -= buf)
+				//	{	//if 128 > 0x1000 ? buf : m_blobLength = 128
+				//		ULONG BytesToWrite = (x > buf ? buf : x);
+				//		m_pStream->Write((void*)&str.data()[baseX], BytesToWrite, nullptr);
+				//		baseX += BytesToWrite;
+				//	}
+				//	LARGE_INTEGER nl = { 0 };
+				//	m_pStream->Seek(nl, STREAM_SEEK::STREAM_SEEK_SET, nullptr);
+				//}
+				break;
+			}
 		}
 		pool->put(conn);
 		return result;

@@ -4,10 +4,10 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Thu Nov 09 22:22:14 2017
+/* at Tue Nov 14 23:09:50 2017
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -52,18 +52,11 @@ typedef interface INWCVariantDictionary INWCVariantDictionary;
 #endif 	/* __INWCVariantDictionary_FWD_DEFINED__ */
 
 
-#ifndef __IVariantDictionary2_FWD_DEFINED__
-#define __IVariantDictionary2_FWD_DEFINED__
-typedef interface IVariantDictionary2 IVariantDictionary2;
+#ifndef __IApplicationCache_FWD_DEFINED__
+#define __IApplicationCache_FWD_DEFINED__
+typedef interface IApplicationCache IApplicationCache;
 
-#endif 	/* __IVariantDictionary2_FWD_DEFINED__ */
-
-
-#ifndef __ISessionObject2_FWD_DEFINED__
-#define __ISessionObject2_FWD_DEFINED__
-typedef interface ISessionObject2 ISessionObject2;
-
-#endif 	/* __ISessionObject2_FWD_DEFINED__ */
+#endif 	/* __IApplicationCache_FWD_DEFINED__ */
 
 
 #ifndef __INWCSession_FWD_DEFINED__
@@ -71,13 +64,6 @@ typedef interface ISessionObject2 ISessionObject2;
 typedef interface INWCSession INWCSession;
 
 #endif 	/* __INWCSession_FWD_DEFINED__ */
-
-
-#ifndef __INWCApplicationObject_FWD_DEFINED__
-#define __INWCApplicationObject_FWD_DEFINED__
-typedef interface INWCApplicationObject INWCApplicationObject;
-
-#endif 	/* __INWCApplicationObject_FWD_DEFINED__ */
 
 
 #ifndef __CVariantDictionary_FWD_DEFINED__
@@ -141,15 +127,15 @@ EXTERN_C const IID IID_INWCVariantDictionary;
     {
     public:
         virtual /* [id][propget] */ HRESULT STDMETHODCALLTYPE get_Item( 
-            /* [in] */ VARIANT varKey,
+            /* [in] */ VARIANT Key,
             /* [retval][out] */ VARIANT *pVal) = 0;
         
         virtual /* [id][propput] */ HRESULT STDMETHODCALLTYPE put_Item( 
-            /* [in] */ VARIANT varKey,
+            /* [in] */ VARIANT Key,
             /* [in] */ VARIANT newVal) = 0;
         
         virtual /* [defaultcollelem][id][propputref] */ HRESULT STDMETHODCALLTYPE putref_Item( 
-            /* [in] */ VARIANT varKey,
+            /* [in] */ VARIANT Key,
             /* [in] */ VARIANT newVal) = 0;
         
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Key( 
@@ -157,7 +143,7 @@ EXTERN_C const IID IID_INWCVariantDictionary;
             /* [retval][out] */ VARIANT *pVal) = 0;
         
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Count( 
-            /* [retval][out] */ int *pVal) = 0;
+            /* [retval][out] */ INT *pVal) = 0;
         
         virtual /* [restricted][id] */ HRESULT STDMETHODCALLTYPE _NewEnum( 
             /* [retval][out] */ IUnknown **pVal) = 0;
@@ -173,16 +159,7 @@ EXTERN_C const IID IID_INWCVariantDictionary;
         
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_VarType( 
             /* [in] */ VARIANT vKey,
-            /* [retval][out] */ SHORT *pVal) = 0;
-        
-        virtual /* [restricted][hidden][propget] */ HRESULT STDMETHODCALLTYPE get_CaseSensitive( 
-            /* [retval][out] */ VARIANT_BOOL *pVal) = 0;
-        
-        virtual /* [restricted][hidden][propput] */ HRESULT STDMETHODCALLTYPE put_CaseSensitive( 
-            /* [in] */ VARIANT_BOOL newVal) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE Persist( 
-            VARIANT varKey) = 0;
+            /* [retval][out] */ VARTYPE *pVal) = 0;
         
     };
     
@@ -244,17 +221,17 @@ EXTERN_C const IID IID_INWCVariantDictionary;
         
         /* [id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Item )( 
             INWCVariantDictionary * This,
-            /* [in] */ VARIANT varKey,
+            /* [in] */ VARIANT Key,
             /* [retval][out] */ VARIANT *pVal);
         
         /* [id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Item )( 
             INWCVariantDictionary * This,
-            /* [in] */ VARIANT varKey,
+            /* [in] */ VARIANT Key,
             /* [in] */ VARIANT newVal);
         
         /* [defaultcollelem][id][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Item )( 
             INWCVariantDictionary * This,
-            /* [in] */ VARIANT varKey,
+            /* [in] */ VARIANT Key,
             /* [in] */ VARIANT newVal);
         
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Key )( 
@@ -264,7 +241,7 @@ EXTERN_C const IID IID_INWCVariantDictionary;
         
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count )( 
             INWCVariantDictionary * This,
-            /* [retval][out] */ int *pVal);
+            /* [retval][out] */ INT *pVal);
         
         /* [restricted][id] */ HRESULT ( STDMETHODCALLTYPE *_NewEnum )( 
             INWCVariantDictionary * This,
@@ -285,19 +262,7 @@ EXTERN_C const IID IID_INWCVariantDictionary;
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_VarType )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT vKey,
-            /* [retval][out] */ SHORT *pVal);
-        
-        /* [restricted][hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_CaseSensitive )( 
-            INWCVariantDictionary * This,
-            /* [retval][out] */ VARIANT_BOOL *pVal);
-        
-        /* [restricted][hidden][propput] */ HRESULT ( STDMETHODCALLTYPE *put_CaseSensitive )( 
-            INWCVariantDictionary * This,
-            /* [in] */ VARIANT_BOOL newVal);
-        
-        HRESULT ( STDMETHODCALLTYPE *Persist )( 
-            INWCVariantDictionary * This,
-            VARIANT varKey);
+            /* [retval][out] */ VARTYPE *pVal);
         
         END_INTERFACE
     } INWCVariantDictionaryVtbl;
@@ -335,14 +300,14 @@ EXTERN_C const IID IID_INWCVariantDictionary;
     ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
 
 
-#define INWCVariantDictionary_get_Item(This,varKey,pVal)	\
-    ( (This)->lpVtbl -> get_Item(This,varKey,pVal) ) 
+#define INWCVariantDictionary_get_Item(This,Key,pVal)	\
+    ( (This)->lpVtbl -> get_Item(This,Key,pVal) ) 
 
-#define INWCVariantDictionary_put_Item(This,varKey,newVal)	\
-    ( (This)->lpVtbl -> put_Item(This,varKey,newVal) ) 
+#define INWCVariantDictionary_put_Item(This,Key,newVal)	\
+    ( (This)->lpVtbl -> put_Item(This,Key,newVal) ) 
 
-#define INWCVariantDictionary_putref_Item(This,varKey,newVal)	\
-    ( (This)->lpVtbl -> putref_Item(This,varKey,newVal) ) 
+#define INWCVariantDictionary_putref_Item(This,Key,newVal)	\
+    ( (This)->lpVtbl -> putref_Item(This,Key,newVal) ) 
 
 #define INWCVariantDictionary_get_Key(This,KeyIndex,pVal)	\
     ( (This)->lpVtbl -> get_Key(This,KeyIndex,pVal) ) 
@@ -365,15 +330,6 @@ EXTERN_C const IID IID_INWCVariantDictionary;
 #define INWCVariantDictionary_get_VarType(This,vKey,pVal)	\
     ( (This)->lpVtbl -> get_VarType(This,vKey,pVal) ) 
 
-#define INWCVariantDictionary_get_CaseSensitive(This,pVal)	\
-    ( (This)->lpVtbl -> get_CaseSensitive(This,pVal) ) 
-
-#define INWCVariantDictionary_put_CaseSensitive(This,newVal)	\
-    ( (This)->lpVtbl -> put_CaseSensitive(This,newVal) ) 
-
-#define INWCVariantDictionary_Persist(This,varKey)	\
-    ( (This)->lpVtbl -> Persist(This,varKey) ) 
-
 #endif /* COBJMACROS */
 
 
@@ -385,164 +341,188 @@ EXTERN_C const IID IID_INWCVariantDictionary;
 #endif 	/* __INWCVariantDictionary_INTERFACE_DEFINED__ */
 
 
-#ifndef __IVariantDictionary2_INTERFACE_DEFINED__
-#define __IVariantDictionary2_INTERFACE_DEFINED__
+#ifndef __IApplicationCache_INTERFACE_DEFINED__
+#define __IApplicationCache_INTERFACE_DEFINED__
 
-/* interface IVariantDictionary2 */
-/* [object][oleautomation][hidden][uuid] */ 
+/* interface IApplicationCache */
+/* [unique][oleautomation][dual][uuid][object] */ 
 
 
-EXTERN_C const IID IID_IVariantDictionary2;
+EXTERN_C const IID IID_IApplicationCache;
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
-    MIDL_INTERFACE("4A7DEB90-B069-11D0-B373-00A0C90C2BD8")
-    IVariantDictionary2 : public IUnknown
+    MIDL_INTERFACE("837D618E-FBC5-49B5-AF23-21545FFCF97D")
+    IApplicationCache : public IDispatch
     {
     public:
-        virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE GetTypeInfoCount2( 
-            UINT *pctinfo) = 0;
-        
-        virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE GetTypeInfo2( 
-            UINT iTInfo,
-            LCID lcid,
-            ITypeInfo **ppTInfo) = 0;
-        
-        virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE GetIDsOfNames2( 
-            REFIID riid,
-            LPOLESTR *rgszNames,
-            UINT cNames,
-            LCID lcid,
-            DISPID *rgDispId) = 0;
-        
-        virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE Invoke2( 
-            DISPID dispIdMember,
-            REFIID riid,
-            LCID lcid,
-            WORD wFlags,
-            DISPPARAMS *pDispParams,
-            VARIANT *pVarResult,
-            EXCEPINFO *pExcepInfo,
-            UINT *puArgErr) = 0;
-        
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Item2( 
-            /* [in] */ VARIANT VarKey,
+        virtual /* [propget][id] */ HRESULT STDMETHODCALLTYPE get_Value( 
+            /* [in] */ BSTR Key,
             /* [retval][out] */ VARIANT *pvar) = 0;
         
-        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_Item2( 
-            /* [in] */ VARIANT VarKey,
+        virtual /* [propput][id] */ HRESULT STDMETHODCALLTYPE put_Value( 
+            /* [in] */ BSTR Key,
             /* [in] */ VARIANT pvar) = 0;
         
-        virtual /* [propputref] */ HRESULT STDMETHODCALLTYPE putref_Item2( 
-            /* [in] */ VARIANT VarKey,
+        virtual /* [propputref][id] */ HRESULT STDMETHODCALLTYPE putref_Value( 
+            /* [in] */ BSTR Key,
             /* [in] */ VARIANT pvar) = 0;
         
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Key2( 
-            /* [in] */ VARIANT VarKey,
-            /* [retval][out] */ VARIANT *pvar) = 0;
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Key( 
+            /* [in] */ INT KeyIndex,
+            /* [retval][out] */ BSTR *pVal) = 0;
         
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Count2( 
-            /* [retval][out] */ int *cStrRet) = 0;
+        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Count( 
+            /* [retval][out] */ int *pVal) = 0;
         
-        virtual /* [restricted][propget] */ HRESULT STDMETHODCALLTYPE get__NewEnum2( 
-            /* [retval][out] */ IUnknown **ppEnumReturn) = 0;
+        virtual /* [restricted][id] */ HRESULT STDMETHODCALLTYPE _NewEnum( 
+            /* [retval][out] */ IUnknown **pVal) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE Remove2( 
-            /* [in] */ VARIANT VarKey) = 0;
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE RemoveKey( 
+            /* [in] */ BSTR Key) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE RemoveAll2( void) = 0;
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE RemoveAll( void) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE LockKey( 
+            /* [in] */ BSTR Key) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE UnlockKey( 
+            /* [in] */ BSTR Key) = 0;
+        
+        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ExpireKeyAt( 
+            /* [in] */ BSTR vKey,
+            /* [in] */ INT at) = 0;
+        
+        virtual /* [propget][id] */ HRESULT STDMETHODCALLTYPE get_KeyExists( 
+            /* [in] */ BSTR Key,
+            /* [retval][out] */ VARIANT_BOOL *pVal) = 0;
+        
+        virtual /* [propget][id] */ HRESULT STDMETHODCALLTYPE get_KeyType( 
+            /* [in] */ BSTR Key,
+            /* [retval][out] */ VARTYPE *pVal) = 0;
         
     };
     
     
 #else 	/* C style interface */
 
-    typedef struct IVariantDictionary2Vtbl
+    typedef struct IApplicationCacheVtbl
     {
         BEGIN_INTERFACE
         
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            IVariantDictionary2 * This,
+            IApplicationCache * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            IVariantDictionary2 * This);
+            IApplicationCache * This);
         
         ULONG ( STDMETHODCALLTYPE *Release )( 
-            IVariantDictionary2 * This);
+            IApplicationCache * This);
         
-        /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount2 )( 
-            IVariantDictionary2 * This,
-            UINT *pctinfo);
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
+            IApplicationCache * This,
+            /* [out] */ UINT *pctinfo);
         
-        /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *GetTypeInfo2 )( 
-            IVariantDictionary2 * This,
-            UINT iTInfo,
-            LCID lcid,
-            ITypeInfo **ppTInfo);
+        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
+            IApplicationCache * This,
+            /* [in] */ UINT iTInfo,
+            /* [in] */ LCID lcid,
+            /* [out] */ ITypeInfo **ppTInfo);
         
-        /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames2 )( 
-            IVariantDictionary2 * This,
-            REFIID riid,
-            LPOLESTR *rgszNames,
-            UINT cNames,
-            LCID lcid,
-            DISPID *rgDispId);
+        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
+            IApplicationCache * This,
+            /* [in] */ REFIID riid,
+            /* [size_is][in] */ LPOLESTR *rgszNames,
+            /* [range][in] */ UINT cNames,
+            /* [in] */ LCID lcid,
+            /* [size_is][out] */ DISPID *rgDispId);
         
-        /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *Invoke2 )( 
-            IVariantDictionary2 * This,
-            DISPID dispIdMember,
-            REFIID riid,
-            LCID lcid,
-            WORD wFlags,
-            DISPPARAMS *pDispParams,
-            VARIANT *pVarResult,
-            EXCEPINFO *pExcepInfo,
-            UINT *puArgErr);
+        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
+            IApplicationCache * This,
+            /* [annotation][in] */ 
+            _In_  DISPID dispIdMember,
+            /* [annotation][in] */ 
+            _In_  REFIID riid,
+            /* [annotation][in] */ 
+            _In_  LCID lcid,
+            /* [annotation][in] */ 
+            _In_  WORD wFlags,
+            /* [annotation][out][in] */ 
+            _In_  DISPPARAMS *pDispParams,
+            /* [annotation][out] */ 
+            _Out_opt_  VARIANT *pVarResult,
+            /* [annotation][out] */ 
+            _Out_opt_  EXCEPINFO *pExcepInfo,
+            /* [annotation][out] */ 
+            _Out_opt_  UINT *puArgErr);
         
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Item2 )( 
-            IVariantDictionary2 * This,
-            /* [in] */ VARIANT VarKey,
+        /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_Value )( 
+            IApplicationCache * This,
+            /* [in] */ BSTR Key,
             /* [retval][out] */ VARIANT *pvar);
         
-        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_Item2 )( 
-            IVariantDictionary2 * This,
-            /* [in] */ VARIANT VarKey,
+        /* [propput][id] */ HRESULT ( STDMETHODCALLTYPE *put_Value )( 
+            IApplicationCache * This,
+            /* [in] */ BSTR Key,
             /* [in] */ VARIANT pvar);
         
-        /* [propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Item2 )( 
-            IVariantDictionary2 * This,
-            /* [in] */ VARIANT VarKey,
+        /* [propputref][id] */ HRESULT ( STDMETHODCALLTYPE *putref_Value )( 
+            IApplicationCache * This,
+            /* [in] */ BSTR Key,
             /* [in] */ VARIANT pvar);
         
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Key2 )( 
-            IVariantDictionary2 * This,
-            /* [in] */ VARIANT VarKey,
-            /* [retval][out] */ VARIANT *pvar);
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Key )( 
+            IApplicationCache * This,
+            /* [in] */ INT KeyIndex,
+            /* [retval][out] */ BSTR *pVal);
         
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count2 )( 
-            IVariantDictionary2 * This,
-            /* [retval][out] */ int *cStrRet);
+        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count )( 
+            IApplicationCache * This,
+            /* [retval][out] */ int *pVal);
         
-        /* [restricted][propget] */ HRESULT ( STDMETHODCALLTYPE *get__NewEnum2 )( 
-            IVariantDictionary2 * This,
-            /* [retval][out] */ IUnknown **ppEnumReturn);
+        /* [restricted][id] */ HRESULT ( STDMETHODCALLTYPE *_NewEnum )( 
+            IApplicationCache * This,
+            /* [retval][out] */ IUnknown **pVal);
         
-        HRESULT ( STDMETHODCALLTYPE *Remove2 )( 
-            IVariantDictionary2 * This,
-            /* [in] */ VARIANT VarKey);
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *RemoveKey )( 
+            IApplicationCache * This,
+            /* [in] */ BSTR Key);
         
-        HRESULT ( STDMETHODCALLTYPE *RemoveAll2 )( 
-            IVariantDictionary2 * This);
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *RemoveAll )( 
+            IApplicationCache * This);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *LockKey )( 
+            IApplicationCache * This,
+            /* [in] */ BSTR Key);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *UnlockKey )( 
+            IApplicationCache * This,
+            /* [in] */ BSTR Key);
+        
+        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *ExpireKeyAt )( 
+            IApplicationCache * This,
+            /* [in] */ BSTR vKey,
+            /* [in] */ INT at);
+        
+        /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_KeyExists )( 
+            IApplicationCache * This,
+            /* [in] */ BSTR Key,
+            /* [retval][out] */ VARIANT_BOOL *pVal);
+        
+        /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_KeyType )( 
+            IApplicationCache * This,
+            /* [in] */ BSTR Key,
+            /* [retval][out] */ VARTYPE *pVal);
         
         END_INTERFACE
-    } IVariantDictionary2Vtbl;
+    } IApplicationCacheVtbl;
 
-    interface IVariantDictionary2
+    interface IApplicationCache
     {
-        CONST_VTBL struct IVariantDictionary2Vtbl *lpVtbl;
+        CONST_VTBL struct IApplicationCacheVtbl *lpVtbl;
     };
 
     
@@ -550,51 +530,67 @@ EXTERN_C const IID IID_IVariantDictionary2;
 #ifdef COBJMACROS
 
 
-#define IVariantDictionary2_QueryInterface(This,riid,ppvObject)	\
+#define IApplicationCache_QueryInterface(This,riid,ppvObject)	\
     ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
 
-#define IVariantDictionary2_AddRef(This)	\
+#define IApplicationCache_AddRef(This)	\
     ( (This)->lpVtbl -> AddRef(This) ) 
 
-#define IVariantDictionary2_Release(This)	\
+#define IApplicationCache_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IVariantDictionary2_GetTypeInfoCount2(This,pctinfo)	\
-    ( (This)->lpVtbl -> GetTypeInfoCount2(This,pctinfo) ) 
+#define IApplicationCache_GetTypeInfoCount(This,pctinfo)	\
+    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
 
-#define IVariantDictionary2_GetTypeInfo2(This,iTInfo,lcid,ppTInfo)	\
-    ( (This)->lpVtbl -> GetTypeInfo2(This,iTInfo,lcid,ppTInfo) ) 
+#define IApplicationCache_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
+    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
 
-#define IVariantDictionary2_GetIDsOfNames2(This,riid,rgszNames,cNames,lcid,rgDispId)	\
-    ( (This)->lpVtbl -> GetIDsOfNames2(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
+#define IApplicationCache_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
+    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
 
-#define IVariantDictionary2_Invoke2(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
-    ( (This)->lpVtbl -> Invoke2(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
+#define IApplicationCache_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
+    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
 
-#define IVariantDictionary2_get_Item2(This,VarKey,pvar)	\
-    ( (This)->lpVtbl -> get_Item2(This,VarKey,pvar) ) 
 
-#define IVariantDictionary2_put_Item2(This,VarKey,pvar)	\
-    ( (This)->lpVtbl -> put_Item2(This,VarKey,pvar) ) 
+#define IApplicationCache_get_Value(This,Key,pvar)	\
+    ( (This)->lpVtbl -> get_Value(This,Key,pvar) ) 
 
-#define IVariantDictionary2_putref_Item2(This,VarKey,pvar)	\
-    ( (This)->lpVtbl -> putref_Item2(This,VarKey,pvar) ) 
+#define IApplicationCache_put_Value(This,Key,pvar)	\
+    ( (This)->lpVtbl -> put_Value(This,Key,pvar) ) 
 
-#define IVariantDictionary2_get_Key2(This,VarKey,pvar)	\
-    ( (This)->lpVtbl -> get_Key2(This,VarKey,pvar) ) 
+#define IApplicationCache_putref_Value(This,Key,pvar)	\
+    ( (This)->lpVtbl -> putref_Value(This,Key,pvar) ) 
 
-#define IVariantDictionary2_get_Count2(This,cStrRet)	\
-    ( (This)->lpVtbl -> get_Count2(This,cStrRet) ) 
+#define IApplicationCache_get_Key(This,KeyIndex,pVal)	\
+    ( (This)->lpVtbl -> get_Key(This,KeyIndex,pVal) ) 
 
-#define IVariantDictionary2_get__NewEnum2(This,ppEnumReturn)	\
-    ( (This)->lpVtbl -> get__NewEnum2(This,ppEnumReturn) ) 
+#define IApplicationCache_get_Count(This,pVal)	\
+    ( (This)->lpVtbl -> get_Count(This,pVal) ) 
 
-#define IVariantDictionary2_Remove2(This,VarKey)	\
-    ( (This)->lpVtbl -> Remove2(This,VarKey) ) 
+#define IApplicationCache__NewEnum(This,pVal)	\
+    ( (This)->lpVtbl -> _NewEnum(This,pVal) ) 
 
-#define IVariantDictionary2_RemoveAll2(This)	\
-    ( (This)->lpVtbl -> RemoveAll2(This) ) 
+#define IApplicationCache_RemoveKey(This,Key)	\
+    ( (This)->lpVtbl -> RemoveKey(This,Key) ) 
+
+#define IApplicationCache_RemoveAll(This)	\
+    ( (This)->lpVtbl -> RemoveAll(This) ) 
+
+#define IApplicationCache_LockKey(This,Key)	\
+    ( (This)->lpVtbl -> LockKey(This,Key) ) 
+
+#define IApplicationCache_UnlockKey(This,Key)	\
+    ( (This)->lpVtbl -> UnlockKey(This,Key) ) 
+
+#define IApplicationCache_ExpireKeyAt(This,vKey,at)	\
+    ( (This)->lpVtbl -> ExpireKeyAt(This,vKey,at) ) 
+
+#define IApplicationCache_get_KeyExists(This,Key,pVal)	\
+    ( (This)->lpVtbl -> get_KeyExists(This,Key,pVal) ) 
+
+#define IApplicationCache_get_KeyType(This,Key,pVal)	\
+    ( (This)->lpVtbl -> get_KeyType(This,Key,pVal) ) 
 
 #endif /* COBJMACROS */
 
@@ -604,267 +600,7 @@ EXTERN_C const IID IID_IVariantDictionary2;
 
 
 
-#endif 	/* __IVariantDictionary2_INTERFACE_DEFINED__ */
-
-
-#ifndef __ISessionObject2_INTERFACE_DEFINED__
-#define __ISessionObject2_INTERFACE_DEFINED__
-
-/* interface ISessionObject2 */
-/* [object][oleautomation][hidden][uuid] */ 
-
-
-EXTERN_C const IID IID_ISessionObject2;
-
-#if defined(__cplusplus) && !defined(CINTERFACE)
-    
-    MIDL_INTERFACE("D97A6DA0-A865-11CF-83AF-00A0C90C2BD8")
-    ISessionObject2 : public IUnknown
-    {
-    public:
-        virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE GetTypeInfoCount2( 
-            UINT *pctinfo) = 0;
-        
-        virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE GetTypeInfo2( 
-            UINT iTInfo,
-            LCID lcid,
-            UINT **ppTInfo) = 0;
-        
-        virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE GetIDsOfNames2( 
-            UINT *riid,
-            LPOLESTR *rgszNames,
-            UINT cNames,
-            LCID lcid,
-            DISPID *rgDispId) = 0;
-        
-        virtual /* [restricted] */ HRESULT STDMETHODCALLTYPE Invoke2( 
-            DISPID dispIdMember,
-            UINT *riid,
-            LCID lcid,
-            WORD wFlags,
-            UINT *pDispParams,
-            VARIANT *pVarResult,
-            UINT *pExcepInfo,
-            UINT *puArgErr) = 0;
-        
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Value2( 
-            /* [in] */ BSTR bstrValue,
-            /* [retval][out] */ VARIANT *pvar) = 0;
-        
-        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_Value2( 
-            /* [in] */ BSTR bstrValue,
-            /* [in] */ VARIANT pvar) = 0;
-        
-        virtual /* [propputref] */ HRESULT STDMETHODCALLTYPE putref_Value2( 
-            /* [in] */ BSTR bstrValue,
-            /* [in] */ VARIANT pvar) = 0;
-        
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Timeout2( 
-            /* [retval][out] */ LONG *plvar) = 0;
-        
-        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_Timeout2( 
-            /* [in] */ LONG plvar) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE Abandon2( void) = 0;
-        
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_CodePage2( 
-            /* [retval][out] */ LONG *plvar) = 0;
-        
-        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_CodePage2( 
-            /* [in] */ LONG plvar) = 0;
-        
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_LCID2( 
-            /* [retval][out] */ LONG *plvar) = 0;
-        
-        virtual /* [propput] */ HRESULT STDMETHODCALLTYPE put_LCID2( 
-            /* [in] */ LONG plvar) = 0;
-        
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_StaticObjects2( 
-            /* [retval][out] */ IVariantDictionary2 **ppTaggedObjects) = 0;
-        
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Contents2( 
-            /* [retval][out] */ IVariantDictionary2 **ppDictionary) = 0;
-        
-    };
-    
-    
-#else 	/* C style interface */
-
-    typedef struct ISessionObject2Vtbl
-    {
-        BEGIN_INTERFACE
-        
-        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            ISessionObject2 * This,
-            /* [in] */ REFIID riid,
-            /* [annotation][iid_is][out] */ 
-            _COM_Outptr_  void **ppvObject);
-        
-        ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            ISessionObject2 * This);
-        
-        ULONG ( STDMETHODCALLTYPE *Release )( 
-            ISessionObject2 * This);
-        
-        /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount2 )( 
-            ISessionObject2 * This,
-            UINT *pctinfo);
-        
-        /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *GetTypeInfo2 )( 
-            ISessionObject2 * This,
-            UINT iTInfo,
-            LCID lcid,
-            UINT **ppTInfo);
-        
-        /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames2 )( 
-            ISessionObject2 * This,
-            UINT *riid,
-            LPOLESTR *rgszNames,
-            UINT cNames,
-            LCID lcid,
-            DISPID *rgDispId);
-        
-        /* [restricted] */ HRESULT ( STDMETHODCALLTYPE *Invoke2 )( 
-            ISessionObject2 * This,
-            DISPID dispIdMember,
-            UINT *riid,
-            LCID lcid,
-            WORD wFlags,
-            UINT *pDispParams,
-            VARIANT *pVarResult,
-            UINT *pExcepInfo,
-            UINT *puArgErr);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Value2 )( 
-            ISessionObject2 * This,
-            /* [in] */ BSTR bstrValue,
-            /* [retval][out] */ VARIANT *pvar);
-        
-        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_Value2 )( 
-            ISessionObject2 * This,
-            /* [in] */ BSTR bstrValue,
-            /* [in] */ VARIANT pvar);
-        
-        /* [propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Value2 )( 
-            ISessionObject2 * This,
-            /* [in] */ BSTR bstrValue,
-            /* [in] */ VARIANT pvar);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Timeout2 )( 
-            ISessionObject2 * This,
-            /* [retval][out] */ LONG *plvar);
-        
-        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_Timeout2 )( 
-            ISessionObject2 * This,
-            /* [in] */ LONG plvar);
-        
-        HRESULT ( STDMETHODCALLTYPE *Abandon2 )( 
-            ISessionObject2 * This);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_CodePage2 )( 
-            ISessionObject2 * This,
-            /* [retval][out] */ LONG *plvar);
-        
-        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_CodePage2 )( 
-            ISessionObject2 * This,
-            /* [in] */ LONG plvar);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_LCID2 )( 
-            ISessionObject2 * This,
-            /* [retval][out] */ LONG *plvar);
-        
-        /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_LCID2 )( 
-            ISessionObject2 * This,
-            /* [in] */ LONG plvar);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_StaticObjects2 )( 
-            ISessionObject2 * This,
-            /* [retval][out] */ IVariantDictionary2 **ppTaggedObjects);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Contents2 )( 
-            ISessionObject2 * This,
-            /* [retval][out] */ IVariantDictionary2 **ppDictionary);
-        
-        END_INTERFACE
-    } ISessionObject2Vtbl;
-
-    interface ISessionObject2
-    {
-        CONST_VTBL struct ISessionObject2Vtbl *lpVtbl;
-    };
-
-    
-
-#ifdef COBJMACROS
-
-
-#define ISessionObject2_QueryInterface(This,riid,ppvObject)	\
-    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
-
-#define ISessionObject2_AddRef(This)	\
-    ( (This)->lpVtbl -> AddRef(This) ) 
-
-#define ISessionObject2_Release(This)	\
-    ( (This)->lpVtbl -> Release(This) ) 
-
-
-#define ISessionObject2_GetTypeInfoCount2(This,pctinfo)	\
-    ( (This)->lpVtbl -> GetTypeInfoCount2(This,pctinfo) ) 
-
-#define ISessionObject2_GetTypeInfo2(This,iTInfo,lcid,ppTInfo)	\
-    ( (This)->lpVtbl -> GetTypeInfo2(This,iTInfo,lcid,ppTInfo) ) 
-
-#define ISessionObject2_GetIDsOfNames2(This,riid,rgszNames,cNames,lcid,rgDispId)	\
-    ( (This)->lpVtbl -> GetIDsOfNames2(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
-
-#define ISessionObject2_Invoke2(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
-    ( (This)->lpVtbl -> Invoke2(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
-
-#define ISessionObject2_get_Value2(This,bstrValue,pvar)	\
-    ( (This)->lpVtbl -> get_Value2(This,bstrValue,pvar) ) 
-
-#define ISessionObject2_put_Value2(This,bstrValue,pvar)	\
-    ( (This)->lpVtbl -> put_Value2(This,bstrValue,pvar) ) 
-
-#define ISessionObject2_putref_Value2(This,bstrValue,pvar)	\
-    ( (This)->lpVtbl -> putref_Value2(This,bstrValue,pvar) ) 
-
-#define ISessionObject2_get_Timeout2(This,plvar)	\
-    ( (This)->lpVtbl -> get_Timeout2(This,plvar) ) 
-
-#define ISessionObject2_put_Timeout2(This,plvar)	\
-    ( (This)->lpVtbl -> put_Timeout2(This,plvar) ) 
-
-#define ISessionObject2_Abandon2(This)	\
-    ( (This)->lpVtbl -> Abandon2(This) ) 
-
-#define ISessionObject2_get_CodePage2(This,plvar)	\
-    ( (This)->lpVtbl -> get_CodePage2(This,plvar) ) 
-
-#define ISessionObject2_put_CodePage2(This,plvar)	\
-    ( (This)->lpVtbl -> put_CodePage2(This,plvar) ) 
-
-#define ISessionObject2_get_LCID2(This,plvar)	\
-    ( (This)->lpVtbl -> get_LCID2(This,plvar) ) 
-
-#define ISessionObject2_put_LCID2(This,plvar)	\
-    ( (This)->lpVtbl -> put_LCID2(This,plvar) ) 
-
-#define ISessionObject2_get_StaticObjects2(This,ppTaggedObjects)	\
-    ( (This)->lpVtbl -> get_StaticObjects2(This,ppTaggedObjects) ) 
-
-#define ISessionObject2_get_Contents2(This,ppDictionary)	\
-    ( (This)->lpVtbl -> get_Contents2(This,ppDictionary) ) 
-
-#endif /* COBJMACROS */
-
-
-#endif 	/* C style interface */
-
-
-
-
-#endif 	/* __ISessionObject2_INTERFACE_DEFINED__ */
+#endif 	/* __IApplicationCache_INTERFACE_DEFINED__ */
 
 
 #ifndef __INWCSession_INTERFACE_DEFINED__
@@ -882,11 +618,6 @@ EXTERN_C const IID IID_INWCSession;
     INWCSession : public IDispatch
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE OnStartPage( 
-            /* [in] */ IUnknown *p) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE OnEndPage( void) = 0;
-        
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_SessionID( 
             /* [retval][out] */ BSTR *pbstrRet) = 0;
         
@@ -973,6 +704,11 @@ EXTERN_C const IID IID_INWCSession;
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_OldSessionID( 
             /* [retval][out] */ BSTR *pVal) = 0;
         
+        virtual HRESULT STDMETHODCALLTYPE OnStartPage( 
+            /* [in] */ IUnknown *p) = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE OnEndPage( void) = 0;
+        
     };
     
     
@@ -1030,13 +766,6 @@ EXTERN_C const IID IID_INWCSession;
             _Out_opt_  EXCEPINFO *pExcepInfo,
             /* [annotation][out] */ 
             _Out_opt_  UINT *puArgErr);
-        
-        HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
-            INWCSession * This,
-            /* [in] */ IUnknown *p);
-        
-        HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
-            INWCSession * This);
         
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_SessionID )( 
             INWCSession * This,
@@ -1151,6 +880,13 @@ EXTERN_C const IID IID_INWCSession;
             INWCSession * This,
             /* [retval][out] */ BSTR *pVal);
         
+        HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
+            INWCSession * This,
+            /* [in] */ IUnknown *p);
+        
+        HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
+            INWCSession * This);
+        
         END_INTERFACE
     } INWCSessionVtbl;
 
@@ -1186,12 +922,6 @@ EXTERN_C const IID IID_INWCSession;
 #define INWCSession_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
     ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
 
-
-#define INWCSession_OnStartPage(This,p)	\
-    ( (This)->lpVtbl -> OnStartPage(This,p) ) 
-
-#define INWCSession_OnEndPage(This)	\
-    ( (This)->lpVtbl -> OnEndPage(This) ) 
 
 #define INWCSession_get_SessionID(This,pbstrRet)	\
     ( (This)->lpVtbl -> get_SessionID(This,pbstrRet) ) 
@@ -1274,6 +1004,12 @@ EXTERN_C const IID IID_INWCSession;
 #define INWCSession_get_OldSessionID(This,pVal)	\
     ( (This)->lpVtbl -> get_OldSessionID(This,pVal) ) 
 
+#define INWCSession_OnStartPage(This,p)	\
+    ( (This)->lpVtbl -> OnStartPage(This,p) ) 
+
+#define INWCSession_OnEndPage(This)	\
+    ( (This)->lpVtbl -> OnEndPage(This) ) 
+
 #endif /* COBJMACROS */
 
 
@@ -1283,216 +1019,6 @@ EXTERN_C const IID IID_INWCSession;
 
 
 #endif 	/* __INWCSession_INTERFACE_DEFINED__ */
-
-
-#ifndef __INWCApplicationObject_INTERFACE_DEFINED__
-#define __INWCApplicationObject_INTERFACE_DEFINED__
-
-/* interface INWCApplicationObject */
-/* [unique][oleautomation][dual][uuid][object] */ 
-
-
-EXTERN_C const IID IID_INWCApplicationObject;
-
-#if defined(__cplusplus) && !defined(CINTERFACE)
-    
-    MIDL_INTERFACE("D97A6DA0-A866-11cf-83AE-10A0C90C2BD9")
-    INWCApplicationObject : public IDispatch
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE OnStartPage( 
-            /* [in] */ IUnknown *p) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE OnEndPage( void) = 0;
-        
-        virtual /* [id][propget] */ HRESULT STDMETHODCALLTYPE get_Value( 
-            /* [in] */ BSTR bstrValue,
-            /* [retval][out] */ VARIANT *pvar) = 0;
-        
-        virtual /* [id][propput] */ HRESULT STDMETHODCALLTYPE put_Value( 
-            /* [in] */ BSTR bstrValue,
-            /* [in] */ VARIANT var) = 0;
-        
-        virtual /* [id][propputref] */ HRESULT STDMETHODCALLTYPE putref_Value( 
-            /* [in] */ BSTR bstrValue,
-            /* [in] */ VARIANT var) = 0;
-        
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Lock( void) = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE UnLock( void) = 0;
-        
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_StaticObjects( 
-            /* [retval][out] */ INWCVariantDictionary **ppProperties) = 0;
-        
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Contents( 
-            /* [retval][out] */ INWCVariantDictionary **ppDictionary) = 0;
-        
-    };
-    
-    
-#else 	/* C style interface */
-
-    typedef struct INWCApplicationObjectVtbl
-    {
-        BEGIN_INTERFACE
-        
-        HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            INWCApplicationObject * This,
-            /* [in] */ REFIID riid,
-            /* [annotation][iid_is][out] */ 
-            _COM_Outptr_  void **ppvObject);
-        
-        ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            INWCApplicationObject * This);
-        
-        ULONG ( STDMETHODCALLTYPE *Release )( 
-            INWCApplicationObject * This);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
-            INWCApplicationObject * This,
-            /* [out] */ UINT *pctinfo);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
-            INWCApplicationObject * This,
-            /* [in] */ UINT iTInfo,
-            /* [in] */ LCID lcid,
-            /* [out] */ ITypeInfo **ppTInfo);
-        
-        HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
-            INWCApplicationObject * This,
-            /* [in] */ REFIID riid,
-            /* [size_is][in] */ LPOLESTR *rgszNames,
-            /* [range][in] */ UINT cNames,
-            /* [in] */ LCID lcid,
-            /* [size_is][out] */ DISPID *rgDispId);
-        
-        /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
-            INWCApplicationObject * This,
-            /* [annotation][in] */ 
-            _In_  DISPID dispIdMember,
-            /* [annotation][in] */ 
-            _In_  REFIID riid,
-            /* [annotation][in] */ 
-            _In_  LCID lcid,
-            /* [annotation][in] */ 
-            _In_  WORD wFlags,
-            /* [annotation][out][in] */ 
-            _In_  DISPPARAMS *pDispParams,
-            /* [annotation][out] */ 
-            _Out_opt_  VARIANT *pVarResult,
-            /* [annotation][out] */ 
-            _Out_opt_  EXCEPINFO *pExcepInfo,
-            /* [annotation][out] */ 
-            _Out_opt_  UINT *puArgErr);
-        
-        HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
-            INWCApplicationObject * This,
-            /* [in] */ IUnknown *p);
-        
-        HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
-            INWCApplicationObject * This);
-        
-        /* [id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Value )( 
-            INWCApplicationObject * This,
-            /* [in] */ BSTR bstrValue,
-            /* [retval][out] */ VARIANT *pvar);
-        
-        /* [id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Value )( 
-            INWCApplicationObject * This,
-            /* [in] */ BSTR bstrValue,
-            /* [in] */ VARIANT var);
-        
-        /* [id][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Value )( 
-            INWCApplicationObject * This,
-            /* [in] */ BSTR bstrValue,
-            /* [in] */ VARIANT var);
-        
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Lock )( 
-            INWCApplicationObject * This);
-        
-        HRESULT ( STDMETHODCALLTYPE *UnLock )( 
-            INWCApplicationObject * This);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_StaticObjects )( 
-            INWCApplicationObject * This,
-            /* [retval][out] */ INWCVariantDictionary **ppProperties);
-        
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Contents )( 
-            INWCApplicationObject * This,
-            /* [retval][out] */ INWCVariantDictionary **ppDictionary);
-        
-        END_INTERFACE
-    } INWCApplicationObjectVtbl;
-
-    interface INWCApplicationObject
-    {
-        CONST_VTBL struct INWCApplicationObjectVtbl *lpVtbl;
-    };
-
-    
-
-#ifdef COBJMACROS
-
-
-#define INWCApplicationObject_QueryInterface(This,riid,ppvObject)	\
-    ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
-
-#define INWCApplicationObject_AddRef(This)	\
-    ( (This)->lpVtbl -> AddRef(This) ) 
-
-#define INWCApplicationObject_Release(This)	\
-    ( (This)->lpVtbl -> Release(This) ) 
-
-
-#define INWCApplicationObject_GetTypeInfoCount(This,pctinfo)	\
-    ( (This)->lpVtbl -> GetTypeInfoCount(This,pctinfo) ) 
-
-#define INWCApplicationObject_GetTypeInfo(This,iTInfo,lcid,ppTInfo)	\
-    ( (This)->lpVtbl -> GetTypeInfo(This,iTInfo,lcid,ppTInfo) ) 
-
-#define INWCApplicationObject_GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId)	\
-    ( (This)->lpVtbl -> GetIDsOfNames(This,riid,rgszNames,cNames,lcid,rgDispId) ) 
-
-#define INWCApplicationObject_Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr)	\
-    ( (This)->lpVtbl -> Invoke(This,dispIdMember,riid,lcid,wFlags,pDispParams,pVarResult,pExcepInfo,puArgErr) ) 
-
-
-#define INWCApplicationObject_OnStartPage(This,p)	\
-    ( (This)->lpVtbl -> OnStartPage(This,p) ) 
-
-#define INWCApplicationObject_OnEndPage(This)	\
-    ( (This)->lpVtbl -> OnEndPage(This) ) 
-
-#define INWCApplicationObject_get_Value(This,bstrValue,pvar)	\
-    ( (This)->lpVtbl -> get_Value(This,bstrValue,pvar) ) 
-
-#define INWCApplicationObject_put_Value(This,bstrValue,var)	\
-    ( (This)->lpVtbl -> put_Value(This,bstrValue,var) ) 
-
-#define INWCApplicationObject_putref_Value(This,bstrValue,var)	\
-    ( (This)->lpVtbl -> putref_Value(This,bstrValue,var) ) 
-
-#define INWCApplicationObject_Lock(This)	\
-    ( (This)->lpVtbl -> Lock(This) ) 
-
-#define INWCApplicationObject_UnLock(This)	\
-    ( (This)->lpVtbl -> UnLock(This) ) 
-
-#define INWCApplicationObject_get_StaticObjects(This,ppProperties)	\
-    ( (This)->lpVtbl -> get_StaticObjects(This,ppProperties) ) 
-
-#define INWCApplicationObject_get_Contents(This,ppDictionary)	\
-    ( (This)->lpVtbl -> get_Contents(This,ppDictionary) ) 
-
-#endif /* COBJMACROS */
-
-
-#endif 	/* C style interface */
-
-
-
-
-#endif 	/* __INWCApplicationObject_INTERFACE_DEFINED__ */
 
 
 

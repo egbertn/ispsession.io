@@ -64,7 +64,7 @@ void __stdcall NWCSession::InvokeOnStartPage() throw()
 	CComVariant arg(punk);
 	while (pEnum->Next(1, &v, nullptr) == S_OK)
 	{
-		SHORT vt;
+		VARTYPE vt;
 		CComVariant valVal;
 		m_piVarDict->get_VarType(v, &vt);
 		if (vt == VT_DISPATCH || vt == VT_UNKNOWN) //sloppy, should only be VT_DISPATCH
@@ -472,90 +472,6 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 	}		
 		
 	return retVal;
-}
-
-
-/*
-	STDMETHOD(GetTypeInfoCount)(UINT *pctinfo); //idispatch stubs
-	STDMETHOD(GetTypeInfo)(UINT iTInfo, LCID lcid, ITypeInfo **ppTInfo);
-	STDMETHOD(GetIDsOfNames)( REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
-	STDMETHOD(Invoke)(DISPID dispIdMember,REFIID riid,LCID lcid,WORD wFlags,DISPPARAMS *pDispParams,VARIANT *pVarResult,EXCEPINFO *pExcepInfo,UINT *puArgErr);
-*/
-// implementation ISessionObject2
-STDMETHODIMP NWCSession::GetTypeInfoCount2(UINT *) throw()
-{
-	return E_NOTIMPL;
-}
-STDMETHODIMP NWCSession::GetTypeInfo2(UINT , LCID , UINT **) throw()
-{
-	return E_NOTIMPL;
-}
-STDMETHODIMP NWCSession::GetIDsOfNames2 ( UINT* ,LPOLESTR *,UINT ,LCID ,DISPID *) throw()
-{
-	return E_NOTIMPL;
-}
-STDMETHODIMP NWCSession::Invoke2(DISPID ,UINT* ,LCID ,WORD ,UINT *,VARIANT *,UINT *,UINT *) throw()
-{
-	return E_NOTIMPL;
-}
-
-STDMETHODIMP NWCSession::get_Value2(BSTR vKey, VARIANT* pVal) throw()
-{
-	return get_Value(vKey, pVal);
-}
-STDMETHODIMP NWCSession::put_Value2(BSTR vKey, VARIANT newVal) throw()
-{
-	return put_Value(vKey, newVal);
-}
-STDMETHODIMP NWCSession::putref_Value2(BSTR vKey, VARIANT newVal) throw()
-{
-	return putref_Value(vKey, newVal);
-}
-STDMETHODIMP NWCSession::get_Timeout2(LONG *plvar) throw()
-{
-	return get_TimeOut(plvar);
-}
-STDMETHODIMP NWCSession::put_Timeout2(LONG lvar) throw()
-{
-	return put_TimeOut(lvar);
-}
-STDMETHODIMP NWCSession::Abandon2(void) throw()
-{
-	return Abandon();
-}
-STDMETHODIMP NWCSession::get_CodePage2(LONG *) throw()
-{
-	return E_NOTIMPL;
-}
-STDMETHODIMP NWCSession::put_CodePage2(LONG ) throw()
-{
-	return E_NOTIMPL;
-}
-STDMETHODIMP NWCSession::get_LCID2(LONG *pVal) throw()
-{
-	return get_LCID(pVal);
-}
-STDMETHODIMP NWCSession::put_LCID2(LONG lVal) throw()
-{
-	return put_LCID(lVal);
-}
-STDMETHODIMP NWCSession::get_StaticObjects2(IVariantDictionary2 **) throw()
-{
-	return E_NOTIMPL;
-}
-
-STDMETHODIMP NWCSession::get_Contents2(IVariantDictionary2 **ppret) throw()
-{
-	HRESULT hr= S_OK;
-	
-	INWCVariantDictionary* ptr;
-	hr = get_Contents(&ptr);
-	if (hr == S_OK)
-	{
-		hr = ptr->QueryInterface(ppret);
-		ptr->Release();
-	}
-	return hr;
 }
 
 STDMETHODIMP NWCSession::get_IsExpired(VARIANT_BOOL* pVal) throw()

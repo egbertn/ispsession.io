@@ -248,6 +248,42 @@ BSTR __stdcall FormatDBTimeStamp(const DATE ts) throw()
 	return sTS.Detach();
 
 }
+STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm) throw()
+{
+	if (pPersistStmInit == nullptr || pStm == nullptr)
+		return E_INVALIDARG;
+	CLSID clsd;
+
+	HRESULT hr = pPersistStmInit->GetClassID(&clsd);
+	if (hr == S_OK)
+		hr = WriteClassStm(pStm, clsd);
+	if (hr == S_OK)
+		hr = pPersistStmInit->Save(pStm, TRUE);
+	return hr;
+}
+
+STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj)
+{
+	if (pStm == nullptr || ppvObj == nullptr) return E_INVALIDARG;
+
+	CLSID clsd;
+	CComPtr<IPersistStreamInit> pPersist;
+	HRESULT hr = ReadClassStm(pStm, &clsd);
+	if (hr == S_OK)
+	{
+		hr = pPersist.CoCreateInstance(clsd, nullptr, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_NO_CODE_DOWNLOAD);
+		if (hr == S_OK)
+		{
+			hr = pPersist->Load(pStm);
+			if (hr == S_OK)
+			{
+				hr = pPersist->QueryInterface(iidInterface, ppvObj);
+			}
+
+		}
+	}
+	return hr;
+}
 
 // optional m_lngTimeOutSetting and 
 // strConstruct [out]
@@ -375,28 +411,13 @@ std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) throw()
 }
 void __stdcall sHexFromBt(GUID* psa, BSTR *sRet) throw()
 {
-	auto pvdata = (PBYTE)psa;
-	if (::SysReAllocStringLen(sRet, psa == NULL? L"00000000000000000000000000000000": NULL, sizeof(GUID)* 2) == TRUE)
+	auto pvdata = (PINT)psa;
+	if (::SysReAllocStringLen(sRet, nullptr, sizeof(GUID)* 2) == TRUE)
 	{
-
-		//ZeroMemory(*sRet, sizeof(GUID) *2);
 		BSTR sdata = *sRet;
-		for (int cx = 0, bx = 0; cx < sizeof(GUID)* 2; bx++)
+		for (int cx = 0; cx < (sizeof(GUID) / sizeof(int)); cx++)
 		{
-			wchar_t btByte = pvdata[bx];
-			wchar_t btByte2 = btByte & 15;
-			btByte = btByte / 16;
-			if (btByte > 9)
-				btByte += 55;
-			else
-				btByte |= 48;
-
-			if (btByte2 > 9)
-				btByte2 += 55;
-			else
-				btByte2 |= 48;
-			sdata[cx++] = btByte;
-			sdata[cx++] = btByte2;
+			swprintf_s(&sdata[cx * sizeof(__int64)], 10, L"%08X", pvdata[cx]);
 		}
 	}
 }
@@ -455,18 +476,37 @@ BSTR __stdcall sHexFromBt(const PUCHAR btBytes, LONG cb, bool prepend) throw()
 }
 BOOL __stdcall IsValidHex(const BSTR Cookie) throw()
 {
-	BOOL retval = TRUE;
 	UINT sLen = ::SysStringLen(Cookie);
 
 	if (sLen == (sizeof(GUID) * 2))
-	{
-		PUCHAR sdata = reinterpret_cast<PUCHAR>(Cookie);
-
-		int bx = sizeof(GUID) - 1;
-		for (LONG cx = (sLen * 2) - 4; cx >= 0; cx -= 4, bx--)
+	{		
+		for (auto cx = (sizeof(GUID) / sizeof(int)) - 1; cx >= 0; cx--)
 		{
-			UCHAR btByte = sdata[cx];
-			UCHAR btByte2 = sdata[cx + 2];
+			auto converted = wcstoul(&Cookie[cx*sizeof(__int64)], L'\0', 16);
+			if (converted == 0)
+			{
+				return FALSE;
+			}
+		}
+	}
+	return TRUE;
+}
+// Converts Hex GUID in Parameter strCookiePtr to addrGUID
+BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) throw()
+{
+	
+	LONG cx = 0;
+	UCHAR btByte = 0, btByte2 = 0;
+	PUCHAR sdata = reinterpret_cast<PUCHAR>(strCookiePtr);
+	UINT sLen = ::SysStringLen(strCookiePtr);
+	BOOL retval = TRUE;
+	if (sLen == (sizeof(GUID) * 2))
+	{
+		int bx = sizeof(GUID) - 1;
+		for (cx = (sLen * 2) - 4; cx >= 0; cx -= 4, bx--)
+		{
+			btByte = sdata[cx];
+			btByte2 = sdata[cx + 2];
 
 			if ((btByte >= 65) & (btByte <= 70)) //& correct
 				btByte -= 55;
@@ -475,8 +515,7 @@ BOOL __stdcall IsValidHex(const BSTR Cookie) throw()
 			//'needless test but you never now if somebody converts to lowercase
 			else if ((btByte >= 97) & (btByte <= 102))
 				btByte -= 87;
-			else{ retval = FALSE; 
-			break; }
+			else{ retval = FALSE; break; }
 
 			if ((btByte2 >= 65) & (btByte2 <= 70))
 				btByte2 -= 55;
@@ -487,57 +526,15 @@ BOOL __stdcall IsValidHex(const BSTR Cookie) throw()
 				btByte2 -= 87;
 			else
 			{
-				retval = FALSE; 
-				break;
+				retval = FALSE; break;
 			}
+			addrGUID[bx] = (btByte * 16) | btByte2;
 		}
-	}
-	else
-	{
-		retval = FALSE;
-	}
-	return retval;
-}
-// Converts Hex GUID in Parameter strCookiePtr to addrGUID
-BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) throw()
-{
-	LONG cx =0;
-    UCHAR btByte =0, btByte2 = 0;
-	PUCHAR sdata = reinterpret_cast<PUCHAR>(strCookiePtr);
-	UINT sLen = ::SysStringLen(strCookiePtr);
-	BOOL retval = TRUE;
-    if (sLen == (sizeof(GUID) * 2)) 
-	{
-		int bx = sizeof(GUID) - 1;
-        for (cx = (sLen * 2) - 4; cx >= 0; cx -= 4, bx--)
-		{
-            btByte = sdata[cx ];
-            btByte2 = sdata[cx + 2];
 
-			if ((btByte >= 65) & (btByte <= 70)) //& correct
-                btByte -= 55;
-            else if ((btByte >= 48) & (btByte <= 57)) 
-                btByte ^= 48;
-            //'needless test but you never now if somebody converts to lowercase
-            else if ((btByte >= 97) & (btByte <= 102))
-                btByte -= 87;
-			else{retval = FALSE; break;}
-
-            if ((btByte2 >= 65) & (btByte2 <= 70))
-                btByte2 -= 55;
-            else if ((btByte2 >= 48) & (btByte2 <= 57))
-                btByte2 ^= 48;  //' cut the two leftmost bits 110000
-            //'needless test but you never now if somebody converts to lowercase
-            else if ((btByte2 >= 97) & (btByte2 <= 102))
-                btByte2 -= 87;
-			else
-               {retval = FALSE; break;}
-            addrGUID[bx] = (btByte * 16) | btByte2;
-		}
-        
 	}
 	else
 		retval = FALSE;
 
 	return  retval;
+	
 }

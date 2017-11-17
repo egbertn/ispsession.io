@@ -17,8 +17,7 @@ class ATL_NO_VTABLE NWCSession :
 	public CComObjectRootEx<CComMultiThreadModel>,
 	public CComCoClass<NWCSession, &CLSID_NWCSession>,
 	public IDispatchImpl<INWCSession, &IID_INWCSession, &LIBID_ISPCSession>	,	
-	public ISupportErrorInfoImpl<&IID_IDispatch>,	
-	public ISessionObject2
+	public ISupportErrorInfoImpl<&IID_IDispatch>
 	
 {
 public:
@@ -30,7 +29,6 @@ public:
 		COM_INTERFACE_ENTRY(INWCSession)
 		COM_INTERFACE_ENTRY(IDispatch)
 		COM_INTERFACE_ENTRY(ISupportErrorInfo)		
-		COM_INTERFACE_ENTRY(ISessionObject2)
 	END_COM_MAP()
 	HRESULT FinalConstruct() throw()
 	{	
@@ -255,23 +253,6 @@ private:
 	STDMETHODIMP Initialize();
 	STDMETHODIMP ReadConfigFromWebConfig();
 	
-	//ISessionObject2 
-	STDMETHOD(GetTypeInfoCount2)(UINT *pctinfo); //idispatch stubs
-	STDMETHOD(GetTypeInfo2)(UINT iTInfo, LCID lcid, UINT**ppTInfo);
-	STDMETHOD(GetIDsOfNames2)( UINT* riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
-	STDMETHOD(Invoke2)(DISPID dispIdMember,UINT* riid,LCID lcid,WORD wFlags,UINT *pDispParams,VARIANT *pVarResult,UINT *pExcepInfo,UINT *puArgErr);
-	STDMETHOD(get_Value2)(BSTR bstrValue, VARIANT *pvar);
-	STDMETHOD(put_Value2)(BSTR bstrValue, VARIANT var);
-	STDMETHOD(putref_Value2)(BSTR bstrValue, VARIANT var);
-	STDMETHOD(get_Timeout2)(LONG *plvar);
-	STDMETHOD(put_Timeout2)(LONG lvar);
-	STDMETHOD(Abandon2)(void);
-	STDMETHOD(get_CodePage2)(LONG *plvar);
-	STDMETHOD(put_CodePage2)(LONG lvar);
-	STDMETHOD(get_LCID2)(LONG *plvar);
-	STDMETHOD(put_LCID2)(LONG lvar);
-	STDMETHOD(get_StaticObjects2)( IVariantDictionary2 **ppTaggedObjects);
-	STDMETHOD(get_Contents2)(IVariantDictionary2 **ppProperties);
 	STDMETHOD_(void,ReadCookieFromQueryString());
 };
 OBJECT_ENTRY_AUTO(CLSID_NWCSession, NWCSession)

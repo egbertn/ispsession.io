@@ -3,17 +3,8 @@
 #include "CSession.h"
 #include "CEnum.h"
 #include "bstrnocache.h"
+#include "tools.h"
 
-struct wire_UDT
-{
-	ULONG clSize;
-	DWORD ifaceSize;
-	//GUID refguid;
-	//GUID rGuidTypeInfo;
-	//WORD uVerMajor;
-	//WORD uVerMinor;
-	//LCID lcid;
-} ;
 struct ARRAY_DESCRIPTOR
 {
 	VARTYPE type;
@@ -28,19 +19,14 @@ public:
 		return x.CompareTo(y, true) == -1;		
 	}
 };
-// like OleSaveToStream2 but uses IPersistStreamInit instead of IPersistStream
-STDMETHODIMP OleSaveToStream2(IPersistStreamInit *ppersistStreamInit, IStream *pStm);
-// like like OleLoadFromStream but uses the IPersistStreamInit instead of IPersistStream
-STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj);
+
 
 // CVariantDictionary
 class ATL_NO_VTABLE CVariantDictionary : 
 	public CComObjectRoot,
 	public CComCoClass<CVariantDictionary, &CLSID_CVariantDictionary>,
 	public ISupportErrorInfoImpl<&IID_INWCVariantDictionary>,
- 	public IDispatchImpl<INWCVariantDictionary, &IID_INWCVariantDictionary, &LIBID_ISPCSession>,
-	public IVariantDictionary2
-
+ 	public IDispatchImpl<INWCVariantDictionary, &IID_INWCVariantDictionary, &LIBID_ISPCSession>
 {
 public:
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
@@ -50,7 +36,6 @@ public:
 		COM_INTERFACE_ENTRY(IDispatch)
 		COM_INTERFACE_ENTRY(ISupportErrorInfo)
 		COM_INTERFACE_ENTRY(INWCVariantDictionary)		
-		COM_INTERFACE_ENTRY(IVariantDictionary2)
 		
 	END_COM_MAP()
 
@@ -74,7 +59,6 @@ public:
 		_isserialized.clear();
 		//RELEASE(m_Stream)
 		FreeMulti(&m_lpstrMulti);
-
 		
 	}
 	// NOT STDMETHOD because we don't support aggregation (we are sealed)
@@ -89,13 +73,9 @@ public:
 	STDMETHODIMP Remove(VARIANT varKey);
 	STDMETHODIMP RemoveAll(void);
 	STDMETHODIMP get_Exists(VARIANT vKey, VARIANT_BOOL* pVal);
-	STDMETHODIMP get_VarType(VARIANT vKey, SHORT * pVal);
-	STDMETHODIMP get_CaseSensitive(VARIANT_BOOL* pVal);
-	STDMETHODIMP put_CaseSensitive(VARIANT_BOOL newVal);
+	STDMETHODIMP get_VarType(VARIANT vKey, VARTYPE * pVal);
 	STDMETHODIMP Persist(VARIANT vKey);
 
-	//STDMETHODIMP LocalContents(DWORD* lSize, HGLOBAL *hglob);
-	
 	STDMETHODIMP LocalContents(DWORD* lSize, IStream **pSequentialStream);
 
 	STDMETHODIMP LocalLoad(IStream* pStream, const DWORD lSize);
@@ -124,6 +104,7 @@ private:
 	STDMETHOD(get__NewEnum2)(IUnknown **ppEnumReturn);
     STDMETHOD(Remove2)(VARIANT VarKey);
 	STDMETHOD(RemoveAll2)( void);
+
 	//STDMETHOD(CleanAndEraseKey)(const BSTR key);
 	//CComObject<CSequentialStream> *m_Stream;	
 	// dictionary dirty or not

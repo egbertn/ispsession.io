@@ -2,7 +2,6 @@
 #include "resource.h"       // main symbols
 #include "CSession.h"
 #include "CEnum.h"
-#include "bstrnocache.h"
 #include "tools.h"
 
 struct ARRAY_DESCRIPTOR
@@ -42,14 +41,12 @@ public:
 	HRESULT FinalConstruct() throw()
 	{
 		readOnly = 
-		blnDirty = FALSE;
-		m_lpstrMulti = NULL;		
-		m_dwMultiLen = 0x1000;
-		m_dwBufSize =0;
+		blnDirty = FALSE;	
 		
 		SEEK_NULL.QuadPart = (0L);
 		//allocate predified buffer
-		AllocPSTR(&m_lpstrMulti, m_dwMultiLen, &m_dwBufSize);
+
+		m_lpstrMulti.reserve(0x1000);
 		return S_OK;
 	}
 
@@ -58,7 +55,7 @@ public:
 		_dictionary.clear();
 		_isserialized.clear();
 		//RELEASE(m_Stream)
-		FreeMulti(&m_lpstrMulti);
+		m_lpstrMulti.clear();
 		
 	}
 	// NOT STDMETHOD because we don't support aggregation (we are sealed)
@@ -116,10 +113,7 @@ private:
 	std::map<CComBSTR, CComVariant, TextComparer> _dictionary;
 	std::map<CComBSTR, bool, TextComparer> _isserialized;
 
-	SIZE_T m_dwBufSize; //keeps a copy of the allocated buffer for multibyte processing
-
-	PSTR m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
-	UINT m_dwMultiLen;
+	std::string m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
 	LARGE_INTEGER SEEK_NULL;	
 };
 OBJECT_ENTRY_NON_CREATEABLE_EX_AUTO(CLSID_CVariantDictionary, CVariantDictionary)

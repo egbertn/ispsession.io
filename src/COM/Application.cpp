@@ -55,6 +55,15 @@ STDMETHODIMP NWCApplication::OnEndPage() throw()
 }
 STDMETHODIMP NWCApplication::IsDirty(BOOL* pRet) throw()
 {
+	*pRet = FALSE;
+	for(auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
+	{
+		if (k->second.IsDirty == TRUE || k->second.IsNew == TRUE)
+		{
+			*pRet = TRUE;
+			break;
+		}
+	}
 	return S_OK;
 }
 STDMETHODIMP NWCApplication::PersistApplication() throw()
@@ -71,13 +80,9 @@ STDMETHODIMP NWCApplication::PersistApplication() throw()
 	DWORD lSize = 0;
 
 	if (blnIsDirty == TRUE)
-	{
-		IApplicationCache* pDatabase = static_cast<IApplicationCache*>(this);
-		QueryInterface(IID_IApplicationCache, (void**)&pDatabase); //eh...
-		
+	{	
 		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
-		hr = CApplicationDL::ApplicationSave(pool, (PUCHAR)&m_AppKey, pDatabase, lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);
-		pDatabase->Release();
+		hr = CApplicationDL::ApplicationSave(pool, (PUCHAR)&m_AppKey, this, lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);		
 
 		logModule.Write(L"CApplicationDL::ApplicationSave  size(%d) time(%d), hr(%x)", lSize, totalRequestTimeMS, hr);
 
@@ -387,10 +392,6 @@ STDMETHODIMP NWCApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
 	}
 	return S_OK;
 }
-STDMETHODIMP NWCApplication::get_KeyType(BSTR Key, VARTYPE* pRet) throw()
-{
-	return S_OK;
-}
 
 STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
 {
@@ -520,6 +521,340 @@ STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 	}
 	return hr;
 }
+STDMETHODIMP NWCApplication::ReadString(std::istream& pStream, BSTR *retval) throw()
+{
+	HRESULT hr = S_OK;
+	UINT lTempSize = 0;
+	auto pRet = new std::string();
+	
+	// size excludes the terminating zero!
+	pStream.read((char*)&lTempSize, sizeof(UINT));
+	if (hr == S_OK)
+	{
+		//TODO: find how vbNullString is written to the native Session
+		// because vbNullString != "" (string with zero length)
+		ATLASSERT(lTempSize < 1000000);
+		if (lTempSize == 0)
+		{
+			::SysReAllocStringLen(retval, nullptr, (UINT)0);
+			logModule.Write(L"ReadString empty");
+		}
+		else if (lTempSize > 0)
+		{
+			//warning! This is a multibyte encoded string!
+			//realloc
+			if (lTempSize > m_lpstrMulti.capacity())
+			{
+				m_lpstrMulti.reserve((lTempSize / 512) * 512 + 2048);
+				
+				m_dwMultiLen = lTempSize;
+			}
+			if (hr == S_OK)
+			{
+				
+				pStream.read((char*)m_lpstrMulti.data(), lTempSize);
+				//because we specify the exact length, writtenbytes is excluding the terminating 0
+				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, m_lpstrMulti.data(), lTempSize, nullptr, 0);
+				if (writtenbytes == 0)
+					hr = ATL::AtlHresultFromLastError();
+				else
+				{
+					if (::SysReAllocStringLen(retval, nullptr, writtenbytes) != FALSE)
+						::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti.data(), lTempSize, *retval, writtenbytes);
+					else
+						hr = E_OUTOFMEMORY;
+				}
+				
+				logModule.Write(L"ReadString %d, %d, %x", lTempSize, writtenbytes, hr);
+			} //enough memory
+			else
+			{
+				logModule.Write(L"ReadString failed %x", hr);
+			}
+		}
+
+	} //read size OK
+	return hr;
+
+}
+///<summary>
+///reads a VARIANT value from the stream (pStream). Arrays are recusively processed
+///</summary>
+///<param name="pStream">asdf</param>
+///<param name="TheValue">asdf</param>
+///<param name="vtype">VT variant type</param>
+///<returns>a HRESULT</returns>
+STDMETHODIMP NWCApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype) throw()
+{
+	LONG cBytes = 0,
+		ElSize = 0,
+		cDims = 0,
+		lElements = 0,
+		lMemSize = 0;
+	VARTYPE lType = VT_EMPTY;
+	// we reassign the value
+	::VariantClear(TheValue);
+	ZeroMemory(TheValue, sizeof(VARIANT));
+
+	PVOID psadata = nullptr;
+	HRESULT hr = S_OK;
+	INT els = 0;
+	if ((vtype & VT_ARRAY) == VT_ARRAY)
+	{
+		ARRAY_DESCRIPTOR descriptor;
+		pStream.read((char*)&descriptor, sizeof(ARRAY_DESCRIPTOR));
+		vtype = descriptor.type;
+		ElSize = descriptor.ElemSize;
+		cDims = descriptor.Dims;
+		lType = vtype; // 'cache the old vtype we need it to set the type of vartype
+		vtype ^= VT_ARRAY; // mask out
+		auto isJagged = false;
+
+		//WARNING on Windows x64 and x86, the variant size array differs		
+		auto doGetType = (vtype == VARENUM::VT_UNKNOWN || vtype == VARENUM::VT_ERROR || vtype == VARENUM::VT_VARIANT); //VT_VARIANT because we have object arrays with a specific type?
+		if (doGetType)
+		{
+			CComBSTR BogusVariantType;
+			ReadString(pStream, &BogusVariantType);
+			// now we have a problem
+			if (!BogusVariantType.StartsWith(L"System.Object"))
+			{
+				logModule.Write(L"FATAL: Cannot support .NET typed arrays %s", BogusVariantType);
+				return E_INVALIDARG;
+			}
+		}
+		else
+		{
+			CComBSTR BogusVariantType;
+			ReadString(pStream, &BogusVariantType);
+			isJagged = BogusVariantType == L"__jagged";
+			if (isJagged)
+			{
+				BogusVariantType.Empty();
+				ReadString(pStream, &BogusVariantType); // e.g. System.Int32[][] this has no use for OLEAuto
+			}
+		}
+		if (ElSize == 0 || cDims == 0)
+		{
+			logModule.Write(L"Array is empty");
+			goto exit;
+		}
+
+
+		//reconstruct the number of elements and size
+		lMemSize = 1;
+		//CTempBuffer<SAFEARRAYBOUND, 128, CComAllocator> safebound(cDims);
+		CComHeapPtr<SAFEARRAYBOUND> safebound;
+		safebound.Allocate(cDims);
+		logModule.Write(L"reading array type=%d cDims %d", vtype, cDims);
+		//int bx=cDims;
+		for (LONG cx = 0; cx < cDims; cx++)// cDims - 1; cx != 0; cx--)
+		{
+			pStream.read((char*)&safebound[cx], sizeof(SAFEARRAYBOUND));
+			{
+				lMemSize *= safebound[cx].cElements;
+			}
+			logModule.Write(L"lBound %d, cElements %d", safebound[cx].lLbound, safebound[cx].cElements);
+		}
+		auto psa = ::SafeArrayCreate(vtype, cDims, safebound);
+
+		if (psa == nullptr)
+		{
+			goto exit;
+		}
+		lElements = lMemSize;
+		lMemSize *= ElSize;
+		logModule.Write(L"array memsize %d els %d", lMemSize, lElements);
+		if (
+			(vtype == VT_UI1) || (vtype == VT_I2) || (vtype == VT_I4) || (vtype == VT_R4) || (vtype == VT_R8)
+			|| (vtype == VT_CY) || (vtype == VT_DATE)
+			|| (vtype == VT_BOOL) || (vtype == VT_I8) || (vtype == VT_I1)
+			)
+		{
+			//retrieve pointer to first address
+			hr = ::SafeArrayAccessData(psa, &psadata);
+			if (hr == S_OK)
+			{
+				pStream.read((char*)psadata, lMemSize);
+				::SafeArrayUnaccessData(psa);
+			}
+		}
+		else if ((vtype == VT_BSTR || vtype == VT_DECIMAL) && lElements > 0)
+		{
+			hr = ::SafeArrayAccessData(psa, &psadata);
+			if (hr == S_OK)
+			{
+				logModule.Write(L"VT_BSTR array %d", lElements);
+				int backup = logModule.get_Logging(); // disable for the moment
+				logModule.set_Logging(0);
+				if (vtype == VT_BSTR)
+				{
+					auto btemp = static_cast<BSTR*>(psadata);
+					for (els = 0; els < lElements && hr == S_OK; els++)
+						hr = ReadString(pStream, &btemp[els]);
+				}
+				else if (vtype == VT_DECIMAL)
+				{
+					auto btemp = static_cast<VARIANT*>(psadata); //ugly but true
+					for (els = 0; els < lElements && hr == S_OK; els++)
+						hr = ReadValue(pStream, &btemp[els], VT_DECIMAL);
+				}
+
+				::SafeArrayUnaccessData(psa);
+				logModule.set_Logging(backup);
+			}
+
+		}
+		else if (vtype == VARENUM::VT_VARIANT && lElements > 0)
+		{
+			CTempBuffer<SAFEARRAYBOUND> psaBound(cDims);
+			//LONG rgIndices[4] = {0};
+			CTempBuffer<LONG> rgIndices(cDims);
+
+			LONG dimPointer = 0; // next dimension will first be incremented
+			LONG findEl = 0, ubound, lbound;
+			::SafeArrayLock(psa);
+			for (LONG x = 0; x < cDims; x++)
+			{
+				::SafeArrayGetLBound(psa, x + 1, &lbound);
+				::SafeArrayGetUBound(psa, x + 1, &ubound);
+				psaBound[x].cElements = ubound - lbound + 1;
+				psaBound[x].lLbound = rgIndices[x] = lbound;
+			}
+			int backup = logModule.get_Logging(); // disable for the moment
+			logModule.set_Logging(0);
+			for (;;)
+			{
+				if (rgIndices[dimPointer] <
+					(LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound)
+				{
+					VARIANT* pVar;
+					hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
+					//logModule.Write(L"Indices %d,%d,%d", rgIndices[0], rgIndices[1], rgIndices[2]);
+					if (FAILED(hr))
+						logModule.Write(L"FATAL: SafeArrayPtrOfIndex failed %x", hr);
+
+					if (hr == S_OK)
+					{
+						vtype = pVar->vt;
+						pStream.read((char*)&vtype, sizeof(VARTYPE));
+						
+							//----- recursive call ----- keep an eye on this
+							hr = ReadValue(pStream, pVar, vtype);
+					}
+					rgIndices[dimPointer]++;
+					if (++findEl == lElements)
+					{
+						break;
+					}
+				}
+				//carry stuff
+				else
+				{
+					//magic
+					while (++dimPointer <= cDims)
+					{
+						if (rgIndices[dimPointer] < ((LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound - 1))
+						{
+							rgIndices[dimPointer]++;
+							break;
+						}
+					}
+
+					//reset previous cols to initial lowerbound from left to 
+					// most right carry position
+					for (LONG z = 0; z < dimPointer; z++)
+						rgIndices[z] = psaBound[z].lLbound;
+
+					dimPointer = 0;
+				}
+			}
+			logModule.set_Logging(backup);
+			::SafeArrayUnlock(psa);
+			logModule.Write(L"VT_VARIANT array elements %d %x", findEl, hr);
+		}
+
+		TheValue->parray = psa;
+		TheValue->vt = lType;
+	}
+	//not an array just a single variable.
+	else
+	{
+		TheValue->vt = vtype;
+		switch (vtype & (VT_ARRAY - 1))
+		{
+		case VT_NULL: case VT_EMPTY:
+			cBytes = 0;
+			break;
+		case VT_I1: case VT_UI1:
+			cBytes = sizeof(BYTE);
+			break;
+		case VT_I2:	case VT_UI2: case VT_BOOL:
+			cBytes = sizeof(VARIANT_BOOL);
+			break;
+		case VT_I4:	case VT_UI4: case VT_R4: case VT_INT: case VT_UINT: case VT_ERROR:
+			cBytes = sizeof(SCODE);
+			break;
+		case VT_I8:	case VT_UI8: case VT_CY: case VT_R8: case VT_DATE:
+			cBytes = sizeof(LONGLONG);
+			break;
+		case VT_DECIMAL:
+			cBytes = sizeof(DECIMAL);
+			pStream.read((char*)TheValue, cBytes);
+			break;
+		case VT_BSTR:
+			hr = ReadString(pStream, &TheValue->bstrVal);
+			cBytes = SysStringByteLen(TheValue->bstrVal);
+			break;
+		case VT_DISPATCH: //fall through VT_UNKNOWN
+		case VT_UNKNOWN:
+		{
+			//Puts the IID_IStream interface as a type of the TheValue->punkVal
+			pStream.read((char*)&cBytes, sizeof(cBytes));
+			if (cBytes > 0)
+			{
+				HGLOBAL hGlob = ::GlobalAlloc(GMEM_MOVEABLE, cBytes);
+				pStream.read((char*)::GlobalLock(hGlob), cBytes);
+				::GlobalUnlock(hGlob);
+				IStream * pTemp;
+				hr = ::CreateStreamOnHGlobal(hGlob, TRUE, &pTemp);
+				if (hr == S_OK)
+				{
+					pTemp->QueryInterface(IID_IUnknown, (void**)&TheValue->punkVal);
+					pTemp->Release();
+
+				}
+				else
+				{
+					TheValue->vt = VT_EMPTY;
+					hr = S_FALSE;
+				}
+			}
+			else
+			{
+				TheValue->vt = VT_EMPTY;
+				hr = S_FALSE;//indicate no data
+			}
+			break;
+		}
+		default:
+			hr = E_INVALIDARG;
+		}
+	exit:
+		logModule.Write(L"Done variant type=%d, size=%d", vtype, cBytes);
+		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL)
+			pStream.read((char*)&TheValue->bVal, cBytes);
+	}
+	//error:
+	if (FAILED(hr))
+	{
+		VariantClear(TheValue);
+		ZeroMemory(TheValue, sizeof(VARIANT));
+	}
+
+	return hr;
+}
+
 /***
 *writes a string in utf-8 compressed format
 *

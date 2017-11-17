@@ -137,7 +137,7 @@ class CApplicationDL:
 public:
 	static HRESULT __stdcall ApplicationSave(const simple_pool::ptr_t &pool,
 		PUCHAR appKey,
-		IApplicationCache* pDictionary,
+		CComObject< NWCApplication>  pDictionary,
 		LONG Expires,
 		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
 		//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
@@ -148,10 +148,6 @@ public:
 		unsigned char bytes[bufLen];
 		ULONG read2 = 0;
 		ULONG didRead = 0;
-		if (pDictionary == nullptr || appKey == nullptr)
-		{
-			return E_POINTER;
-		}
 		
 		
 		auto appkey = HexStringFromMemory((PBYTE)appKey, sizeof(GUID));
@@ -170,7 +166,7 @@ public:
 		cseqs->SetSize(ul);
 		cseqs->QueryInterface(IID_IStream, (void**)pSequentialStream);//refcount==1
 		int keyCount;
-		pDictionary->get_Count(&keyCount);//1 based
+		pDictionary.get_Count(&keyCount);//1 based
 		
 	
 		command rediscommand("MSET");
@@ -184,8 +180,8 @@ public:
 
 			CComBSTR vkey;
 			
-			hr = pDictionary->get_Key(key, &vkey);
-			hr = pDictionary->get_Value(vkey, &vval);
+			hr = pDictionary.get_Key(key, &vkey);
+			hr = pDictionary.get_Value(vkey, &vval);
 			auto vt = vval.vt;
 			CComBSTR conKey, ansiBstr;
 			vkeyStr.Detach(&conKey);

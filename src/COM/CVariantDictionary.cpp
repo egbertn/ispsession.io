@@ -1327,11 +1327,10 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 			hr = ATL::AtlHresultFromLastError();
 		else
 		{
-			if (byteswritten > m_dwMultiLen)
+			if (byteswritten > m_lpstrMulti.capacity())
 			{
-				hr = AllocPSTR(&m_lpstrMulti, byteswritten, &m_dwBufSize);
-				m_dwMultiLen = byteswritten;
-				logModule.Write(L"bufsize %d, bytes written %d in AllocPSTR %x", m_dwBufSize, byteswritten, hr);
+				m_lpstrMulti.reserve((byteswritten / 512) * 512 + 1024);			
+				logModule.Write(L"bufsize %d, bytes written %d in AllocPSTR %x", m_lpstrMulti.capacity(), byteswritten, hr);
 				if (FAILED(hr))
 				{
 					test = 0;
@@ -1339,13 +1338,14 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 					return hr;
 				}
 			}
-			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti, byteswritten, nullptr, nullptr);
+			m_lpstrMulti.resize(byteswritten);
+			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti.data(), byteswritten, nullptr, nullptr);
 			if (test > 0)
 			{
 				test--; //exclude terminating zero
 				hr = pStream->Write(&test, sizeof(UINT), nullptr);
 				if (hr == S_OK)
-					hr = pStream->Write(m_lpstrMulti, test, nullptr);
+					hr = pStream->Write(m_lpstrMulti.data(), test, nullptr);
 				logModule.Write(L"WriteString Bytes %d", test);
 			}
 		}
@@ -1361,7 +1361,7 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 /*
  * decompresses a string (BSTR) from utf-8 format and also tests for old (legacy) utf-16 format
  */
-STDMETHODIMP STDMETHODCALLTYPE CVariantDictionary::ReadString(IStream *pStream, BSTR *retval) throw()
+STDMETHODIMP CVariantDictionary::ReadString(IStream *pStream, BSTR *retval) throw()
 {
 	HRESULT hr = S_OK;
 	UINT lTempSize = 0;
@@ -1379,24 +1379,23 @@ STDMETHODIMP STDMETHODCALLTYPE CVariantDictionary::ReadString(IStream *pStream, 
 		}
 		else if (lTempSize > 0) 
 		{
-			//warning! This is a multibyte encoded string!
-			//realloc
-			if (lTempSize > m_dwMultiLen)
+			//warning! This is a multibyte encoded string!			
+			if (lTempSize > m_lpstrMulti.capacity())
 			{
-				hr = AllocPSTR(&m_lpstrMulti, lTempSize, &m_dwBufSize)	;
-				m_dwMultiLen = lTempSize;
+				m_lpstrMulti.reserve((lTempSize / 512) * 512 + 1024);				
 			}	
 			if (hr == S_OK)
 			{
-				hr = pStream->Read(m_lpstrMulti, lTempSize, nullptr);
+				m_lpstrMulti.resize(lTempSize);
+				hr = pStream->Read((PSTR)m_lpstrMulti.data(), lTempSize, nullptr);
 				//because we specify the exact length, writtenbytes is excluding the terminating 0
-				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti, lTempSize, nullptr, 0);	
+				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti.data(), lTempSize, nullptr, 0);	
 				if (writtenbytes == 0)
 					hr = ATL::AtlHresultFromLastError();
 				else
 				{
 					if (::SysReAllocStringLen(retval, nullptr, writtenbytes) != FALSE)
-						::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti, lTempSize, *retval, writtenbytes);
+						::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti.data(), lTempSize, *retval, writtenbytes);
 					else
 						hr = E_OUTOFMEMORY;
 				}//succeed utf-8 to utf-16

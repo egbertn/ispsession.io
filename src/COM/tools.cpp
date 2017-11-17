@@ -538,3 +538,11 @@ BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) throw()
 	return  retval;
 	
 }
+void __stdcall FreeString(BSTR * theString) throw()
+{
+	if (theString != NULL && *theString != NULL)
+	{
+		SysFreeString(*theString);
+		*theString = NULL;
+	}
+}

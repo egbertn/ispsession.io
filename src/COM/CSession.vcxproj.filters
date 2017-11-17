@@ -22,9 +22,6 @@
     <ClCompile Include="ADCLogModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bstrnocache.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="CSession.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -155,9 +152,6 @@
       <Filter>Generated Files</Filter>
     </ClInclude>
     <ClInclude Include="CStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bstrnocache.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="stdafx.h">

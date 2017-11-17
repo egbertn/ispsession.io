@@ -137,8 +137,10 @@ private:
 	STDMETHODIMP IsDirty(BOOL* pRet);
 	//std:vector<byte> probably semantically is better, instead of std::string
 	STDMETHODIMP SerializeKey(BSTR key, std::string& binaryString);
-	STDMETHODIMP WriteString(BSTR Key, std::string& outputString);
+	STDMETHODIMP ReadString(std::istream& stream, BSTR* outputString);
+	STDMETHODIMP ReadValue(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype);
 	//allows recursion
+	STDMETHODIMP WriteString(BSTR Key, std::string& inoutputString);
 	STDMETHODIMP WriteValue(VARTYPE vt, VARIANT& val, std::string& binaryString);
 	// converts a e.g. recordset into a VT_IUNKNOWN of IStream
 	STDMETHODIMP ConvertObjectToStream(VARIANT& val);

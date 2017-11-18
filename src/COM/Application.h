@@ -123,7 +123,10 @@ public:
 	
 	STDMETHOD(get_KeyExists)(BSTR Key, VARIANT_BOOL *pVal);
 	STDMETHOD(get_KeyType)(BSTR Key, VARTYPE* pVal);
-
+	// public but not exposed to COM
+	STDMETHODIMP get_KeyStates(std::vector<char*> &dirty_keys, std::vector<char*> &new_keys, std::vector<char*> &other_keys);
+	STDMETHODIMP SerializeKey(BSTR key, std::string& binaryString);
+	STDMETHODIMP DeserializeKey(BSTR key, std::string& binaryString);
 
 private:
 	//IIS specific 
@@ -136,7 +139,6 @@ private:
 	STDMETHODIMP LocalFind(BSTR Key, ElementModel* found);
 	STDMETHODIMP IsDirty(BOOL* pRet);
 	//std:vector<byte> probably semantically is better, instead of std::string
-	STDMETHODIMP SerializeKey(BSTR key, std::string& binaryString);
 	STDMETHODIMP ReadString(std::istream& stream, BSTR* outputString);
 	STDMETHODIMP ReadValue(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype);
 	//allows recursion
@@ -146,7 +148,7 @@ private:
 	STDMETHODIMP ConvertObjectToStream(VARIANT& val);
 	// converts an IStream to an instance of a COM class
 	STDMETHODIMP ConvertVStreamToObject(VARIANT& val);
-	STDMETHODIMP DeserializeKey(BSTR key, std::string binaryString);
+
 	
 	STDMETHODIMP ReadConfigFromWebConfig();
 	STDMETHODIMP InitializeDataSource();

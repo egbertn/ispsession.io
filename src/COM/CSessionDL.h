@@ -6,7 +6,7 @@
 #include "tools.h"
 #include "CSession.h"
 #include "CStream.h"
-
+#include "Application.h"
 
 //initializes from SystemTime
 struct DBTIMESTAMP 
@@ -131,12 +131,19 @@ public:
 	
 
 };
+std::string str_toupper(std::string s) {
+	std::transform(s.begin(), s.end(), s.begin(),		
+		// [](char c){ return std::toupper(c); }          // wrong
+		[](unsigned char c){ return std::toupper(c); } // correct
+	);
+	return s;
+}
 class CApplicationDL:
 	public _ApplicationAccessor
 {
 public:
 	static HRESULT __stdcall ApplicationSave(const simple_pool::ptr_t &pool,
-		PUCHAR appKey,
+		GUID& appKey,
 		CComObject< NWCApplication>  pDictionary,
 		LONG Expires,
 		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
@@ -144,86 +151,101 @@ public:
 		LONG totalRequestTime
 		)
 	{
-		const UINT bufLen = 0x1000;
-		unsigned char bytes[bufLen];
-		ULONG read2 = 0;
-		ULONG didRead = 0;
+		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));
+		auto appkeyPrefix = appkey + ":";
 		
-		
-		auto appkey = HexStringFromMemory((PBYTE)appKey, sizeof(GUID));
-		
-		std::string ansi, buf;
-		ansi.append(appkey);	
 		
 		//write binary safe string
 		HRESULT hr = S_OK;
-
-		CComObject<CStream>* cseqs;
-		CComObject<CStream>::CreateInstance(&cseqs);
-		ULARGE_INTEGER ul;
-		ul.QuadPart = 128;
-		IStream* pSequentialStream  = nullptr;
-		cseqs->SetSize(ul);
-		cseqs->QueryInterface(IID_IStream, (void**)pSequentialStream);//refcount==1
+		
 		int keyCount;
 		pDictionary.get_Count(&keyCount);//1 based
 		
-	
+		command transactionStart("MULTI");
+		command transactionCommit("EXEC");
 		command rediscommand("MSET");
 		command redisSAdd("SADD");
-		redisSAdd << ansi; //SADD appkey 
+		 
+		std::vector<char*> changedKeys;
+		std::vector<char*> newKeys;
+		std::vector<char*> otherKeys;
+		pDictionary.get_KeyStates(changedKeys, newKeys, otherKeys);
 		
-		for (auto key = 1; key <= keyCount; key++)
-		{
-			CComVariant vkeyStr ;
-			CComVariant vval;
-
-			CComBSTR vkey;
-			
-			hr = pDictionary.get_Key(key, &vkey);
-			hr = pDictionary.get_Value(vkey, &vval);
-			auto vt = vval.vt;
-			CComBSTR conKey, ansiBstr;
-			vkeyStr.Detach(&conKey);
-			ansiBstr.Attach(conKey.ToByteString());
-			ansi.assign((PCHAR)ansiBstr.m_str, ansiBstr.ByteLength());
 		
-			//hr = pDictionary->WriteValue(pSequentialStream, &vval, vt, conKey);
-			//reset stream to position 0
-			LARGE_INTEGER li;
-			li.QuadPart = 0L;
-			hr = pSequentialStream->Seek(li, STREAM_SEEK_SET, nullptr);
-			didRead = 0;
-			do
-			{
-				hr = pSequentialStream->Read(bytes, bufLen, &read2);
-				didRead += read2;
-				if (read2 > 0)
-				{
-					buf.append((PCSTR)bytes, (size_t)read2);
-				}
-			} while (hr == S_OK);
-			rediscommand << ansi << buf;
-			redisSAdd << ansi;
-			buf.clear();
+		/*
+		1. Start transaction with MULTI
+		2. Add specified keys (when count> 0) to set {appkey} with SADD
+		3. serialize new and modified Keys (when count> 0 ) and their values with MSET
+		4. Commit transaction with EXEC
+		*/
 
-			ULARGE_INTEGER newSize;
-			newSize.QuadPart = 0L;
-			pSequentialStream->SetSize(newSize);
-		};
-
+		
 		hr = S_OK; //reset S_FALSE to S_OK
-		auto conn = pool->get();
-	
-		auto reply = conn->run(rediscommand);
-		hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
-		if (hr == S_OK)
+		if (newKeys.size() > 0 || changedKeys.size() > 0)
 		{
-			reply = conn->run(redisSAdd);
+			auto conn = pool->get();
+			//1. trans
+			auto reply = conn->run(transactionStart);
 			hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
+
+			//2. the key set must be expanded
+			if (newKeys.size() > 0)
+			{
+				redisSAdd << appkey; //SADD appkey KEY, [KEY...]
+				string k;
+				for (auto saddKey = 0; saddKey < newKeys.size(); ++saddKey)
+				{
+					k = appkeyPrefix + str_toupper(newKeys[saddKey]);
+					redisSAdd << k;
+				}
+				reply = conn->run(redisSAdd);
+				hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
+			}
+			//3. serialize individual keys
+			
+			if (newKeys.size() > 0)
+			{
+				string k;
+				string binary;
+				CComBSTR bstrKey;
+				for (auto saddKey = 0; saddKey < newKeys.size(); ++saddKey)
+				{
+					//only set redis keys to upper, not the serialized one
+					k = appkeyPrefix + str_toupper(newKeys[saddKey]);
+					bstrKey = newKeys[saddKey];
+					hr = pDictionary.SerializeKey(bstrKey, binary);
+					logModule.Write(L"Serialize key %s %x", bstrKey, hr);
+					if (SUCCEEDED(hr))
+					{
+						rediscommand << k << binary;
+					}
+				}			
+			}
+			if (changedKeys.size() > 0)
+			{
+				string k;
+				string binary;
+				CComBSTR bstrKey;
+				for (auto saddKey = 0; saddKey < changedKeys.size(); ++saddKey)
+				{
+					//only set redis keys to upper, not the serialized one
+					k = appkeyPrefix + str_toupper(changedKeys[saddKey]);
+					bstrKey = changedKeys[saddKey];
+					hr = pDictionary.SerializeKey(bstrKey, binary);
+					logModule.Write(L"Serialize key %s %x", bstrKey, hr);
+					if (SUCCEEDED(hr))
+					{
+						rediscommand << k << binary;
+					}
+				}				
+			}
+			
+			reply = conn->run(rediscommand);
+			hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
+			
+			reply = conn->run(transactionCommit);
+			pool->put(conn);
 		}
-		pool->put(conn);
-		
 
 	   
 		return hr;

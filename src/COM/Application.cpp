@@ -53,6 +53,29 @@ STDMETHODIMP NWCApplication::OnEndPage() throw()
 	logModule.Write(L"Application:OnEndPage");
 	return hr;
 }
+STDMETHODIMP NWCApplication::get_KeyStates(std::vector<char*> &dirty_keys, std::vector<char*> &new_keys, std::vector<char*> &other_keys) throw()
+{
+	//USES_CONVERSION;
+	HRESULT hr = S_OK;
+	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
+	{
+		if (k->second.IsNew == TRUE)
+		{
+			new_keys.push_back(CW2A(k->first));			
+		}
+		else if (k->second.IsDirty == TRUE)
+		{
+			dirty_keys.push_back(CW2A(k->first));
+
+		}
+		else
+		{
+			other_keys.push_back(CW2A(k->first));
+		}
+	}
+	return hr;
+}
+
 STDMETHODIMP NWCApplication::IsDirty(BOOL* pRet) throw()
 {
 	*pRet = FALSE;
@@ -73,6 +96,7 @@ STDMETHODIMP NWCApplication::PersistApplication() throw()
 	{
 		return S_OK;
 	}
+	std::string str;
 	BOOL blnIsDirty;
 	hr = IsDirty(&blnIsDirty);
 	logModule.Write(L"PersistApplication err=%d, dirty=%d", m_bErrState, blnIsDirty);
@@ -82,7 +106,7 @@ STDMETHODIMP NWCApplication::PersistApplication() throw()
 	if (blnIsDirty == TRUE)
 	{	
 		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
-		hr = CApplicationDL::ApplicationSave(pool, (PUCHAR)&m_AppKey, this, lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);		
+		hr = CApplicationDL::ApplicationSave(pool, m_AppKey, this, lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);		
 
 		logModule.Write(L"CApplicationDL::ApplicationSave  size(%d) time(%d), hr(%x)", lSize, totalRequestTimeMS, hr);
 
@@ -257,7 +281,7 @@ STDMETHODIMP NWCApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 	}
 	else //putref should receive an object reference/instance
 	{
-		hr = E_POINTER;
+		hr = E_INVALIDARG;
 		Error(L"This variable is not an object", GetObjectCLSID(), hr);
 		logModule.Write(L"putref_Item not VT_DISPATCH or VT_UNKNOWN but %d", origType);
 	}
@@ -955,6 +979,7 @@ STDMETHODIMP NWCApplication::ConvertObjectToStream(VARIANT &var) throw()
 STDMETHODIMP NWCApplication::SerializeKey(BSTR Key, std::string& binaryString) throw()
 {
 	HRESULT hr = S_OK;
+	binaryString.resize(0);
 	auto pos = _dictionary.find(Key);
 	if (pos != _dictionary.end())
 	{
@@ -1281,7 +1306,7 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 
 	return hr;
 }
-STDMETHODIMP NWCApplication::DeserializeKey(BSTR Key, std::string binaryString) throw()
+STDMETHODIMP NWCApplication::DeserializeKey(BSTR Key, std::string& binaryString) throw()
 {
 	HRESULT hr = S_OK;
 	return hr;

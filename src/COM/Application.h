@@ -4,18 +4,34 @@
 #include "message.h"
 #include <chrono>
 
-
+#include "IDatabase.h"
 #include "tools.h"
 #include "CRedLock.h"
-struct ARRAY_DESCRIPTOR
-{
-	VARTYPE type;
-	LONG ElemSize;
-	LONG Dims;
-};
+
 //defines a datavalue structure
 struct ElementModel
 {
+	ElementModel(_In_ const ElementModel& src)
+	{
+		this->IsNew = src.IsNew;
+		this->IsDirty = src.IsDirty;
+		this->IsSerialized = src.IsSerialized;
+		this->ExpireAt = src.ExpireAt;
+		memset(&this->val, 0, sizeof(VARIANT));
+		this->val = src.val;
+	}
+	ElementModel& operator=(_In_ const ElementModel& src)
+	{
+		IsNew = src.IsNew;
+		IsDirty = src.IsDirty;
+		IsSerialized = src.IsSerialized;
+		ExpireAt = src.ExpireAt;
+		return *this;
+	}
+	ElementModel()
+	{
+		memset(this, 0, sizeof(ElementModel));
+	}
 	CComVariant val;
 	BOOL IsNew;
 	BOOL IsDirty;
@@ -32,9 +48,9 @@ struct ElementModel
 struct KeyComparer
 {
 public:
-	bool operator()(CComBSTR x, CComBSTR y) const throw()
+	bool operator()(BSTR x, BSTR y) const throw()
 	{
-		return x.CompareTo(y, true) == -1;
+		return ::VarBstrCmp(x, y, ::GetThreadLocale(), NORM_IGNORECASE) == VARCMP_LT;
 	}
 };
 
@@ -42,7 +58,8 @@ class ATL_NO_VTABLE NWCApplication :
 	public CComObjectRootEx<CComMultiThreadModel>,
 	public CComCoClass<NWCApplication, &CLSID_NWCApplication>,
 	public IDispatchImpl<IApplicationCache, &IID_IApplicationCache, &LIBID_ISPCSession>,
-	public ISupportErrorInfoImpl<&IID_IDispatch>
+	public ISupportErrorInfoImpl<&IID_IDispatch>,
+	public IDatabase
 
 {
 public:
@@ -54,6 +71,7 @@ public:
 		COM_INTERFACE_ENTRY(IDispatch)
 		COM_INTERFACE_ENTRY(ISupportErrorInfo)	
 		COM_INTERFACE_ENTRY(IApplicationCache)
+		COM_INTERFACE_ENTRY(IDatabase)
 	END_COM_MAP()
 
 	HRESULT FinalConstruct() throw()
@@ -122,11 +140,18 @@ public:
 	STDMETHOD(ExpireKeyAt)(BSTR Key, INT at);
 	
 	STDMETHOD(get_KeyExists)(BSTR Key, VARIANT_BOOL *pVal);
-	STDMETHOD(get_KeyType)(BSTR Key, VARTYPE* pVal);
-	// public but not exposed to COM
-	STDMETHODIMP get_KeyStates(std::vector<char*> &dirty_keys, std::vector<char*> &new_keys, std::vector<char*> &other_keys);
-	STDMETHODIMP SerializeKey(BSTR key, std::string& binaryString);
-	STDMETHODIMP DeserializeKey(BSTR key, std::string& binaryString);
+	STDMETHOD(get_KeyType)(BSTR Key, SHORT* pVal);
+
+
+	// public but not exposed to IDL
+	////IDatabase
+	STDMETHOD( get_KeyCount)(PINT pval);
+	STDMETHOD (get_KeyStates)(std::vector<char*> &dirty_keys, std::vector<char*> &new_keys, std::vector<char*> &other_keys);
+	STDMETHOD (SerializeKey)(BSTR key, std::string& binaryString);
+	//unpacks key & value from the blob       
+	STDMETHOD (DeserializeKey)(std::string& binaryString);
+
+
 
 private:
 	//IIS specific 
@@ -147,7 +172,7 @@ private:
 	// converts a e.g. recordset into a VT_IUNKNOWN of IStream
 	STDMETHODIMP ConvertObjectToStream(VARIANT& val);
 	// converts an IStream to an instance of a COM class
-	STDMETHODIMP ConvertVStreamToObject(VARIANT& val);
+	STDMETHODIMP ConvertVStreamToObject(ElementModel& val);
 
 	
 	STDMETHODIMP ReadConfigFromWebConfig();

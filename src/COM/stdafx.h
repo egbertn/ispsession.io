@@ -32,7 +32,9 @@
 using namespace ATL;
 #define NO_BOOST
 #include "include/redis3m/redis3m.hpp"
-#include <iostream>
+#include <iostream> 
+#include <cctype>
+#include <clocale>
 using namespace redis3m;
 
 
@@ -96,4 +98,9 @@ using namespace redis3m;
 #include "ADClogModule.h"
 
 extern LoggingModule logModule;
-
+struct ARRAY_DESCRIPTOR
+{
+	VARTYPE type;
+	LONG ElemSize;
+	LONG Dims;
+};

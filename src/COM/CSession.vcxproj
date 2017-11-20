@@ -507,6 +507,7 @@
     <ClInclude Include="..\..\..\..\Users\gastweb\Downloads\getopt_mb_uni_vc10\getopt_mb_uni_vc10\getopt_mb_uni_vc10\getopt.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="CRedLock.h" />
+    <ClInclude Include="IDatabase.h" />
     <ClInclude Include="sds.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ADCLogModule.h" />

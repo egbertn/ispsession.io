@@ -202,6 +202,9 @@
     <ClInclude Include="ConfigurationManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="IDatabase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CSession.rc">

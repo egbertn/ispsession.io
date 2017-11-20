@@ -21,7 +21,7 @@ std::wstring& __stdcall trim(std::wstring &s);
 std::string& __stdcall trim(std::string &s);
 
 void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elems, int maxCount = 0);
-
+std::string str_toupper(std::string s);
 
 
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName);

@@ -4,12 +4,7 @@
 #include "CEnum.h"
 #include "tools.h"
 
-struct ARRAY_DESCRIPTOR
-{
-	VARTYPE type;
-	LONG ElemSize;
-	LONG Dims;
-};
+
 struct TextComparer
 {
 public:
@@ -70,7 +65,7 @@ public:
 	STDMETHODIMP Remove(VARIANT varKey);
 	STDMETHODIMP RemoveAll(void);
 	STDMETHODIMP get_Exists(VARIANT vKey, VARIANT_BOOL* pVal);
-	STDMETHODIMP get_VarType(VARIANT vKey, VARTYPE * pVal);
+	STDMETHODIMP get_VarType(VARIANT vKey, SHORT * pVal);
 	STDMETHODIMP Persist(VARIANT vKey);
 
 	STDMETHODIMP LocalContents(DWORD* lSize, IStream **pSequentialStream);
@@ -87,20 +82,7 @@ public:
 	//STDMETHODIMP ReadUnsupportedValue(IStream *pStream, VARIANT* TheValue, DWORD size);
 	//STDMETHODIMP WriteUnsupportedValue(IStream *pStream, VARIANT* TheValue);
 private:
-	//IVariantDictionary2
-	STDMETHOD(GetTypeInfoCount2)(UINT *); //idispatch stubs
-	STDMETHOD(GetTypeInfo2)(UINT, LCID, ITypeInfo **);
-	
-	STDMETHOD(GetIDsOfNames2)(REFIID , LPOLESTR *, UINT, LCID, DISPID *);
-	STDMETHOD(Invoke2)(DISPID dispid, REFIID, LCID, WORD, DISPPARAMS *, VARIANT *, EXCEPINFO *, UINT *);
-	STDMETHOD(get_Item2)(VARIANT VarKey, VARIANT *pvar);
-    STDMETHOD(put_Item2)(VARIANT VarKey,VARIANT pvar);
-    STDMETHOD(putref_Item2)(VARIANT VarKey, VARIANT pvar);
-    STDMETHOD(get_Key2)(VARIANT VarKey, VARIANT *pvar);
-	STDMETHOD(get_Count2)(int *cStrRet);
-	STDMETHOD(get__NewEnum2)(IUnknown **ppEnumReturn);
-    STDMETHOD(Remove2)(VARIANT VarKey);
-	STDMETHOD(RemoveAll2)( void);
+
 
 	//STDMETHOD(CleanAndEraseKey)(const BSTR key);
 	//CComObject<CSequentialStream> *m_Stream;	

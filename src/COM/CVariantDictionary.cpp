@@ -78,7 +78,7 @@ STDMETHODIMP CVariantDictionary::get_Item(VARIANT varKey, VARIANT* pVal) throw()
 		}
 		else
 		{
-			hr = ::VariantCopy(pVal, &pos->second);
+			hr = pos->second.CopyTo(pVal);
 			if (hr != S_OK) logModule.Write(L"VariantCopy %x", hr);
 		}
 	}
@@ -1201,7 +1201,7 @@ STDMETHODIMP CVariantDictionary::get_Exists(VARIANT vKey, VARIANT_BOOL* pVal) th
 	}
 	return hr;
 }
-STDMETHODIMP CVariantDictionary::get_VarType(VARIANT vKey, VARTYPE *vType) throw()
+STDMETHODIMP CVariantDictionary::get_VarType(VARIANT vKey, SHORT *vType) throw()
 {
 	
 	CComVariant keycopy;

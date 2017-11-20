@@ -3,34 +3,49 @@
 #include "tools.h"
 #include "ConfigurationManager.h"
 
-std::wstring& __stdcall ltrim(std::wstring &s) {
+std::wstring& __stdcall ltrim(std::wstring &s) 
+{
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
 		std::not1(std::ptr_fun<int, int>(std::isspace))));
 	return s;
 }
-std::string& __stdcall ltrim(std::string &s) {
+std::string& __stdcall ltrim(std::string &s) 
+{
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
 		std::not1(std::ptr_fun<int, int>(std::isspace))));
 	return s;
 }
 // trim from end
-std::wstring& __stdcall rtrim(std::wstring &s) {
+std::wstring& __stdcall rtrim(std::wstring &s) 
+{
 	s.erase(std::find_if(s.rbegin(), s.rend(),
 		std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 	return s;
 }
-std::string& __stdcall rtrim(std::string &s) {
+std::string& __stdcall rtrim(std::string &s) 
+{
 	s.erase(std::find_if(s.rbegin(), s.rend(),
 		std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
 	return s;
 }
 
 // trim from both ends
-std::wstring& __stdcall trim(std::wstring &s) {
+std::wstring& __stdcall trim(std::wstring &s) 
+{
 	return ltrim(rtrim(s));
 }
-std::string& __stdcall trim(std::string &s) {
+std::string& __stdcall trim(std::string &s) 
+{
 	return ltrim(rtrim(s));
+}
+
+std::string str_toupper(std::string s) 
+{
+	std::transform(s.begin(), s.end(), s.begin(),
+		// [](char c){ return std::toupper(c); }          // wrong
+		[](unsigned char c){ return std::toupper(c); } // correct
+	);
+	return s;
 }
 //void split(const std::string &s, char delim, std::vector<std::string> &elems, int maxCount = 0)
 //{
@@ -373,7 +388,7 @@ string __stdcall ws2s(const std::wstring& wstr)
 	using convert_typeX = std::codecvt_utf8<wchar_t>;
 	std::wstring_convert<convert_typeX, wchar_t> converterX;
 
-	return converterX.to_bytes(wstr);
+	return std::move( converterX.to_bytes(wstr));
 }
 
 //assumes that PBYTE is valid memory! 
@@ -411,13 +426,28 @@ std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) throw()
 }
 void __stdcall sHexFromBt(GUID* psa, BSTR *sRet) throw()
 {
-	auto pvdata = (PINT)psa;
-	if (::SysReAllocStringLen(sRet, nullptr, sizeof(GUID)* 2) == TRUE)
+	auto pvdata = (PBYTE)psa;
+	if (::SysReAllocStringLen(sRet, psa == NULL ? L"00000000000000000000000000000000" : NULL, sizeof(GUID) * 2) == TRUE)
 	{
+
+		//ZeroMemory(*sRet, sizeof(GUID) *2);
 		BSTR sdata = *sRet;
-		for (int cx = 0; cx < (sizeof(GUID) / sizeof(int)); cx++)
+		for (int cx = 0, bx = 0; cx < sizeof(GUID) * 2; bx++)
 		{
-			swprintf_s(&sdata[cx * sizeof(__int64)], 10, L"%08X", pvdata[cx]);
+			wchar_t btByte = pvdata[bx];
+			wchar_t btByte2 = btByte & 15;
+			btByte = btByte / 16;
+			if (btByte > 9)
+				btByte += 55;
+			else
+				btByte |= 48;
+
+			if (btByte2 > 9)
+				btByte2 += 55;
+			else
+				btByte2 |= 48;
+			sdata[cx++] = btByte;
+			sdata[cx++] = btByte2;
 		}
 	}
 }
@@ -480,7 +510,7 @@ BOOL __stdcall IsValidHex(const BSTR Cookie) throw()
 
 	if (sLen == (sizeof(GUID) * 2))
 	{		
-		for (auto cx = (sizeof(GUID) / sizeof(int)) - 1; cx >= 0; cx--)
+		for (INT cx = (sizeof(GUID) / sizeof(int)) - 1; cx >= 0; cx--)
 		{
 			auto converted = wcstoul(&Cookie[cx*sizeof(__int64)], L'\0', 16);
 			if (converted == 0)

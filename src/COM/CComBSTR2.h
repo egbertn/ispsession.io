@@ -2645,7 +2645,10 @@ public:
 	{
 		return ::VariantCopy(this, const_cast<VARIANT*>(pSrc)); 
 	}
-
+	HRESULT CopyTo(_Out_ VARIANT* pDest) throw()
+	{
+		return ::VariantCopy(pDest, this);
+	}
 	HRESULT CopyTo(_Outptr_result_z_ BSTR *pstrDest) const
 	{
 		ATLASSERT(pstrDest != NULL && vt == VT_BSTR);

@@ -4,10 +4,10 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Tue Nov 14 23:09:50 2017
+/* at Mon Nov 20 23:27:52 2017
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -159,7 +159,7 @@ EXTERN_C const IID IID_INWCVariantDictionary;
         
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_VarType( 
             /* [in] */ VARIANT vKey,
-            /* [retval][out] */ VARTYPE *pVal) = 0;
+            /* [retval][out] */ SHORT *pVal) = 0;
         
     };
     
@@ -262,7 +262,7 @@ EXTERN_C const IID IID_INWCVariantDictionary;
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_VarType )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT vKey,
-            /* [retval][out] */ VARTYPE *pVal);
+            /* [retval][out] */ SHORT *pVal);
         
         END_INTERFACE
     } INWCVariantDictionaryVtbl;
@@ -399,7 +399,12 @@ EXTERN_C const IID IID_IApplicationCache;
         
         virtual /* [propget][id] */ HRESULT STDMETHODCALLTYPE get_KeyType( 
             /* [in] */ BSTR Key,
-            /* [retval][out] */ VARTYPE *pVal) = 0;
+            /* [retval][out] */ SHORT *pVal) = 0;
+        
+        virtual /* [hidden] */ HRESULT STDMETHODCALLTYPE OnStartPage( 
+            /* [in] */ IUnknown *p) = 0;
+        
+        virtual /* [hidden] */ HRESULT STDMETHODCALLTYPE OnEndPage( void) = 0;
         
     };
     
@@ -515,7 +520,14 @@ EXTERN_C const IID IID_IApplicationCache;
         /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_KeyType )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key,
-            /* [retval][out] */ VARTYPE *pVal);
+            /* [retval][out] */ SHORT *pVal);
+        
+        /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
+            IApplicationCache * This,
+            /* [in] */ IUnknown *p);
+        
+        /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
+            IApplicationCache * This);
         
         END_INTERFACE
     } IApplicationCacheVtbl;
@@ -591,6 +603,12 @@ EXTERN_C const IID IID_IApplicationCache;
 
 #define IApplicationCache_get_KeyType(This,Key,pVal)	\
     ( (This)->lpVtbl -> get_KeyType(This,Key,pVal) ) 
+
+#define IApplicationCache_OnStartPage(This,p)	\
+    ( (This)->lpVtbl -> OnStartPage(This,p) ) 
+
+#define IApplicationCache_OnEndPage(This)	\
+    ( (This)->lpVtbl -> OnEndPage(This) ) 
 
 #endif /* COBJMACROS */
 
@@ -704,10 +722,10 @@ EXTERN_C const IID IID_INWCSession;
         virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_OldSessionID( 
             /* [retval][out] */ BSTR *pVal) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE OnStartPage( 
+        virtual /* [hidden] */ HRESULT STDMETHODCALLTYPE OnStartPage( 
             /* [in] */ IUnknown *p) = 0;
         
-        virtual HRESULT STDMETHODCALLTYPE OnEndPage( void) = 0;
+        virtual /* [hidden] */ HRESULT STDMETHODCALLTYPE OnEndPage( void) = 0;
         
     };
     
@@ -880,11 +898,11 @@ EXTERN_C const IID IID_INWCSession;
             INWCSession * This,
             /* [retval][out] */ BSTR *pVal);
         
-        HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
+        /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
             INWCSession * This,
             /* [in] */ IUnknown *p);
         
-        HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
+        /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
             INWCSession * This);
         
         END_INTERFACE

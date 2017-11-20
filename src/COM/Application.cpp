@@ -7,7 +7,7 @@
 #include "tools.h"
 #include "CEnum.h"
 
-
+//IIS stuff
 STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 {
 	logModule.Write(L"Application:OnStartPage");
@@ -21,7 +21,7 @@ STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 		this->Error(L"Could not get ASP Scripting context", this->GetObjectCLSID(), hr);
 		return hr;
 	}
-	if (FAILED(m_pScriptContext->get_Request(&m_piRequest))) return E_FAIL;
+	//if (FAILED(m_pScriptContext->get_Request(&m_piRequest))) return E_FAIL;
 	if (FAILED(m_pScriptContext->get_Response(&m_piResponse))) return E_FAIL;
 	if (FAILED(m_pScriptContext->get_Server(&m_piServer))) return E_FAIL;
 	hr = ReadConfigFromWebConfig();
@@ -47,34 +47,15 @@ STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 	return hr;
 
 }
+
+//IIS stuff
 STDMETHODIMP NWCApplication::OnEndPage() throw()
 {
 	HRESULT hr = PersistApplication();
 	logModule.Write(L"Application:OnEndPage");
 	return hr;
 }
-STDMETHODIMP NWCApplication::get_KeyStates(std::vector<char*> &dirty_keys, std::vector<char*> &new_keys, std::vector<char*> &other_keys) throw()
-{
-	//USES_CONVERSION;
-	HRESULT hr = S_OK;
-	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
-	{
-		if (k->second.IsNew == TRUE)
-		{
-			new_keys.push_back(CW2A(k->first));			
-		}
-		else if (k->second.IsDirty == TRUE)
-		{
-			dirty_keys.push_back(CW2A(k->first));
 
-		}
-		else
-		{
-			other_keys.push_back(CW2A(k->first));
-		}
-	}
-	return hr;
-}
 
 STDMETHODIMP NWCApplication::IsDirty(BOOL* pRet) throw()
 {
@@ -106,7 +87,8 @@ STDMETHODIMP NWCApplication::PersistApplication() throw()
 	if (blnIsDirty == TRUE)
 	{	
 		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
-		hr = CApplicationDL::ApplicationSave(pool, m_AppKey, this, lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);		
+		CComPtr<IDatabase> database = this;
+		hr = CApplicationDL::ApplicationSave(pool, m_AppKey, database, lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);		
 
 		logModule.Write(L"CApplicationDL::ApplicationSave  size(%d) time(%d), hr(%x)", lSize, totalRequestTimeMS, hr);
 
@@ -127,48 +109,21 @@ STDMETHODIMP NWCApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 	VARTYPE origType = pos->second.val.vt;
 	if (origType == VT_UNKNOWN || origType == VT_DISPATCH)
 	{
-		// first test whether or not this already was unpacked by testing if it is a VT_UI1 | VT_ARRAY type
-	
-		bool isSerialized = pos->second.IsSerialized == TRUE;
-
-		// already persisted? Just AddReff and return the value
-		if (!isSerialized)
-		{
-			logModule.Write(L"Already DeSerialized %s", Key);
-			pos->second.val.punkVal->QueryInterface(&pVal->punkVal);
-			pVal->vt = origType;
-		}
-		else
-		{
-			CComQIPtr<IStream> l_pIStr(pos->second.val.punkVal);
-			hr = l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
-			pos->second.val.Clear();//remove the IStream, it is not the object itself
-			hr = OleLoadFromStream(l_pIStr, IID_IUnknown, (void**)&pVal->punkVal);
-			bool doPersist2 = false;
-			if (hr == E_NOINTERFACE) //IPersistStream not found!
-			{
-				doPersist2 = true;
-				//set the ptr sizeof(CLSID) back because the GetClassId advanced 16 bytes in the stream
-				LARGE_INTEGER dbMove;
-				dbMove.QuadPart = -(long long)sizeof(CLSID);
-				hr = l_pIStr->Seek(dbMove, STREAM_SEEK_CUR, nullptr);
-				hr = OleLoadFromStream2(l_pIStr, IID_IUnknown, (void**)&pVal->punkVal);
-			}
-			logModule.Write(L"OleLoadFromStream%s %x", doPersist2 ? L"2" : L"", hr);
-			pos->second.IsSerialized = FALSE; //don't deserialize next time
-			if (hr == S_OK)
-			{
-				// put the unpersisted object reference back in the variant.
-				pVal->punkVal->QueryInterface(&pos->second.val.punkVal);
-				pos->second.val.vt = pVal->vt = origType;
-			}
-			else
-				pVal->vt = VT_EMPTY;
-		}
+		// first test whether or not this already was unpacked b
+		
+		if (pos->second.IsSerialized == TRUE)
+		{		
+			hr = ConvertVStreamToObject(pos->second);
+			logModule.Write(L"Derializing key %s %x", Key, hr);
+		}		
+		
+		pos->second.val.punkVal->QueryInterface(&pVal->punkVal);
+		pVal->vt = origType;			
+		
 	}	
 	else
 	{
-		hr = ::VariantCopy(pVal, &pos->second.val);
+		hr = pos->second.val.CopyTo(pVal);
 		if (hr != S_OK) logModule.Write(L"VariantCopy %x", hr);
 	}
 	if (FAILED(hr))
@@ -196,13 +151,13 @@ STDMETHODIMP NWCApplication::put_Value(BSTR key, VARIANT newVal) throw()
 
 	if (pos == _dictionary.end())
 	{
-		ElementModel v = { 0 };
-		v.IsNew =
-		v.IsDirty = TRUE;//both should be true
+		ElementModel v;
+		v.IsNew = TRUE;
+		
 		//add it with an empty value and find it again
 		logModule.Write(L"add key %s", key);
 
-		_dictionary.insert(pair<CComBSTR, ElementModel>(key, v));
+		_dictionary.insert(pair<CComBSTR, ElementModel>(key, v)); //element is copied by value, so a VariantCopy is done
 		pos = _dictionary.find(key);
 	}
 	if (vDeref.vt == VT_DISPATCH)
@@ -253,9 +208,9 @@ STDMETHODIMP NWCApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 		if (pos == _dictionary.end())
 		{
 			logModule.Write(L"add key %s", key);
-			ElementModel v = { 0 };
+			ElementModel v;
 			v.val = vDeref;
-			v.IsDirty = v.IsNew = TRUE;
+			v.IsNew = TRUE;
 			_dictionary.insert(pair<CComBSTR, ElementModel>(key, v));
 			pos = _dictionary.find(key);
 		}
@@ -311,6 +266,8 @@ STDMETHODIMP NWCApplication::get_Count(PINT pVal) throw()
 	*pVal = (int)_dictionary.size();
 	return S_OK;
 }
+
+
 STDMETHODIMP NWCApplication::get_KeyExists(BSTR Key, VARIANT_BOOL* pVal) throw()
 {
 	auto pos = _dictionary.find(Key);
@@ -318,7 +275,7 @@ STDMETHODIMP NWCApplication::get_KeyExists(BSTR Key, VARIANT_BOOL* pVal) throw()
 	return S_OK;
 }
 
-STDMETHODIMP NWCApplication::get_KeyType(BSTR Key, VARTYPE* pVal) throw()
+STDMETHODIMP NWCApplication::get_KeyType(BSTR Key, SHORT* pVal) throw()
 {
 	auto pos = _dictionary.find(Key);
 	*pVal = pos->second.val.vt;
@@ -497,7 +454,7 @@ STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 	m_startSessionRequest = std::chrono::system_clock::now();
 	if (SUCCEEDED(hr))
 	{
-		auto success = CSessionDL::OpenDBConnection(std::wstring(m_strConstruct), pool);
+		auto success = CSessionDL::OpenDBConnection(std::wstring(m_strConstruct, m_strConstruct.Length()), pool);
 		if (!success)
 		{
 			hr = E_FAIL;
@@ -510,39 +467,9 @@ STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 	}
 	dlm = new CRedLock();
 	CApplicationDL applicationDl;
-	hr = applicationDl.ApplicationGet(pool, (PUCHAR)&m_AppKey);
-	if (SUCCEEDED(hr))
-	{
-	//	((PLONGLONG)(&m_dbTimeStamp)) = (LONGLONG)(applicationDl.m_LastUpdated);
-	}
-	if (SUCCEEDED(hr) && applicationDl.IsNULL == FALSE && applicationDl.m_blobLength > 0)
-	{
-		CComObject<CStream>* cseqs;
-		CComObject<CStream>::CreateInstance(&cseqs);
-		cseqs->AddRef();
-		const INT bufSize = 0x1000;
-		ULONG read = 0;
-		BYTE buf[bufSize]; //stack memory
-		hr = S_OK;
-		do
-		{
-			hr = applicationDl.m_pStream->Read(buf, bufSize, &read);
-			if (read > 0)
-			{
-				cseqs->Write(buf, read, nullptr);
-			}
-		} while (read != 0 && hr == S_OK);
-
-		hr = S_OK;
-		LARGE_INTEGER nl = { 0 };
-		cseqs->Seek(nl, STREAM_SEEK_SET, nullptr);
-		/*hr = m_piVarDict->LocalLoad(cseqs, applicationDl.m_blobLength);
-		if (FAILED(hr))
-		{
-			logModule.Write(L"loading Application failed %x", hr);
-		}*/
-		cseqs->Release();
-	}
+	CComPtr<IDatabase> database = this;
+	hr = applicationDl.ApplicationGet(pool, m_AppKey, database);
+	
 	return hr;
 }
 STDMETHODIMP NWCApplication::ReadString(std::istream& pStream, BSTR *retval) throw()
@@ -907,12 +834,12 @@ STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, std::string& pStream) thro
 				{
 					m_lpstrMulti.reserve((byteswritten / 512) * 512 + 1048);
 				}
-				catch (std::bad_alloc& e)
+				catch (std::bad_alloc&)
 				{
 					pStream.append((char*)&test, sizeof(UINT));
 					return E_OUTOFMEMORY;
 				}
-				catch (std::length_error& e)
+				catch (std::length_error& )
 				{
 					
 					test = 0;
@@ -940,7 +867,30 @@ STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, std::string& pStream) thro
 	}
 	return hr;
 }
-STDMETHODIMP NWCApplication::ConvertObjectToStream(VARIANT &var) throw()
+STDMETHODIMP NWCApplication::ConvertVStreamToObject(ElementModel &var) throw()
+{
+	HRESULT hr = S_OK;
+	CComQIPtr<IStream> l_pIStr(var.val.punkVal);
+	hr = l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
+	var.val.punkVal->Release();//remove the IStream, it is not the object itself
+	hr = OleLoadFromStream(l_pIStr, IID_IUnknown, (void**)&var.val.punkVal);
+	bool doPersist2 = false;
+	if (hr == E_NOINTERFACE) //IPersistStream not found!
+	{
+		doPersist2 = true;
+		//set the ptr sizeof(CLSID) back because the GetClassId advanced 16 bytes in the stream
+		LARGE_INTEGER dbMove;
+		dbMove.QuadPart = -(long long)sizeof(CLSID);
+		hr = l_pIStr->Seek(dbMove, STREAM_SEEK_CUR, nullptr);
+		hr = OleLoadFromStream2(l_pIStr, IID_IUnknown, (void**)&var.val.punkVal);
+	}
+	logModule.Write(L"OleLoadFromStream%s %x", doPersist2 ? L"2" : L"", hr);
+	var.IsSerialized= FALSE; //don't deserialize next time
+	
+	
+	return hr;
+}
+STDMETHODIMP NWCApplication::ConvertObjectToStream( VARIANT &var) throw()
 {
 	if (var.vt != VT_UNKNOWN || var.punkVal == nullptr)
 	{
@@ -976,48 +926,7 @@ STDMETHODIMP NWCApplication::ConvertObjectToStream(VARIANT &var) throw()
 	}
 	return hr;
 }
-STDMETHODIMP NWCApplication::SerializeKey(BSTR Key, std::string& binaryString) throw()
-{
-	HRESULT hr = S_OK;
-	binaryString.resize(0);
-	auto pos = _dictionary.find(Key);
-	if (pos != _dictionary.end())
-	{
-		std::string retVal;
-		// write the complete string including the leading 4 bytes
-		HRESULT hr = WriteString(Key, binaryString);
-		//variant type
-		VARTYPE vtype = pos->second.val.vt;
-		if (SUCCEEDED(hr))
-		{	
-			
-			binaryString.append((char*)&vtype, sizeof(VARTYPE));
-			if (pos->second.IsSerialized == FALSE)
-			{
-				hr = ConvertObjectToStream(pos->second.val);
-			}
-			hr = WriteValue(vtype, pos->second.val, binaryString);
 
-			
-
-			
-		}
-		logModule.Write(L"WriteProperty propname=%s, type=%d, result=%x", std::wstring(binaryString.begin(), binaryString.end()), vtype, hr);
-		/*    ' 1- Len4 PropName var
-		' 4- Variant
-		'OR----
-
-		' 1- Len4 PropName var
-		' 2- vType 2
-		' 3- Variant - String / Variant Object / Array
-
-		'IF -- Variant Array
-		'
-		*/
-		return hr;
-	}
-	return hr;
-}
 
 STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::string& binaryString) throw()
 {
@@ -1306,8 +1215,103 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 
 	return hr;
 }
-STDMETHODIMP NWCApplication::DeserializeKey(BSTR Key, std::string& binaryString) throw()
+/* IDatabase implementation*/
+STDMETHODIMP NWCApplication::get_KeyCount(PINT pVal)  throw()
+{
+	*pVal = (INT)_dictionary.size();
+	return S_OK;
+}
+STDMETHODIMP NWCApplication::SerializeKey( BSTR Key, std::string& binaryString) throw()
 {
 	HRESULT hr = S_OK;
+	binaryString.resize(0);
+	auto pos = _dictionary.find(Key);
+	if (pos != _dictionary.end())
+	{
+		std::string retVal;
+		// write the complete string including the leading 4 bytes
+		HRESULT hr = WriteString(Key, binaryString);
+		//write variant type
+		VARTYPE vtype = pos->second.val.vt;
+		if (SUCCEEDED(hr))
+		{
+
+			binaryString.append((char*)&vtype, sizeof(VARTYPE));
+			if (pos->second.IsSerialized == FALSE)
+			{
+				hr = ConvertObjectToStream(pos->second.val);
+			}
+			hr = WriteValue(vtype, pos->second.val, binaryString);
+		}
+		logModule.Write(L"WriteProperty propname=%s, type=%d, result=%x", std::wstring(binaryString.begin(), binaryString.end()), vtype, hr);
+		/*    ' 1- Len4 PropName var
+		' 4- Variant
+		'OR----
+
+		' 1- Len4 PropName var
+		' 2- vType 2
+		' 3- Variant - String / Variant Object / Array
+
+		'IF -- Variant Array
+		'
+		*/
+		return hr;
+	}
 	return hr;
 }
+STDMETHODIMP NWCApplication::DeserializeKey(std::string& binaryString) throw()
+{
+	HRESULT hr = S_OK;
+	auto stream = std::stringstream(binaryString, ios_base::in || ios_base::binary);
+	/*
+	1. read the keyname
+	2. read the VARTYPE (VarType)
+	3. read the contents
+	4. Set the key + value in the dictionary (maintaining original casing)
+	*/
+	//
+	CComBSTR key;
+	CComVariant val;
+	VARTYPE vt = 0;
+	hr = ReadString(stream, &key);
+	
+	if (SUCCEEDED(hr))
+	{
+		stream.read((char*)&vt, sizeof(VARTYPE));
+		logModule.Write(L"Deserialized key %s, with type %d", key, vt);
+		hr = ReadValue(stream, &val, vt);
+		hr = put_Value(key, val);
+	}
+	else
+	{
+		logModule.Write(L"DeserializeKey %d failed", hr);
+	}
+	return hr;
+}
+
+STDMETHODIMP NWCApplication::get_KeyStates(std::vector<char*> &dirty_keys, std::vector<char*> &new_keys, std::vector<char*> &other_keys) throw()
+{
+	//USES_CONVERSION;
+	HRESULT hr = S_OK;
+	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
+	{
+		CComBSTR ansi;
+		ansi.Attach(((CComBSTR2)k->first).ToByteString());
+		if (k->second.IsNew == TRUE)
+		{
+			new_keys.push_back((PSTR)ansi.m_str);
+		}
+		else if (k->second.IsDirty == TRUE)
+		{
+			dirty_keys.push_back((PSTR)ansi.m_str);
+
+		}
+		else
+		{
+			other_keys.push_back((PSTR)ansi.m_str);
+		}
+	}
+	return hr;
+}
+
+/* END IDatabase*/

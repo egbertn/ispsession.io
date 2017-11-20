@@ -8,6 +8,7 @@
 #include "CStream.h"
 #include "Application.h"
 
+
 //initializes from SystemTime
 struct DBTIMESTAMP 
 {
@@ -32,21 +33,7 @@ struct DBTIMESTAMP
 	USHORT second;
 	ULONG  fraction;
 };
-struct PersistMetaDataApp
-{
-public:
-	PersistMetaDataApp() :
-		sizeofMeta(sizeof(PersistMetaDataApp)),
-		m_Expires(525600)	
 
-	{
-		memset(&m_LastUpdated, sizeof(DBTIMESTAMP), 0);
-	}
-	LONG sizeofMeta; //4
-	DBTIMESTAMP m_LastUpdated; //20
-	LONG m_Expires; //525600 = one year in minutes
-
-};
 struct PersistMetaData
 {
 public:
@@ -131,20 +118,14 @@ public:
 	
 
 };
-std::string str_toupper(std::string s) {
-	std::transform(s.begin(), s.end(), s.begin(),		
-		// [](char c){ return std::toupper(c); }          // wrong
-		[](unsigned char c){ return std::toupper(c); } // correct
-	);
-	return s;
-}
+
 class CApplicationDL:
 	public _ApplicationAccessor
 {
 public:
 	static HRESULT __stdcall ApplicationSave(const simple_pool::ptr_t &pool,
 		GUID& appKey,
-		CComObject< NWCApplication>  pDictionary,
+		IDatabase*  pDictionary,
 		LONG Expires,
 		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
 		//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
@@ -159,7 +140,7 @@ public:
 		HRESULT hr = S_OK;
 		
 		int keyCount;
-		pDictionary.get_Count(&keyCount);//1 based
+		pDictionary->get_KeyCount(&keyCount);//1 based
 		
 		command transactionStart("MULTI");
 		command transactionCommit("EXEC");
@@ -169,7 +150,7 @@ public:
 		std::vector<char*> changedKeys;
 		std::vector<char*> newKeys;
 		std::vector<char*> otherKeys;
-		pDictionary.get_KeyStates(changedKeys, newKeys, otherKeys);
+		pDictionary->get_KeyStates(changedKeys, newKeys, otherKeys);
 		
 		
 		/*
@@ -213,7 +194,7 @@ public:
 					//only set redis keys to upper, not the serialized one
 					k = appkeyPrefix + str_toupper(newKeys[saddKey]);
 					bstrKey = newKeys[saddKey];
-					hr = pDictionary.SerializeKey(bstrKey, binary);
+					hr = pDictionary->SerializeKey(bstrKey, binary);
 					logModule.Write(L"Serialize key %s %x", bstrKey, hr);
 					if (SUCCEEDED(hr))
 					{
@@ -231,7 +212,7 @@ public:
 					//only set redis keys to upper, not the serialized one
 					k = appkeyPrefix + str_toupper(changedKeys[saddKey]);
 					bstrKey = changedKeys[saddKey];
-					hr = pDictionary.SerializeKey(bstrKey, binary);
+					hr = pDictionary->SerializeKey(bstrKey, binary);
 					logModule.Write(L"Serialize key %s %x", bstrKey, hr);
 					if (SUCCEEDED(hr))
 					{
@@ -251,27 +232,26 @@ public:
 		return hr;
 	}
 
-	HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const PUCHAR appKey)
+	HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const GUID& appKey, IDatabase*  pDictionary)
 	{
-		auto appkey = HexStringFromMemory(appKey, sizeof(GUID));
-
-		std::string ansi;
-		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(appkey);
-
+		HRESULT hr = S_OK;
+		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));
+		auto applicationPrefix = appkey + ':';
 		auto conn = pool->get();
 		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
 		{
 			return E_ACCESSDENIED;
 		}
 		auto result = S_OK;
-		auto repl = conn->run(command("SMEMBERS")(ansi));
+		auto repl = conn->run(command("SMEMBERS")(appkey));
 		auto mget = command("MGET");
-		if (repl.type() == reply::type_t::ARRAY)
+		if (repl.type() == reply::type_t::ARRAY && repl.elements().size() >0)
 		{
-			auto keys = repl.elements();			
+			auto keys = repl.elements();	
+			string k;
 			for (auto it = keys.begin(); it != keys.end(); ++it)
 			{
+				//note: the key alredy is uppercase in format "{appkey}:{keyname}"
 				mget << it->str() ;//should be string, always, its a key
 			}
 
@@ -295,28 +275,24 @@ public:
 				m_blobLength = repl.strlen();
 				
 				
-
-				
-
-				
-				//if (IsNULL == FALSE)
-				//{
-				//	CComObject<CStream>::CreateInstance(&m_pStream);
-				//	m_pStream->AddRef();
-				//	//start blobLength = 128
-				//	for (int x = m_blobLength - baseX; x > 0; x -= buf)
-				//	{	//if 128 > 0x1000 ? buf : m_blobLength = 128
-				//		ULONG BytesToWrite = (x > buf ? buf : x);
-				//		m_pStream->Write((void*)&str.data()[baseX], BytesToWrite, nullptr);
-				//		baseX += BytesToWrite;
-				//	}
-				//	LARGE_INTEGER nl = { 0 };
-				//	m_pStream->Seek(nl, STREAM_SEEK::STREAM_SEEK_SET, nullptr);
-				//}
 				break;
 			}
+		//now get all the keys at once
+			repl = conn->run(mget);	
+			if (repl.type() == reply::type_t::ARRAY)
+			{
+				auto count = repl.elements().size();
+				for (auto it = 0; it < count; ++it)
+				{
+					auto subRepl = repl.elements()[it];
+					//key is format "{appkey}:{key}"
+					hr = pDictionary->DeserializeKey((string)subRepl.str());
+				}
+			}
 		}
+		
 		pool->put(conn);
+	
 		return result;
 	}	
 	//destructor
@@ -335,7 +311,7 @@ class  CSessionDL
 public:
 	// splits  e.g. "mycache.redis.cache.windows.net,abortConnect=false,ssl=true,password=..."
 	// and performs 
-	static bool __stdcall OpenDBConnection(const std::wstring constructor, simple_pool::ptr_t& retVal)
+	static bool __stdcall OpenDBConnection(const std::wstring& constructor, simple_pool::ptr_t& retVal)
 	{
 		logModule.Write(L"Connection string %s", constructor.c_str());
 		std::vector<std::wstring> arr;
@@ -426,11 +402,11 @@ public:
 		auto sAppkey = HexStringFromMemory(appKey, sizeof(GUID));
 
 		auto sGuid = HexStringFromMemory(guid, sizeof(GUID));
-		std::string ansi;
-		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(sAppkey);
-		ansi.append(":");
-		ansi.append(sGuid);
+		std::string ansi = sAppkey + ":" + sGuid;
+
+
+
+
 
 
 		auto c = pool->get();
@@ -590,15 +566,13 @@ class CpSessionGet:
 public:
 	//Gets the session returns S_FALSE if the session is empty
 	HRESULT __stdcall OpenRowset(const simple_pool::ptr_t &pool,
-		PBYTE m_App_KeyPar, PBYTE m_GUIDPar) throw()
+		const GUID& m_App_KeyPar, const GUID& m_GUIDPar) throw()
 	{
-		auto appkey = HexStringFromMemory(m_App_KeyPar, sizeof(GUID));
-		auto skey = HexStringFromMemory(m_GUIDPar, sizeof(GUID));
-		std::string ansi;
-		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(appkey);
-		ansi.append(":");
-		ansi.append(skey);
+		auto appkey = HexStringFromMemory((PBYTE)&m_App_KeyPar, sizeof(GUID));
+		auto skey = HexStringFromMemory((PBYTE)&m_GUIDPar, sizeof(GUID));
+		std::string ansi = appkey + ":" + skey;
+		
+
 
 		auto conn = pool->get();
 		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get

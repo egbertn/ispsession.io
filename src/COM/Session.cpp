@@ -64,7 +64,7 @@ void __stdcall NWCSession::InvokeOnStartPage() throw()
 	CComVariant arg(punk);
 	while (pEnum->Next(1, &v, nullptr) == S_OK)
 	{
-		VARTYPE vt;
+		SHORT vt;
 		CComVariant valVal;
 		m_piVarDict->get_VarType(v, &vt);
 		if (vt == VT_DISPATCH || vt == VT_UNKNOWN) //sloppy, should only be VT_DISPATCH
@@ -906,7 +906,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 	CpSessionGet pgetSession;
 	for(;;)
 	{
-		hr = pgetSession.OpenRowset(pool, (PBYTE)&btAppKey, (PBYTE)&guid);
+		hr = pgetSession.OpenRowset(pool, btAppKey, guid);
 	
 		if (FAILED(hr))
 		{

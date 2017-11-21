@@ -160,6 +160,10 @@ STDMETHODIMP NWCApplication::put_Value(BSTR key, VARIANT newVal) throw()
 		_dictionary.insert(pair<CComBSTR, ElementModel>(key, v)); //element is copied by value, so a VariantCopy is done
 		pos = _dictionary.find(key);
 	}
+	else
+	{
+		pos->second.IsDirty = true;//going to change
+	}
 	if (vDeref.vt == VT_DISPATCH)
 	{
 		if (vDeref.pdispVal == nullptr)
@@ -213,6 +217,10 @@ STDMETHODIMP NWCApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 			v.IsNew = TRUE;
 			_dictionary.insert(pair<CComBSTR, ElementModel>(key, v));
 			pos = _dictionary.find(key);
+		}
+		else
+		{
+			pos->second.IsDirty = true;//going to change
 		}
 		valueArray = &pos->second.val;
 
@@ -1214,6 +1222,10 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 	}
 
 	return hr;
+}
+STDMETHODIMP NWCApplication::get_Contents(IVariantDictionary2 **ppVal) throw()
+{
+	return E_NOTIMPL;
 }
 /* IDatabase implementation*/
 STDMETHODIMP NWCApplication::get_KeyCount(PINT pVal)  throw()

@@ -61,6 +61,7 @@ class ATL_NO_VTABLE NWCApplication :
 	public ISupportErrorInfoImpl<&IID_IDispatch>,
 	public IDatabase
 
+
 {
 public:
 	DECLARE_OBJECT_DESCRIPTION("Classic ASP Application replacement by ADC Cure")
@@ -141,7 +142,7 @@ public:
 	
 	STDMETHOD(get_KeyExists)(BSTR Key, VARIANT_BOOL *pVal);
 	STDMETHOD(get_KeyType)(BSTR Key, SHORT* pVal);
-
+	STDMETHOD(get_Contents)(IVariantDictionary2 ** ppVal);
 
 	// public but not exposed to IDL
 	////IDatabase

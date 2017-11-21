@@ -113,11 +113,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="CSession.idl">
-      <Filter>Source Files</Filter>
-    </Midl>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="ADCLogModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -218,5 +213,10 @@
     <CustomBuild Include="message.mc">
       <Filter>Resource Files</Filter>
     </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="CSession.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

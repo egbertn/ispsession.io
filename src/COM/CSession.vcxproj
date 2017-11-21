@@ -501,9 +501,6 @@
     <None Include="Session.rgs" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="CSession.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="..\..\..\..\Users\gastweb\Downloads\getopt_mb_uni_vc10\getopt_mb_uni_vc10\getopt_mb_uni_vc10\getopt.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="CRedLock.h" />
@@ -540,6 +537,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="CSession.idl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -13,70 +13,79 @@ import "ocidl.idl";
 ] 
 
 interface INWCVariantDictionary : IDispatch 
-{	[propget,id(0)] HRESULT  Item([in] VARIANT varKey, [out,retval] VARIANT *pVal);
-	[propput,id(0)] HRESULT  Item([in] VARIANT varKey, [in] VARIANT newVal);
-	[propputref,id(0),defaultcollelem] HRESULT  Item([in] VARIANT varKey, [in] VARIANT newVal);
+{	[propget,id(0)] HRESULT  Item([in] VARIANT Key, [out,retval] VARIANT *pVal);
+	[propput,id(0)] HRESULT  Item([in] VARIANT Key, [in] VARIANT newVal);
+	[propputref,id(0),defaultcollelem] HRESULT  Item([in] VARIANT Key, [in] VARIANT newVal);
 	[propget] HRESULT  Key([in] VARIANT KeyIndex, [out,retval] VARIANT *pVal);
-	[propget] HRESULT  Count([out,retval] int *pVal);
+	[propget] HRESULT  Count([out,retval] INT *pVal);
 	[id(-4),restricted] HRESULT  _NewEnum([out,retval] IUnknown **pVal);
 	HRESULT  Remove([in] VARIANT varKey);
 	HRESULT  RemoveAll();
 	[propget] HRESULT  Exists([in] VARIANT vKey, [out,retval] VARIANT_BOOL *pVal);
-	[propget] HRESULT  VarType([in] VARIANT vKey, [out,retval] SHORT *pVal);
-	[propget, hidden, restricted] HRESULT  CaseSensitive([out,retval] VARIANT_BOOL *pVal);
-	[propput, hidden, restricted] HRESULT  CaseSensitive([in] VARIANT_BOOL newVal);
-	HRESULT Persist(VARIANT varKey);
+	[propget] HRESULT  VarType([in] VARIANT vKey, [out, retval] SHORT *pVal);
+
 };
 
+[
+	object,
+	uuid(4a7deb90-b069-11d0-b373-00a0c90c2bd8),
+	dual,
+	oleautomation,
+	pointer_default(unique)
+]
 
-[odl,uuid(4A7DEB90-B069-11D0-B373-00A0C90C2BD8), hidden,oleautomation]
-interface IVariantDictionary2 : IUnknown
+interface IVariantDictionary2 : IDispatch
 {
-	[restricted] HRESULT GetTypeInfoCount2(UINT *pctinfo);//idispatch stubs
-	[restricted] HRESULT GetTypeInfo2(UINT iTInfo, LCID lcid, ITypeInfo **ppTInfo);
-	[restricted] HRESULT GetIDsOfNames2( REFIID riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
-	[restricted] HRESULT Invoke2(DISPID dispIdMember, REFIID riid, LCID lcid, WORD wFlags, DISPPARAMS *pDispParams, VARIANT *pVarResult, EXCEPINFO *pExcepInfo, UINT *puArgErr);
+	[propget, id(0)] HRESULT  Item([in] VARIANT Key, [out, retval] VARIANT *pVal);
+	[propput, id(0)] HRESULT  Item([in] VARIANT Key, [in] VARIANT newVal);
+	[propputref, id(0), defaultcollelem] HRESULT  Item([in] VARIANT Key, [in] VARIANT newVal);
+	[propget] HRESULT  Key([in] VARIANT KeyIndex, [out, retval] VARIANT *pVal);
+	[propget] HRESULT  Count([out, retval] INT *pVal);
+	[id(-4), restricted] HRESULT  _NewEnum([out, retval] IUnknown **pVal);
+	HRESULT  Remove([in] VARIANT varKey);
+	HRESULT  RemoveAll();
+};
+//[
+//	object,
+//	uuid(A0AD6FD9-E01A-4A0F-B002-492F5F05091C)
+//]
+//
+//interface ApplicationSerializer : IUnknown
+//{
+//	HRESULT SerializeKey()
+//};
+[
+	object,
+	uuid(837D618E-FBC5-49B5-AF23-21545FFCF97D),
+	dual,
+	oleautomation,
+	pointer_default(unique)
+]
+interface IApplicationCache : IDispatch
+{
+	[id(00000000), propget] HRESULT Value([in] BSTR Key, [out, retval] VARIANT* pvar);
+	[id(00000000), propput] HRESULT Value([in] BSTR Key,[in] VARIANT pvar);
+	[id(00000000), propputref] HRESULT Value([in] BSTR Key, [in] VARIANT pvar);
+	[propget] HRESULT  Key([in] INT KeyIndex, [out, retval] BSTR *pVal);
+	[propget, helpstring("one based offset index")] HRESULT  Count([out, retval] int *pVal);
+	[id(-4), restricted] HRESULT  _NewEnum([out, retval] IUnknown **pVal);
+	[helpstring("Removes specified key from dictionary")] HRESULT  RemoveKey([in] BSTR Key);
+	[helpstring("Removes all keys from application. Caution")] HRESULT  RemoveAll();
+	[id(0x60020007), helpstring("locks specific key, when no argument given, locks the application")] HRESULT LockKey([in] BSTR Key);
+	[id(0x60020008), helpstring("Unlocks specific key, when no argument given, unlocks the application")] HRESULT UnlockKey([in] BSTR Key);
+	[id(0x60020009), helpstring("milliseconds due at which this key will expire")] HRESULT ExpireKeyAt([in] BSTR vKey, [in] INT at);
+	[id(0x6002000A), propget] HRESULT  KeyExists([in] BSTR Key, [out, retval] VARIANT_BOOL *pVal);
+	[id(0x6002000B), propget] HRESULT  KeyType([in] BSTR Key, [out, retval] SHORT *pVal);
+	[propget] HRESULT Contents([out, retval] IVariantDictionary2 **ppProperties);
 
-    [propget] HRESULT Item2([in] VARIANT VarKey, [out, retval] VARIANT* pvar);
-    [propput] HRESULT Item2([in] VARIANT VarKey, [in] VARIANT pvar);
-	[propputref]HRESULT Item2([in] VARIANT VarKey, [in] VARIANT pvar);
-    [propget] HRESULT Key2([in] VARIANT VarKey, [out, retval] VARIANT* pvar);
-    [propget] HRESULT Count2([out, retval] int* cStrRet);
-    [propget, restricted] HRESULT _NewEnum2([out, retval] IUnknown** ppEnumReturn);
-    HRESULT Remove2([in] VARIANT VarKey);
-    HRESULT RemoveAll2();
+	//called internally by IIS when used with Server.CreateObject
+	[hidden] HRESULT OnStartPage([in] IUnknown* p);
+	[hidden] HRESULT OnEndPage();
+	// end IIS
 };
 
-//original MS definition
-[odl, uuid(D97A6DA0-A865-11CF-83AF-00A0C90C2BD8),hidden,oleautomation]
-	interface ISessionObject2 : IUnknown // cannot use IDispatch
-	{
-	[restricted] HRESULT GetTypeInfoCount2(UINT *pctinfo);//idispatch stubs
-	[restricted] HRESULT GetTypeInfo2(UINT iTInfo, LCID lcid, UINT **ppTInfo);
-	[restricted] HRESULT GetIDsOfNames2( UINT* riid,LPOLESTR *rgszNames,UINT cNames,LCID lcid,DISPID *rgDispId);
-	[restricted] HRESULT Invoke2(DISPID dispIdMember,UINT* riid,LCID lcid,WORD wFlags,UINT *pDispParams,VARIANT *pVarResult,UINT *pExcepInfo,UINT *puArgErr);
 
-    [propget] HRESULT Value2(
-                    [in] BSTR bstrValue, 
-                    [out, retval] VARIANT* pvar);
-    [propput] HRESULT Value2(
-                    [in] BSTR bstrValue, 
-                    [in] VARIANT pvar);
-    [propputref] HRESULT Value2(
-                    [in] BSTR bstrValue, 
-                    [in] VARIANT pvar);
-    [propget] HRESULT Timeout2([out, retval] LONG* plvar);
-    [propput] HRESULT Timeout2([in] LONG plvar);
-    HRESULT Abandon2();
-    [propget] HRESULT CodePage2([out, retval] LONG* plvar);
-    [propput] HRESULT CodePage2([in] LONG plvar);
-    [propget] HRESULT LCID2([out, retval] LONG* plvar);
-    [propput] HRESULT LCID2([in] LONG plvar);
-    [propget] HRESULT StaticObjects2([out, retval] IVariantDictionary2** ppTaggedObjects);
-    [propget] HRESULT Contents2([out, retval] IVariantDictionary2** ppDictionary);
-};
 
-	//our extended ISession definition
 [
 	object,
 	uuid(A84D5FFF-6EB4-4211-82E6-045C74F3CB6B),
@@ -87,10 +96,7 @@ interface IVariantDictionary2 : IUnknown
 ] 
 interface INWCSession : IDispatch 
 {	
-	//called internally by IIS when used with Server.CreateObject
-	HRESULT OnStartPage([in] IUnknown* p);
-	HRESULT OnEndPage();
-	// end IIS
+
 
 	[propget] HRESULT  SessionID([out,retval] BSTR *pbstrRet);
 	[propget,id(0)] HRESULT  Value([in] BSTR vkey, [out,retval] VARIANT *pVal);
@@ -124,32 +130,12 @@ interface INWCSession : IDispatch
 	HRESULT EnsureURLCookie();	
 	[propget] 
 	HRESULT OldSessionID ([out, retval] BSTR *pVal);	
-
-
-
-};
-
-[
-	object,
-	uuid(D97A6DA0-A866-11cf-83AE-10A0C90C2BD9),
-	dual,
-	oleautomation,
-	pointer_default(unique)
-
-]
-interface INWCApplicationObject : IDispatch
-{
 	//called internally by IIS when used with Server.CreateObject
-	HRESULT OnStartPage([in] IUnknown* p);
-	HRESULT OnEndPage();
-	//end iis
-	[propget, id(0)] HRESULT Value([in] BSTR bstrValue, [out, retval] VARIANT* pvar);
-	[propput, id(0)] HRESULT Value([in] BSTR bstrValue, [in] VARIANT var);
-	[propputref, id(0)] HRESULT Value([in] BSTR bstrValue, [in] VARIANT var);
-	[helpstring("Locks the application object for unique access.")] HRESULT Lock();
-	HRESULT UnLock();
-	[propget] HRESULT StaticObjects([out, retval] INWCVariantDictionary **ppProperties);
-	[propget] HRESULT Contents([out, retval] INWCVariantDictionary **ppDictionary);
+	[hidden] HRESULT OnStartPage([in] IUnknown* p);
+	[hidden] HRESULT OnEndPage();
+	// end IIS
+
+
 };
 
 [ version(1.0), uuid(A51465F8-E60A-4645-8DFE-F0F1DE91DC80), helpstring("CSession 1.0 Type Library") ]
@@ -191,6 +177,6 @@ library ISPCSession
 	]
 	coclass NWCApplication
 	{
-		interface INWCApplicationObject;
+		interface IApplicationCache;
 	};
 }

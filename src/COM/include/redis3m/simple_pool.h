@@ -13,8 +13,13 @@ namespace redis3m
 {
 	static std::set<connection::ptr_t> connections;
 	static ATL::CCriticalSection _access_mutex;
-
-
+	static ATL::CHandle _timer;
+	static ATL::CHandle _threadHandle;
+	/*DWORD(WINAPI *PTHREAD_START_ROUTINE)(
+		LPVOID lpThreadParameter
+		);*/
+	DWORD __stdcall  TimerThread(void* param);
+	void __stdcall TimerAPCProc();
 /**
  * @brief Manages a pool of connections to a single Redis server
  */
@@ -74,6 +79,8 @@ public:
      */
     void put(connection::ptr_t conn);
 
+	
+		
     //void run_with_connection(std::function<void(connection::ptr_t)> f, unsigned int retries=5);
 
     /**
@@ -86,7 +93,7 @@ public:
 private:
     simple_pool(const std::string& path);
     simple_pool(const std::string& host, unsigned int port, const std::string& password);
-
+	
     std::string _path;
     std::string _host;
 	std::string _password;

@@ -146,11 +146,12 @@ public:
 		command transactionCommit("EXEC");
 		command rediscommand("MSET");
 		command redisSAdd("SADD");
-		 
+		
 		std::vector<char*> changedKeys;
 		std::vector<char*> newKeys;
 		std::vector<char*> otherKeys;
-		pDictionary->get_KeyStates(changedKeys, newKeys, otherKeys);
+		std::vector<pair<char*, INT>> expireKeys;
+		pDictionary->get_KeyStates(changedKeys, newKeys, otherKeys, expireKeys);
 		
 		
 		/*
@@ -159,12 +160,12 @@ public:
 		3. serialize new and modified Keys (when count> 0 ) and their values with MSET
 		4. Commit transaction with EXEC
 		*/
-
+		auto conn = pool->get();
 		
 		hr = S_OK; //reset S_FALSE to S_OK
 		if (newKeys.size() > 0 || changedKeys.size() > 0)
 		{
-			auto conn = pool->get();
+			
 			//1. trans
 			auto reply = conn->run(transactionStart);
 			hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
@@ -180,7 +181,7 @@ public:
 					redisSAdd << k;
 				}
 				reply = conn->run(redisSAdd);
-				hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
+				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "OK" || reply.str() == "QUEUED") ? S_OK : E_FAIL;
 			}
 			//3. serialize individual keys
 			
@@ -222,8 +223,25 @@ public:
 			}
 			
 			reply = conn->run(rediscommand);
-			hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
+			hr = reply.type() == reply::type_t::STATUS && (reply.str() == "OK" || reply.str() == "QUEUED") ? S_OK : E_FAIL;
 			
+			if (hr == S_OK)
+			{
+				for (auto expireKey = 0; expireKey < expireKeys.size(); ++expireKey)
+				{
+					//ms instead of EXPIRE seconds
+				
+					reply = conn->run(command("PEXPIRE")
+						(std::string(expireKeys[expireKey].first))
+						(expireKeys[expireKey].second));
+					/*conn->run_with_connection<void>([&](connection::ptr_t conn)
+						       {
+						conn->run(command("SET")("foo")("bar"));
+						});*/
+
+				}
+			}
+
 			reply = conn->run(transactionCommit);
 			pool->put(conn);
 		}
@@ -359,7 +377,7 @@ public:
 				try
 				{
 					//convert wstring to string by using begin() and end(), pointing at char*
-					retVal = simple_pool::create(std::string(host.begin(), host.end()), portParsed, pw);
+					retVal = simple_pool::create(ws2s(host), portParsed, pw);
 					if (databaseNo > 0)
 					{
 						logModule.Write(L"Set Database to %d", databaseNo);

@@ -60,8 +60,6 @@ class ATL_NO_VTABLE NWCApplication :
 	public IDispatchImpl<IApplicationCache, &IID_IApplicationCache, &LIBID_ISPCSession>,
 	public ISupportErrorInfoImpl<&IID_IDispatch>,
 	public IDatabase
-
-
 {
 public:
 	DECLARE_OBJECT_DESCRIPTION("Classic ASP Application replacement by ADC Cure")
@@ -73,6 +71,7 @@ public:
 		COM_INTERFACE_ENTRY(ISupportErrorInfo)	
 		COM_INTERFACE_ENTRY(IApplicationCache)
 		COM_INTERFACE_ENTRY(IDatabase)
+		
 	END_COM_MAP()
 
 	HRESULT FinalConstruct() throw()
@@ -147,7 +146,11 @@ public:
 	// public but not exposed to IDL
 	////IDatabase
 	STDMETHOD( get_KeyCount)(PINT pval);
-	STDMETHOD (get_KeyStates)(std::vector<char*> &dirty_keys, std::vector<char*> &new_keys, std::vector<char*> &other_keys);
+	STDMETHOD (get_KeyStates)(
+		std::vector<char*> &dirty_keys, 
+		std::vector<char*> &new_keys, 
+		std::vector<char*> &other_keys, 
+		std::vector<std::pair<char*, INT>> & expireKeys);
 	STDMETHOD (SerializeKey)(BSTR key, std::string& binaryString);
 	//unpacks key & value from the blob       
 	STDMETHOD (DeserializeKey)(std::string& binaryString);

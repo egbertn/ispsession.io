@@ -857,7 +857,7 @@ STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, std::string& pStream) thro
 				
 				
 			}
-			m_lpstrMulti.resize(test+sizeof(UINT));
+			m_lpstrMulti.resize(byteswritten + sizeof(UINT));
 			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti.data() + sizeof(UINT), byteswritten, nullptr, nullptr);
 			if (test > 0)
 			{
@@ -1255,7 +1255,7 @@ STDMETHODIMP NWCApplication::SerializeKey( BSTR Key, std::string& binaryString) 
 			}
 			hr = WriteValue(vtype, pos->second.val, binaryString);
 		}
-		logModule.Write(L"WriteProperty propname=%s, type=%d, result=%x", std::wstring(binaryString.begin(), binaryString.end()), vtype, hr);
+		logModule.Write(L"WriteProperty propname=%s, type=%d, result=%x", Key, vtype, hr);
 		/*    ' 1- Len4 PropName var
 		' 4- Variant
 		'OR----
@@ -1301,7 +1301,11 @@ STDMETHODIMP NWCApplication::DeserializeKey(std::string& binaryString) throw()
 	return hr;
 }
 
-STDMETHODIMP NWCApplication::get_KeyStates(std::vector<char*> &dirty_keys, std::vector<char*> &new_keys, std::vector<char*> &other_keys) throw()
+STDMETHODIMP NWCApplication::get_KeyStates(
+	std::vector<char*> &dirty_keys, 
+	std::vector<char*> &new_keys,
+	std::vector<char*> &other_keys,
+	std::vector<std::pair<char*, INT>> &expire_keys) throw()
 {
 	//USES_CONVERSION;
 	HRESULT hr = S_OK;
@@ -1321,6 +1325,10 @@ STDMETHODIMP NWCApplication::get_KeyStates(std::vector<char*> &dirty_keys, std::
 		else
 		{
 			other_keys.push_back((PSTR)ansi.m_str);
+		}
+		if (k->second.ExpireAt > 0)
+		{
+			expire_keys.push_back(std::pair<char*, INT>((PSTR)ansi.m_str, k->second.ExpireAt));
 		}
 	}
 	return hr;

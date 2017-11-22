@@ -39,11 +39,16 @@ connection::connection(const std::string& path)
         redisFree(c);
         throw unable_to_connect();
     }
+	
 }
 
 connection::~connection()
 {
-    redisFree(c);
+	if (is_valid())
+	{		
+		redisFree(c);		
+	}
+	c->err = REDIS_ERR;
 }
 
 void connection::append(const std::vector<std::string> &commands)

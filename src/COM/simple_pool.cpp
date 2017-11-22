@@ -3,25 +3,85 @@
 #include "stdafx.h"
 #include "include/redis3m/simple_pool.h"
 #include "include/redis3m/command.h"
-
+#include <thread>
 using namespace redis3m;
+#define _SECOND 10000000
+#define KEEPCONNECTION_IN_POOL_SEC 20
+DWORD __stdcall  redis3m::TimerThread(void* param)
+{
+	_timer.Attach(::CreateWaitableTimer(NULL, TRUE, NULL));
+
+	LARGE_INTEGER liDueTime;
+
+	liDueTime.QuadPart = -20 * _SECOND;
+
+	::SetWaitableTimer(_timer, &liDueTime, 2000, NULL, NULL, 0);
+	do
+	{
+		if (::WaitForSingleObject(_timer, INFINITE) != WAIT_OBJECT_0)
+		{
+			auto err = ::GetLastError();//should be 6
+			break;
+		}
+		else
+		{
+			TimerAPCProc();
+		}
+	} while (true);
+
+	return 0;
+}
+//we must clean up connections before Redis disconnects itself
+// todo find out if we can optimize this
+// so, what's the problem Redisfree(c) in Connection.cpp delivers a system exception if Redis closed it already
+void __stdcall redis3m::TimerAPCProc() throw() 
+{
+	_access_mutex.Enter();
+	auto size = connections.size();
+	
+	for (auto x = connections.begin(); x != connections.end();)
+	{
+		auto con = *x;
+		if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - con->_startSessionRequest).count() > KEEPCONNECTION_IN_POOL_SEC)
+		{
+			connections.erase(x++);// the ++ seems to work, do not change
+		}
+		else
+		{
+			++x;
+		}
+	}
+	
+	if (connections.size() == 0)
+	{
+		::CancelWaitableTimer(_timer);
+		_timer.Close();
+		_threadHandle.Close();
+	}
+	_access_mutex.Leave();
+};
 
 connection::ptr_t simple_pool::get()
 {
+	
     connection::ptr_t ret;
 
     {
         //std::lock_guard<std::mutex> lock(access_mutex);
 		_access_mutex.Enter();
         std::set<connection::ptr_t>::iterator it = connections.begin();
+		
         if (it != connections.end())
         {
-            ret = *it;
+            ret = *it;			
             connections.erase(it);
         }
-
     }
-
+	if (_timer == NULL)
+	{
+		
+		_threadHandle.Attach(::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL));
+	}
     if (!ret)
     {
       /*  if (!_path.empty())
@@ -51,6 +111,7 @@ connection::ptr_t simple_pool::get()
 				}
 			}
     }
+	ret->_startSessionRequest = std::chrono::system_clock::now();
 	_access_mutex.Leave();
     return ret;
 }

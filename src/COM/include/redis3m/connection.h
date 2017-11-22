@@ -9,7 +9,7 @@
 #include "reply.h"
 #include <vector>
 #include <memory>
-
+#include <chrono>
 struct redisContext;
 
 namespace redis3m {
@@ -96,6 +96,7 @@ public:
         MASTER = 1,
         SLAVE = 2
     };
+	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> _startSessionRequest;
 
 private:
     friend class connection_pool;

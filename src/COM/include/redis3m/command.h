@@ -18,14 +18,14 @@ public:
     {
         _args.push_back(arg);
     }
-
+	
 	template<typename Type>
 	inline command& operator<<(const Type arg)
 	{
 		_args.push_back(std::to_string(arg));
 		return *this;
 	}
-
+	
 	template<typename Type>
 	inline command& operator()(const Type arg)
 	{

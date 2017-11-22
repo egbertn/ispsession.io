@@ -28,7 +28,6 @@ DWORD __stdcall  redis3m::TimerThread(void* param)
 			TimerAPCProc();
 		}
 	} while (true);
-
 	return 0;
 }
 //we must clean up connections before Redis disconnects itself
@@ -81,6 +80,7 @@ connection::ptr_t simple_pool::get()
 	{
 		
 		_threadHandle.Attach(::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL));
+		//std::thread trh(TimerThread);
 	}
     if (!ret)
     {

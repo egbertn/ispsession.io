@@ -120,7 +120,7 @@ private:
 	GUID m_AppKey;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 	std::map<CComBSTR, ElementModel, KeyComparer> _dictionary;
-	std::vector<PWCHAR> _removed;
+	std::vector<PCHAR> _removed;
 	LARGE_INTEGER SEEK_NULL;
 	std::string m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
 	UINT m_dwMultiLen;
@@ -150,7 +150,8 @@ public:
 		std::vector<char*> &dirty_keys, 
 		std::vector<char*> &new_keys, 
 		std::vector<char*> &other_keys, 
-		std::vector<std::pair<char*, INT>> & expireKeys);
+		std::vector<std::pair<char*, INT>> & expireKeys,
+		std::vector<char*> &removed_keys);
 	STDMETHOD (SerializeKey)(BSTR key, std::string& binaryString);
 	//unpacks key & value from the blob       
 	STDMETHOD (DeserializeKey)(std::string& binaryString);

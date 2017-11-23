@@ -9,7 +9,8 @@ public:
 		std::vector<char*> &changedKeys, 
 		std::vector<char*> &newKeys, 
 		std::vector<char*> &otherKeys,
-		std::vector<std::pair<char*, INT>> & expireKeys) = 0;
+		std::vector<std::pair<char*, INT>> & expireKeys,
+		std::vector<char*> &removedKeys) = 0;
 	STDMETHOD(SerializeKey)(BSTR Key, std::string& binaryString) = 0;
 	STDMETHOD(DeserializeKey)(std::string& binaryString) = 0;
 };

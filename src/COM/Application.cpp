@@ -60,9 +60,14 @@ STDMETHODIMP NWCApplication::OnEndPage() throw()
 STDMETHODIMP NWCApplication::IsDirty(BOOL* pRet) throw()
 {
 	*pRet = FALSE;
+	if (_removed.size() > 0)
+	{
+		*pRet = TRUE;
+		return S_OK;
+	}
 	for(auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
-		if (k->second.IsDirty == TRUE || k->second.IsNew == TRUE)
+		if (k->second.IsDirty == TRUE || k->second.IsNew == TRUE || k->second.ExpireAt > 0)
 		{
 			*pRet = TRUE;
 			break;
@@ -324,10 +329,16 @@ STDMETHODIMP NWCApplication::RemoveKey(BSTR Key) throw()
 		_dictionary.erase(pos);
 		//avoid duplicates the vector is not a unique dictionary
 		auto found = std::find_if(_removed.begin(), _removed.end(),
-			[=](PWSTR  &l){ return StrCmpIW( Key, l)==0; });
-		if (found != _removed.end())
+			[=](PSTR  &l){ 
+			CComBSTR ansiKey;
+			ansiKey.AssignBSTR(Key);
+			ansiKey.Attach(ansiKey.ToByteString());
+			return StrCmpIA( (PSTR)ansiKey.m_str, l)==0; });
+		if (found == _removed.end())
 		{
-			_removed.push_back(Key);
+			CComBSTR ansi;
+			ansi.Attach(CComBSTR(Key).ToByteString());
+			_removed.push_back((PSTR)ansi.m_str);
 		}
 		logModule.Write(L"remove key %s", Key);		
 	}
@@ -339,10 +350,16 @@ STDMETHODIMP NWCApplication::RemoveAll() throw()
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
 		auto found = std::find_if(_removed.begin(), _removed.end(),
-			[=](PWSTR  &l){ return StrCmpIW(k->first, l) == 0; });
-		if (found != _removed.end())
+			[=](PSTR  &l){
+			CComBSTR ansiKey;
+			ansiKey.Attach(((CComBSTR2)k->first).ToByteString());
+			return StrCmpIA((PSTR)ansiKey.m_str, l) == 0; });
+		if (found == _removed.end())
 		{
-			_removed.push_back(k->first);
+			CComBSTR ansi;
+			ansi.Attach(((CComBSTR2)k->first).ToByteString());
+
+			_removed.push_back((PSTR)ansi.m_str);
 		}
 		_dictionary.erase(k);
 	}
@@ -1305,7 +1322,8 @@ STDMETHODIMP NWCApplication::get_KeyStates(
 	std::vector<char*> &dirty_keys, 
 	std::vector<char*> &new_keys,
 	std::vector<char*> &other_keys,
-	std::vector<std::pair<char*, INT>> &expire_keys) throw()
+	std::vector<std::pair<char*, INT>> &expire_keys,
+	std::vector<char*> &removed_keys) throw()
 {
 	//USES_CONVERSION;
 	HRESULT hr = S_OK;
@@ -1330,6 +1348,10 @@ STDMETHODIMP NWCApplication::get_KeyStates(
 		{
 			expire_keys.push_back(std::pair<char*, INT>((PSTR)ansi.m_str, k->second.ExpireAt));
 		}
+	}
+	for (auto k = _removed.begin(); k != _removed.end(); ++k)
+	{
+		removed_keys.push_back(*k);
 	}
 	return hr;
 }

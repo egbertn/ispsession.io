@@ -142,16 +142,16 @@ public:
 		int keyCount;
 		pDictionary->get_KeyCount(&keyCount);//1 based
 		
-		command transactionStart("MULTI");
 		command transactionCommit("EXEC");
-		command rediscommand("MSET");
+		command multipleSet("MSET");
 		command redisSAdd("SADD");
 		
 		std::vector<char*> changedKeys;
 		std::vector<char*> newKeys;
 		std::vector<char*> otherKeys;
 		std::vector<pair<char*, INT>> expireKeys;
-		pDictionary->get_KeyStates(changedKeys, newKeys, otherKeys, expireKeys);
+		std::vector<char*> removedKeys;
+		pDictionary->get_KeyStates(changedKeys, newKeys, otherKeys, expireKeys, removedKeys);
 		
 		
 		/*
@@ -163,11 +163,11 @@ public:
 		auto conn = pool->get();
 		
 		hr = S_OK; //reset S_FALSE to S_OK
-		if (newKeys.size() > 0 || changedKeys.size() > 0)
+		if (newKeys.size() > 0 || changedKeys.size() > 0 || removedKeys.size() > 0 || expireKeys.size()>0)
 		{
 			
 			//1. trans
-			auto reply = conn->run(transactionStart);
+			auto reply = conn->run(command("MULTI"));//transaction Start
 			hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
 
 			//2. the key set must be expanded
@@ -181,8 +181,22 @@ public:
 					redisSAdd << k;
 				}
 				reply = conn->run(redisSAdd);
-				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "OK" || reply.str() == "QUEUED") ? S_OK : E_FAIL;
+				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
 			}
+			if (removedKeys.size() > 0)
+			{
+				command srem("SREM");//redis 2.4+ supports multiples
+				srem << appkey;
+				string k;
+				for (auto sremoveKey = removedKeys.begin(); sremoveKey != removedKeys.end(); ++sremoveKey)
+				{					
+					k = appkeyPrefix + str_toupper(*sremoveKey);
+					srem << k;
+				}
+				auto reply = conn->run(srem);
+				auto result = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
+			}
+
 			//3. serialize individual keys
 			
 			if (newKeys.size() > 0)
@@ -199,7 +213,7 @@ public:
 					logModule.Write(L"Serialize key %s %x", bstrKey, hr);
 					if (SUCCEEDED(hr))
 					{
-						rediscommand << k << binary;
+						multipleSet << k << binary;
 					}
 				}			
 			}
@@ -217,13 +231,14 @@ public:
 					logModule.Write(L"Serialize key %s %x", bstrKey, hr);
 					if (SUCCEEDED(hr))
 					{
-						rediscommand << k << binary;
+						multipleSet << k << binary;
 					}
 				}				
+				reply = conn->run(multipleSet);
+				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
 			}
-			
-			reply = conn->run(rediscommand);
-			hr = reply.type() == reply::type_t::STATUS && (reply.str() == "OK" || reply.str() == "QUEUED") ? S_OK : E_FAIL;
+
+
 			
 			if (hr == S_OK)
 			{
@@ -232,7 +247,7 @@ public:
 					//ms instead of EXPIRE seconds
 				
 					reply = conn->run(command("PEXPIRE")
-						(std::string(expireKeys[expireKey].first))
+						(appkeyPrefix + std::string(expireKeys[expireKey].first))
 						(expireKeys[expireKey].second));
 					/*conn->run_with_connection<void>([&](connection::ptr_t conn)
 						       {
@@ -242,7 +257,7 @@ public:
 				}
 			}
 
-			reply = conn->run(transactionCommit);
+			reply = conn->run(command("EXEC")); //commit transaction
 			pool->put(conn);
 		}
 

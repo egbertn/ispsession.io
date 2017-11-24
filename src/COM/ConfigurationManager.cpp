@@ -70,7 +70,7 @@ BSTR ConfigurationManager::AppSettings(const BSTR key, PCWSTR defaultValue) thro
 	find.Detach();
 	//ATLTRACE(L"AppSettings findKey found %d %s\r\n", found, key);
 	//note: GetValueAt returns by reference, and does not Copy()	
-	if (found != _map.end()) 
+	if (found != _map.end() && ((CComBSTR)(*found).first).CompareTo(key) == 0) 
 	{
 		return found->second.Copy();
 	}

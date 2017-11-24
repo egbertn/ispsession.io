@@ -76,22 +76,14 @@ public:
 
 	HRESULT FinalConstruct() throw()
 	{
-		PCWSTR location = L"FinalConsturct";
 		m_OnStartPageCalled = FALSE;
 		m_bErrState = FALSE;
 		m_Dirty = FALSE;
 
 		SEEK_NULL.QuadPart = 0;
-		HRESULT hr = 
-			ReadDllConfig(&m_strConstruct, NULL, &m_doLogging, NULL, NULL);
+	
 		
-		if (FAILED(hr))
-		{
-			ReportComError2(hr, location);
-			m_bErrState = TRUE;
-		}
-		
-		return hr;
+		return S_OK;
 	}
 	void FinalRelease() throw()
 	{
@@ -109,7 +101,6 @@ private:
 	CComPtr<IServer> m_piServer;
 	CRedLock  * dlm;
 	CLock my_lock;
-	CComBSTR m_strConstruct;
 	//redis connection pool
 	simple_pool::ptr_t pool;
 	BYTE m_dbTimeStamp[8];

@@ -4,11 +4,11 @@
 
 
  /* File created by MIDL compiler version 8.00.0603 */
-/* at Wed Nov 22 20:46:36 2017
+/* at Fri Nov 24 20:05:42 2017
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0603 
-    protocol : dce , ms_ext, app_config, c_ext, robust
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
+    protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)

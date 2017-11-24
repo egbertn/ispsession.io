@@ -300,81 +300,81 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 	return hr;
 }
 
-// optional m_lngTimeOutSetting and 
-// strConstruct [out]
-STDMETHODIMP ReadDllConfig(BSTR * strConstruct, LONG *lTimeOutSetting, /*BOOL *hashSessionID,*/ int *enableLogging, GUID * license, BSTR* licenseContents) throw()
-{
-
-	ConfigurationManager config;
-	
-	CComBSTR key, val;
-	
-	key = L"ispsession_io:DataSource";
-	*strConstruct = config.AppSettings(key);
-	if (*strConstruct == NULL)
-	{
-		OutputDebugStringA("CSession.dll.Config not found, therefore exiting\r\n");
-		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-	}
-	key.SetLength(512);
-	auto stored = ::GetEnvironmentVariableW(*strConstruct, key, 512);
-	if (stored > 0)
-	{
-		SysReAllocStringLen(strConstruct, key, stored);
-	}
-	if (lTimeOutSetting != nullptr)
-	{
-		key = L"ispsession_io:SessionTimeout";
-		val.Attach(config.AppSettings(key, L"20"));
-		if (val.Length() > 0 && val.IsNumeric())
-			*lTimeOutSetting = val.ToLong();
-	}
-	/*if (hashSessionID!= NULL)
-	{
-		key = L"HASH_SESSIONID";
-		val.Attach(config.AppSettings(key, L"false"));
-		if (val.Length() > 0 && val.IsBool())
-			*hashSessionID = val.ToBool()  == VARIANT_TRUE ? TRUE : FALSE;
-	}*/
-	
-	/*if (EnableCompression != NULL)
-	{
-		key = L"UseCompression";
-		val.Attach(config.AppSettings(key, L"1"));
-		*EnableCompression = val.ToLong();
-	}*/
-
-	if (enableLogging != NULL)
-	{
-		key = L"ispsession_io:EnableLogging";
-		val.Attach(config.AppSettings(key, L"0"));
-		if (val.Length() > 0 && val.IsNumeric())
-			*enableLogging= val.ToLong();
-#ifdef DEBUG
-		AtlTrace(L"Logging enabled %d\r\n", *enableLogging);
-#endif
-	}
-	if (license != NULL)
-	{
-		key = L"ispsession_io:License";
-
-		val.Attach(config.AppSettings(key, L""));
-		if (val.Length() != 0)
-		{
-			setstring((const PUCHAR)license, val.m_str);
-		}   
-	}
-	if (licenseContents != NULL)
-	{
-		key = L"ispsession_io:Csession.LIC";
-		val.Attach(config.AppSettings(key, L""));
-		if (val.Length() != 0)
-		{
-			*licenseContents = val.Detach();
-		}
-	}
-	return S_OK;
-}
+//// optional m_lngTimeOutSetting and 
+//// strConstruct [out]
+//STDMETHODIMP ReadDllConfig(BSTR * strConstruct, LONG *lTimeOutSetting, /*BOOL *hashSessionID,*/ int *enableLogging, GUID * license, BSTR* licenseContents) throw()
+//{
+//
+//	ConfigurationManager config;
+//	
+//	CComBSTR key, val;
+//	
+//	key = L"ispsession_io:DataSource";
+//	*strConstruct = config.AppSettings(key);
+//	if (*strConstruct == NULL)
+//	{
+//		OutputDebugStringA("CSession.dll.Config not found, therefore exiting\r\n");
+//		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+//	}
+//	key.SetLength(512);
+//	auto stored = ::GetEnvironmentVariableW(*strConstruct, key, 512);
+//	if (stored > 0)
+//	{
+//		SysReAllocStringLen(strConstruct, key, stored);
+//	}
+//	if (lTimeOutSetting != nullptr)
+//	{
+//		key = L"ispsession_io:SessionTimeout";
+//		val.Attach(config.AppSettings(key, L"20"));
+//		if (val.Length() > 0 && val.IsNumeric())
+//			*lTimeOutSetting = val.ToLong();
+//	}
+//	/*if (hashSessionID!= NULL)
+//	{
+//		key = L"HASH_SESSIONID";
+//		val.Attach(config.AppSettings(key, L"false"));
+//		if (val.Length() > 0 && val.IsBool())
+//			*hashSessionID = val.ToBool()  == VARIANT_TRUE ? TRUE : FALSE;
+//	}*/
+//	
+//	/*if (EnableCompression != NULL)
+//	{
+//		key = L"UseCompression";
+//		val.Attach(config.AppSettings(key, L"1"));
+//		*EnableCompression = val.ToLong();
+//	}*/
+//
+//	if (enableLogging != NULL)
+//	{
+//		key = L"ispsession_io:EnableLogging";
+//		val.Attach(config.AppSettings(key, L"0"));
+//		if (val.Length() > 0 && val.IsNumeric())
+//			*enableLogging= val.ToLong();
+//#ifdef DEBUG
+//		AtlTrace(L"Logging enabled %d\r\n", *enableLogging);
+//#endif
+//	}
+//	if (license != NULL)
+//	{
+//		key = L"ispsession_io:License";
+//
+//		val.Attach(config.AppSettings(key, L""));
+//		if (val.Length() != 0)
+//		{
+//			setstring((const PUCHAR)license, val.m_str);
+//		}   
+//	}
+//	if (licenseContents != NULL)
+//	{
+//		key = L"ispsession_io:Csession.LIC";
+//		val.Attach(config.AppSettings(key, L""));
+//		if (val.Length() != 0)
+//		{
+//			*licenseContents = val.Detach();
+//		}
+//	}
+//	return S_OK;
+//}
 wstring __stdcall s2ws(const std::string& str)
 {
 	using convert_typeX = std::codecvt_utf8<wchar_t>;

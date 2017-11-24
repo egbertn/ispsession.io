@@ -33,9 +33,9 @@ BSTR __stdcall FileStripFile(const wchar_t* pathname);
 BSTR __stdcall FileStripPath(const wchar_t* pathname);
 // reads registry for settings
 // optional lngTimeOutSetting 
-STDMETHODIMP ReadDllConfig(/*out*/ BSTR * strConstruct, LONG *lTimeOutSetting,
-							  /*BOOL *EnableCompression,  */
-							/*  BOOL *hashSessionID =0,*/ int *EnableLogging=0, GUID * license=NULL, BSTR* licensedFor=NULL);
+//STDMETHODIMP ReadDllConfig(/*out*/ BSTR * strConstruct, LONG *lTimeOutSetting,
+//							  /*BOOL *EnableCompression,  */
+//							/*  BOOL *hashSessionID =0,*/ int *EnableLogging=0, GUID * license=NULL, BSTR* licensedFor=NULL);
 
 BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr);
 BOOL __stdcall IsValidHex(const BSTR Cookie);

@@ -328,6 +328,7 @@ STDMETHODIMP NWCApplication::RemoveKey(BSTR Key) throw()
 	{
 		_dictionary.erase(pos);
 		//avoid duplicates the vector is not a unique dictionary
+		
 		auto found = std::find_if(_removed.begin(), _removed.end(),
 			[=](PSTR  &l){ 
 			CComBSTR ansiKey;
@@ -453,17 +454,15 @@ STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
 	CComBSTR bstrProp = L"APP_KEY";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0)
-	{
-		logModule.Write(L"AppKey: (%s)", bstrProp);
-	}
+	
+	logModule.Write(L"AppKey: (%s)", bstrProp);
+	
 
-#ifndef AppKeyNULL 
 	if (setstring(reinterpret_cast<PUCHAR>(&m_AppKey), bstrProp) == FALSE)
-		// we could do it without appkey it becomes GUID_NULL
-		ZeroMemory(&m_AppKey, sizeof(GUID));
-#endif	
-
+	{
+		hr = E_INVALIDARG;
+		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);
+	}
 
 	return hr;
 }
@@ -475,11 +474,80 @@ STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 	PCWSTR location = L"InitializeDataSource";
 	int port = 5578;
 	HRESULT hr = S_OK;
+
+	CComBSTR retVal, configFile(L"/web.Config");
+	///traverse back to root if necessary, note, UNC paths are not advisable
+	CComBSTR root;
+	bool exists = false;
+	hr = m_piServer->MapPath(configFile, &root);
+	configFile.Insert(0, L".");
+	//IIS Setting 'enable parent paths' must be enabled
+	for (;;)
+	{
+		retVal.Empty();
+		hr = m_piServer->MapPath(configFile, &retVal);
+		if (FAILED(hr))
+		{
+			break;
+		}
+		if ((exists = FileExists(retVal)) == true)
+		{
+			break;
+		}
+		logModule.Write(L"logic %s, phys %s", configFile, retVal);
+		//avoid going beyond the root of this IIS website
+		if (CComBSTR::Compare(retVal, root, true, false, false) == 0)
+		{
+			break;
+		}
+		if (configFile.StartsWith(L"./"))
+		{
+			configFile.Remove(0, 2);
+		}
+		configFile.Insert(0, L"../");
+	}
+	if (exists == FALSE)
+	{
+
+		exists = FileExists(root);
+		if (exists == TRUE)
+		{//last resort
+			retVal.Attach(root.Detach());
+			hr = S_OK;
+		}
+	}
+	if (exists == FALSE || FAILED(hr))
+	{
+		logModule.Write(L"searched web.Config up to: (%s) none found %x", retVal, hr);
+		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+	}
+	ConfigurationManager config(retVal);
+
 	//dlm->AddServerUrl("", port); //TODO: get con string
 	m_startSessionRequest = std::chrono::system_clock::now();
+	CComBSTR bstrProp ( L"DataSource"), strConstruct;
+	auto prefix = L"ispsession_io:";
+	bstrProp.Insert(0, prefix);
+	strConstruct.SetLength(512);
+	auto stored = ::GetEnvironmentVariableW(bstrProp, strConstruct, 512);
+	if (stored > 0)
+	{
+		strConstruct.SetLength(stored);
+	}
+	else
+	{
+		strConstruct.Attach(config.AppSettings(bstrProp));
+	}
+	if (strConstruct.IsEmpty())
+	{
+		hr = HRESULT_FROM_WIN32(ERROR_CANTREAD);
+		Error(L"Invalid web.Config datasource not found", this->GetObjectCLSID(), hr);
+		return hr;
+	}
+
 	if (SUCCEEDED(hr))
 	{
-		auto success = CSessionDL::OpenDBConnection(std::wstring(m_strConstruct, m_strConstruct.Length()), pool);
+		auto success = CSessionDL::OpenDBConnection(std::wstring(strConstruct, strConstruct.Length()), pool);
 		if (!success)
 		{
 			hr = E_FAIL;
@@ -880,7 +948,7 @@ STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, std::string& pStream) thro
 			{
 				test--; //exclude terminating zero
 				memcpy((void*)m_lpstrMulti.data(), &test, sizeof(test));
-				pStream.append(m_lpstrMulti, 0, test + sizeof(test));
+				pStream.append(m_lpstrMulti.data(), 0, test + sizeof(test));
 				logModule.Write(L"WriteString Bytes %d", test);
 			}
 		}

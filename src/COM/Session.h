@@ -56,41 +56,9 @@ public:
 		MAXTIME = EXPIREAT;
 		#endif
 		lngTimeOutSetting = 0;		
-		
-		GUID license= {0};
-		CComBSTR strLicensedFor;
-		int doLogging = 0;
-		HRESULT hr = ReadDllConfig(&strConstruct, &lngTimeOutSetting, &doLogging, &license, &strLicensedFor);
+		HRESULT hr = S_OK;
+		::InterlockedIncrement(&dwInstanceCount);
 
-		logModule.set_Logging(doLogging);
-
-		logModule.Write(L"Read defaults timeout %d, dologging %d", lngTimeOutSetting, doLogging);
-		licenseOK = LicentieCheck(&license, strLicensedFor);
-#ifndef Demo	
-		if (licenseOK == false) 
-		{
-			hr = CLASS_E_NOTLICENSED;
-			Error(L"No valid License Found", CLSID_NWCSession, hr);			
-		}
-#endif
-
-		if (SUCCEEDED(hr))
-		{
-			auto success= CSessionDL::OpenDBConnection(std::wstring(strConstruct), pool);
-			if (!success)
-			{
-				hr = E_FAIL;
-			}
-		}
-		if (FAILED(hr))
-		{			
-			ReportComError2(hr, location);
-			bErrState = TRUE;						
-		}
-		else
-		{
-			::InterlockedIncrement(&dwInstanceCount);
-		}
 		int diff = MAXINSTANCES - dwInstanceCount;
 		if (diff < 0)
 
@@ -106,10 +74,7 @@ public:
 			// refcount becomes 1 ...
 			hr = m_piVarDict->AddRef();
 		}
-		if (licenseOK == false)
-		{
-			Sleep(200);			
-		}
+		
 
 		return hr;
 	}

@@ -12,7 +12,6 @@
 // will be called if from asp Server.CreateObject is used
 STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) throw()
 {
-	logModule.Write(L"OnStartPage");
 
 	HRESULT hr = aspsvc->QueryInterface(&m_pictx);
 	if (FAILED(hr))
@@ -24,6 +23,7 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) throw()
 	if (FAILED(m_pictx->get_Response(&m_piResponse))) return E_FAIL;
 	if (FAILED(m_pictx->get_Server(&m_piServer))) return E_FAIL;
 	hr = ReadConfigFromWebConfig();
+	logModule.Write(L"OnStartPage");
 	if (FAILED(hr))
 	{
 		return hr;
@@ -138,12 +138,52 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	}
 	ConfigurationManager config(retVal);
 	const PWSTR prefix = L"ispsession_io:";
-	CComBSTR bstrProp ( L"AD_PATH");	
+	CComBSTR bstrProp ( L"EnableLogging"), temp, strLicensedFor;	
+	GUID license = { 0 };
+	bstrProp.Insert(0, prefix);
+	bstrProp.Attach(config.AppSettings(bstrProp));
+	if (bstrProp.Length() > 0 && bstrProp.IsNumeric())
+	{
+		auto enableLogging = bstrProp.ToLong();
+		logModule.set_Logging(enableLogging);
+		logModule.Write(L"Read dologging %d", enableLogging);
+	}
+
+	bstrProp = L"License";
+	bstrProp.Insert(0, prefix);
+	bstrProp.Attach(config.AppSettings(bstrProp));
+	if (!bstrProp.IsEmpty())
+	{
+		setstring((const PUCHAR)&license, bstrProp);
+	}
+	bstrProp = L"Csession.LIC";
+	bstrProp.Insert(0, prefix);
+	bstrProp.Attach(config.AppSettings(bstrProp));
+	if (bstrProp.Length() != 0)
+	{
+		strLicensedFor.Attach(bstrProp.Detach());//move
+	}
+
+	licenseOK = LicentieCheck(&license, strLicensedFor);
+#ifndef Demo	
+	if (licenseOK == false)
+	{
+		hr = CLASS_E_NOTLICENSED;
+		Error(L"No valid License Found", CLSID_NWCSession, hr);
+		return hr;
+	}if (licenseOK == false)
+	{
+		Sleep(200);
+	}
+#endif
+	
+
+	bstrProp = L"AD_PATH";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0)
 	{
-		strAppPath.Attach(bstrProp.Detach()); //attach + detach, an ugly optimization just moving pointers instead of values...
+		strAppPath.Attach(bstrProp.Detach()); 
 	}
 	bstrProp = L"AD_DOMAIN";
 	bstrProp.Insert(0, prefix);
@@ -152,6 +192,45 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	{		
 		strCookieDOM.Attach(bstrProp.Detach());		
 	}
+	bstrProp = L"DataSource";
+	bstrProp.Insert(0, prefix);
+	strConstruct.SetLength(512);
+	auto stored = ::GetEnvironmentVariableW(bstrProp, strConstruct, 512);
+	if (stored > 0)
+	{
+		strConstruct.SetLength(stored);		
+	}
+	else
+	{
+		strConstruct.Attach(config.AppSettings(bstrProp));
+	}
+	if (strConstruct.IsEmpty())
+	{
+		hr = HRESULT_FROM_WIN32(ERROR_CANTREAD);
+		Error(L"Invalid web.Config datasource not found",this->GetObjectCLSID(), hr);
+		return hr;
+	}
+	if (SUCCEEDED(hr))
+	{
+		auto success = CSessionDL::OpenDBConnection(std::wstring(strConstruct), pool);
+		if (!success)
+		{
+			hr = E_FAIL;
+		}
+	}
+
+	bstrProp = L"SessionTimeout";
+	bstrProp.Insert(0, prefix);
+	temp.Attach(config.AppSettings(bstrProp));
+	if (temp.Length() > 0 && temp.IsNumeric())
+	{
+		lngTimeOutSetting = temp.ToLong();
+	}
+	else
+	{
+		lngTimeOutSetting = 20;//?? too small
+	}
+	
 
 	bstrProp = L"CookieName";
 	bstrProp.Insert(0, prefix);
@@ -160,7 +239,15 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	{
 		m_bstrToken.Attach(bstrProp.Detach());
 	}
-	logModule.Write(L"AD_DOMAIN: (%s), AD_PATH: (%s), CookieName (%s)", strCookieDOM, strAppPath, m_bstrToken);
+	logModule.Write(L"Timeout (%d), AD_DOMAIN: (%s), AD_PATH: (%s), CookieName (%s)", lngTimeout, strCookieDOM, strAppPath, m_bstrToken);
+
+	bstrProp = L"SessionTimeout";
+	bstrProp.Insert(0, prefix);
+	bstrProp.Attach(config.AppSettings(bstrProp));
+	if (bstrProp.Length() > 0 && bstrProp.IsNumeric())
+	{
+		this->lngTimeout = bstrProp.ToLong();
+	}
 
 	bstrProp = L"HASH_SESSIONID";
 	bstrProp.Insert(0, prefix);
@@ -206,15 +293,21 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	bstrProp = L"APP_KEY";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0)
+	if (bstrProp.Length() != 32)
+	{
+		hr = E_INVALIDARG;
+		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);
+	}
+	else
+	{
 		logModule.Write(L"AppKey: (%s)", bstrProp);
+	}
 
-
-#ifndef AppKeyNULL 
 	if (setstring(reinterpret_cast<PUCHAR>(&btAppKey), bstrProp) == FALSE)
-		// we could do it without appkey it becomes GUID_NULL
-		ZeroMemory(&btAppKey, sizeof(GUID));
-#endif	
+	{
+		hr = E_INVALIDARG;
+		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);
+	}
 	
 
 	return hr;

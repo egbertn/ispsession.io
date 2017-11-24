@@ -6,7 +6,7 @@
 #include "message.h"
 #define Demo
 // defines for ISP Session tiny edition
-//#define AppKeyNULL
+
 #define EXPIREAT (43069) // ie: 30/oct/2017
 #define MAXINSTANCES 1000
 #define STRICT

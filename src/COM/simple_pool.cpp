@@ -13,7 +13,7 @@ DWORD __stdcall  redis3m::TimerThread(void* param)
 
 	LARGE_INTEGER liDueTime;
 
-	liDueTime.QuadPart = -20 * _SECOND;
+	liDueTime.QuadPart = -10 * _SECOND;
 
 	::SetWaitableTimer(_timer, &liDueTime, 2000, NULL, NULL, 0);
 	do

@@ -165,9 +165,9 @@ STDMETHODIMP NWCApplication::put_Value(BSTR key, VARIANT newVal) throw()
 		_dictionary.insert(pair<CComBSTR, ElementModel>(key, v)); //element is copied by value, so a VariantCopy is done
 		pos = _dictionary.find(key);
 	}
-	else
+	else if (pos->second.IsNew == FALSE)
 	{
-		pos->second.IsDirty = true;//going to change
+		pos->second.IsDirty = TRUE;//going to change
 	}
 	if (vDeref.vt == VT_DISPATCH)
 	{
@@ -225,7 +225,7 @@ STDMETHODIMP NWCApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 		}
 		else
 		{
-			pos->second.IsDirty = true;//going to change
+			pos->second.IsDirty = TRUE;//going to change
 		}
 		valueArray = &pos->second.val;
 
@@ -949,7 +949,7 @@ STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, std::string& pStream) thro
 				test--; //exclude terminating zero
 				memcpy((void*)m_lpstrMulti.data(), &test, sizeof(test));
 				pStream.append(m_lpstrMulti.data(), 0, test + sizeof(test));
-				logModule.Write(L"WriteString Bytes %d", test);
+				logModule.Write(L"A: WriteString Bytes %d", test);
 			}
 		}
 	}
@@ -1377,7 +1377,11 @@ STDMETHODIMP NWCApplication::DeserializeKey(std::string& binaryString) throw()
 		stream.read((char*)&vt, sizeof(VARTYPE));
 		logModule.Write(L"Deserialized key %s, with type %d", key, vt);
 		hr = ReadValue(stream, &val, vt);
-		hr = put_Value(key, val);
+		ElementModel m;
+		_dictionary.insert(std::pair<CComBSTR, ElementModel>(key, m));
+		auto pos = _dictionary.find(key);
+		pos->second.val = val;
+		//val.Detach(&pos->second.val);		 
 	}
 	else
 	{

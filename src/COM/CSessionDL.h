@@ -177,7 +177,7 @@ public:
 				string k;
 				for (auto saddKey = 0; saddKey < newKeys.size(); ++saddKey)
 				{
-					k = appkeyPrefix + str_toupper(string(newKeys[saddKey]));
+					k = appkeyPrefix + str_toupper(newKeys[saddKey]);
 					redisSAdd << k;
 				}
 				reply = conn->run(redisSAdd);
@@ -190,7 +190,7 @@ public:
 				string k;
 				for (auto sremoveKey = removedKeys.begin(); sremoveKey != removedKeys.end(); ++sremoveKey)
 				{					
-					k = appkeyPrefix + str_toupper(string(*sremoveKey));
+					k = appkeyPrefix + str_toupper(*sremoveKey);
 					srem << k;
 				}
 				auto reply = conn->run(srem);

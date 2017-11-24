@@ -1346,7 +1346,7 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 				hr = pStream->Write(&test, sizeof(UINT), nullptr);
 				if (hr == S_OK)
 					hr = pStream->Write(m_lpstrMulti.data(), test, nullptr);
-				logModule.Write(L"WriteString Bytes %d", test);
+				logModule.Write(L"S: WriteString Bytes %d", test);
 			}
 		}
 	}

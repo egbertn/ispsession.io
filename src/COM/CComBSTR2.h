@@ -1104,7 +1104,8 @@ public:
 			UINT neededLen = len * 4;
 
 			BSTR pszA = SysAllocStringByteLen(NULL, neededLen);
-
+			memset(pszA, 0, neededLen);
+			SetLastError(0);
 			int _convert = WideCharToMultiByte(codePage, 0, m_str, len, (PSTR)pszA, neededLen, NULL, NULL);
 			if (_convert == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
 			{

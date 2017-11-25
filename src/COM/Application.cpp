@@ -328,18 +328,23 @@ STDMETHODIMP NWCApplication::RemoveKey(BSTR Key) throw()
 	{
 		_dictionary.erase(pos);
 		//avoid duplicates the vector is not a unique dictionary
-		
+		CComBSTR ansiKey, k;
+		ansiKey.Attach(Key);//steal
+		k.Attach(ansiKey.ToByteString());
+		ansiKey.Detach();//give back
+
 		auto found = std::find_if(_removed.begin(), _removed.end(),
-			[=](PSTR  &l){ 
-			CComBSTR ansiKey;
-			ansiKey.AssignBSTR(Key);
-			ansiKey.Attach(ansiKey.ToByteString());
-			return StrCmpIA( (PSTR)ansiKey.m_str, l)==0; });
+			[=](string  &l){ 
+			return  l.compare((PCSTR)k.m_str) == 0; });
 		if (found == _removed.end())
 		{
 			CComBSTR ansi;
-			ansi.Attach(CComBSTR(Key).ToByteString());
+			CComBSTR orig;
+			orig.Attach(Key);
+			ansi.Attach(orig.ToByteString());
+			orig.Detach();
 			_removed.push_back((PSTR)ansi.m_str);
+			ansi.Empty();
 		}
 		logModule.Write(L"remove key %s", Key);		
 	}
@@ -351,16 +356,17 @@ STDMETHODIMP NWCApplication::RemoveAll() throw()
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
 		auto found = std::find_if(_removed.begin(), _removed.end(),
-			[=](PSTR  &l){
+			[=](string  &l){
 			CComBSTR ansiKey;
 			ansiKey.Attach(((CComBSTR2)k->first).ToByteString());
-			return StrCmpIA((PSTR)ansiKey.m_str, l) == 0; });
+			return l.compare((PSTR)ansiKey.m_str) == 0; });
 		if (found == _removed.end())
 		{
 			CComBSTR ansi;
 			ansi.Attach(((CComBSTR2)k->first).ToByteString());
 
 			_removed.push_back((PSTR)ansi.m_str);
+			ansi.Empty();
 		}
 		_dictionary.erase(k);
 	}
@@ -587,24 +593,20 @@ STDMETHODIMP NWCApplication::ReadString(std::istream& pStream, BSTR *retval) thr
 		{
 			//warning! This is a multibyte encoded string!
 			//realloc
-			if (lTempSize > m_lpstrMulti.capacity())
-			{
-				m_lpstrMulti.reserve((lTempSize / 512) * 512 + 2048);
-				
-				m_dwMultiLen = lTempSize;
-			}
+			auto result = EnsureBuffer(lTempSize);
+			
 			if (hr == S_OK)
 			{
 				
-				pStream.read((char*)m_lpstrMulti.data(), lTempSize);
+				pStream.read((char*)m_lpstrMulti.m_pData, lTempSize);
 				//because we specify the exact length, writtenbytes is excluding the terminating 0
-				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, m_lpstrMulti.data(), lTempSize, nullptr, 0);
+				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, (PSTR) m_lpstrMulti.m_pData, lTempSize, nullptr, 0);
 				if (writtenbytes == 0)
 					hr = ATL::AtlHresultFromLastError();
 				else
 				{
 					if (::SysReAllocStringLen(retval, nullptr, writtenbytes) != FALSE)
-						::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti.data(), lTempSize, *retval, writtenbytes);
+						::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti.m_pData, lTempSize, *retval, writtenbytes);
 					else
 						hr = E_OUTOFMEMORY;
 				}
@@ -903,7 +905,7 @@ STDMETHODIMP NWCApplication::ReadValue(std::istream& pStream, VARIANT* TheValue,
 *writes a string in utf-8 compressed format
 *
 ***/
-STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, std::string& pStream) throw()
+STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, IStream* pStream) throw()
 {
 	HRESULT hr = S_OK;
 
@@ -921,34 +923,15 @@ STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, std::string& pStream) thro
 			hr = ATL::AtlHresultFromLastError();
 		else
 		{
-			if (byteswritten > m_lpstrMulti.capacity())
-			{
-				try
-				{
-					m_lpstrMulti.reserve((byteswritten / 512) * 512 + 1048);
-				}
-				catch (std::bad_alloc&)
-				{
-					pStream.append((char*)&test, sizeof(UINT));
-					return E_OUTOFMEMORY;
-				}
-				catch (std::length_error& )
-				{
-					
-					test = 0;
-					pStream.append((char*)&test, sizeof(UINT));
-					return E_OUTOFMEMORY;					
-				}
-				
-				
-			}
-			m_lpstrMulti.resize(byteswritten + sizeof(UINT));
-			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti.data() + sizeof(UINT), byteswritten, nullptr, nullptr);
+			
+			auto result = EnsureBuffer(byteswritten);
+			
+			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti.m_pData, byteswritten, nullptr, nullptr);
 			if (test > 0)
 			{
-				test--; //exclude terminating zero
-				memcpy((void*)m_lpstrMulti.data(), &test, sizeof(test));
-				pStream.append(m_lpstrMulti.data(), 0, test + sizeof(test));
+				test--; //exclude terminating zero				
+				pStream->Write(&test, sizeof(test), nullptr);
+				pStream->Write(m_lpstrMulti.m_pData,  test, nullptr);
 				logModule.Write(L"A: WriteString Bytes %d", test);
 			}
 		}
@@ -956,7 +939,7 @@ STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, std::string& pStream) thro
 	else //empty string
 	{
 		test = 0;
-		pStream.append((char*)&test, sizeof(UINT));
+		pStream->Write((char*)&test, sizeof(UINT), nullptr);
 	}
 	return hr;
 }
@@ -1021,7 +1004,7 @@ STDMETHODIMP NWCApplication::ConvertObjectToStream( VARIANT &var) throw()
 }
 
 
-STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::string& binaryString) throw()
+STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* binaryString) throw()
 {
 
 	LONG cBytes = 0,
@@ -1058,7 +1041,7 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 		descriptor.type = vtype;
 		descriptor.ElemSize = ElSize;
 		descriptor.Dims = cDims;
-		binaryString.append((char*)&descriptor, sizeof(ARRAY_DESCRIPTOR));
+		binaryString->Write((char*)&descriptor, sizeof(ARRAY_DESCRIPTOR), nullptr);
 
 		VARTYPE vcopy = vtype & ~VT_ARRAY;
 		if (vcopy == VARENUM::VT_UNKNOWN || vcopy == VARENUM::VT_ERROR || vcopy == VARENUM::VT_VARIANT)
@@ -1087,7 +1070,7 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 			hr = ::SafeArrayGetLBound(psa, cx, &bounds[1]);
 			hr = ::SafeArrayGetUBound(psa, cx, &bounds[0]);
 			bounds[0] = bounds[0] - bounds[1] + 1;
-			binaryString.append((char*)bounds, sizeof(SAFEARRAYBOUND));
+			binaryString->Write(bounds, sizeof(SAFEARRAYBOUND), nullptr);
 			psaBound[cx - 1].lLbound = bounds[1];
 			psaBound[cx - 1].cElements = bounds[0];
 			lMemSize *= bounds[0];
@@ -1109,7 +1092,7 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 				hr = ::SafeArrayAccessData(psa, &psadata);
 				if (hr == S_OK)
 				{
-					binaryString.append((char*)psadata, lMemSize);
+					binaryString->Write((char*)psadata, lMemSize, nullptr);
 					::SafeArrayUnaccessData(psa);
 				}
 			}
@@ -1180,7 +1163,7 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 							return hr;
 						}
 						vtype = pVar->vt;
-						binaryString.append((char*)&vtype, sizeof(VARTYPE));
+						binaryString->Write((char*)&vtype, sizeof(VARTYPE), nullptr);
 						//----- recursive call ----- keep an eye on this
 						hr = WriteValue(vtype, *pVar, binaryString);
 
@@ -1220,7 +1203,7 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 		{
 			if (psa == nullptr)
 				//handle nullptr pointer array
-				binaryString.append((char*)psa, sizeof(nullptr));
+				binaryString->Write(0, sizeof(int), nullptr);
 			else
 				hr = E_INVALIDARG;
 		}
@@ -1252,7 +1235,7 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 		case VT_DECIMAL:
 			//correct because decimal eats the whole variant !
 			cBytes = sizeof(DECIMAL);
-			binaryString.append((char*)&TheVal, cBytes);
+			binaryString->Write((char*)&TheVal, cBytes, nullptr);
 			break;
 		case VT_BSTR:
 
@@ -1277,14 +1260,14 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 				cBytes = pstatstg.cbSize.LowPart;
 				logModule.Write(L"Streamsize %d", cBytes);
 				// copy the persisted object as bytestream to the main stream	and prefix with stream length	
-				binaryString.append((char*)&cBytes, sizeof(pstatstg.cbSize.LowPart));
+				binaryString->Write((char*)&cBytes, sizeof(pstatstg.cbSize.LowPart), nullptr);
 				unsigned char buf[2048];
 				ULONG actualRead = 0;
 				HRESULT hr2 = S_OK;
 				while (hr2 == S_OK)
 				{
 					hr2 = l_pIStr->Read(buf, sizeof(buf), &actualRead);
-					binaryString.append((char*)buf, actualRead);
+					binaryString->Write(buf, actualRead, nullptr);
 				}			
 				
 			}
@@ -1292,7 +1275,7 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 			{
 				// indicate zero bytes
 				cBytes = 0;
-				binaryString.append((char*)&cBytes, sizeof(DWORD));
+				binaryString->Write((char*)&cBytes, sizeof(DWORD), nullptr);
 			}
 
 			break;
@@ -1302,7 +1285,7 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, std::str
 		}
 	exit: // sorry
 		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL)
-			binaryString.append((char*)&TheVal.bVal, cBytes);
+			binaryString->Write((char*)&TheVal.bVal, cBytes, nullptr);
 		logModule.Write(L"Simple variant size=%d", cBytes);
 	}
 
@@ -1318,10 +1301,10 @@ STDMETHODIMP NWCApplication::get_KeyCount(PINT pVal)  throw()
 	*pVal = (INT)_dictionary.size();
 	return S_OK;
 }
-STDMETHODIMP NWCApplication::SerializeKey( BSTR Key, std::string& binaryString) throw()
+STDMETHODIMP NWCApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
 {
 	HRESULT hr = S_OK;
-	binaryString.resize(0);
+	binaryString->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
 	auto pos = _dictionary.find(Key);
 	if (pos != _dictionary.end())
 	{
@@ -1331,10 +1314,9 @@ STDMETHODIMP NWCApplication::SerializeKey( BSTR Key, std::string& binaryString) 
 		//write variant type
 		VARTYPE vtype = pos->second.val.vt;
 		if (SUCCEEDED(hr))
-		{
-
-			binaryString.append((char*)&vtype, sizeof(VARTYPE));
-			if (pos->second.IsSerialized == FALSE)
+		{			
+			binaryString->Write((char*)&vtype, sizeof(VARTYPE), nullptr);
+			if ((pos->second.val.vt == VT_UNKNOWN || pos->second.val.vt == VT_DISPATCH) && pos->second.IsSerialized == FALSE)
 			{
 				hr = ConvertObjectToStream(pos->second.val);
 			}
@@ -1380,8 +1362,8 @@ STDMETHODIMP NWCApplication::DeserializeKey(std::string& binaryString) throw()
 		ElementModel m;
 		_dictionary.insert(std::pair<CComBSTR, ElementModel>(key, m));
 		auto pos = _dictionary.find(key);
-		pos->second.val = val;
-		//val.Detach(&pos->second.val);		 
+		//pos->second.val = val;
+		val.Detach(&pos->second.val);		 
 	}
 	else
 	{
@@ -1402,7 +1384,11 @@ STDMETHODIMP NWCApplication::get_KeyStates(
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
 		CComBSTR ansi;
-		ansi.Attach(((CComBSTR2)k->first).ToByteString());
+		ansi.Attach(((CComBSTR2)(*k).first).ToByteString());
+		if (ansi.IsEmpty())
+		{
+			logModule.Write(L"Severe error, empty key found");
+		}
 		if (k->second.IsNew == TRUE)
 		{
 			new_keys.push_back((PSTR)ansi.m_str);
@@ -1421,11 +1407,27 @@ STDMETHODIMP NWCApplication::get_KeyStates(
 			expire_keys.push_back(std::pair<char*, INT>((PSTR)ansi.m_str, k->second.ExpireAt));
 		}
 	}
-	for (auto k = _removed.begin(); k != _removed.end(); ++k)
+	auto sz = _removed.size();
+	for (auto k = 0; k < sz; ++k)
 	{
-		removed_keys.push_back(*k);
+		removed_keys.push_back((PCHAR)_removed[k].c_str());
 	}
 	return hr;
 }
 
 /* END IDatabase*/
+
+STDMETHODIMP NWCApplication::EnsureBuffer(INT newBuffer) throw()
+{
+	if (newBuffer > m_currentBufLen)
+	{
+		m_currentBufLen = (newBuffer / 512) * 512 + 1024;
+		auto result = m_lpstrMulti.ReallocateBytes(m_currentBufLen);
+		if (result == false)
+		{
+			return E_OUTOFMEMORY;
+		}
+	}
+
+	return S_OK;
+}

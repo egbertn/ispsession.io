@@ -111,10 +111,10 @@ private:
 	GUID m_AppKey;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 	std::map<CComBSTR, ElementModel, KeyComparer> _dictionary;
-	std::vector<PCHAR> _removed;
-	LARGE_INTEGER SEEK_NULL;
-	std::string m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
-	UINT m_dwMultiLen;
+	std::vector<string> _removed;
+	LARGE_INTEGER SEEK_NULL;	
+	CHeapPtr<byte> m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
+	INT m_currentBufLen = 0;
 
 public:
 	//IApplicationObject
@@ -143,7 +143,7 @@ public:
 		std::vector<char*> &other_keys, 
 		std::vector<std::pair<char*, INT>> & expireKeys,
 		std::vector<char*> &removed_keys);
-	STDMETHOD (SerializeKey)(BSTR key, std::string& binaryString);
+	STDMETHOD(SerializeKey)(BSTR key, IStream* binaryString);
 	//unpacks key & value from the blob       
 	STDMETHOD (DeserializeKey)(std::string& binaryString);
 
@@ -163,8 +163,8 @@ private:
 	STDMETHODIMP ReadString(std::istream& stream, BSTR* outputString);
 	STDMETHODIMP ReadValue(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype);
 	//allows recursion
-	STDMETHODIMP WriteString(BSTR Key, std::string& inoutputString);
-	STDMETHODIMP WriteValue(VARTYPE vt, VARIANT& val, std::string& binaryString);
+	STDMETHODIMP WriteString(BSTR Key, IStream* inoutputString);
+	STDMETHODIMP WriteValue(VARTYPE vt, VARIANT& val, IStream* binaryString);
 	// converts a e.g. recordset into a VT_IUNKNOWN of IStream
 	STDMETHODIMP ConvertObjectToStream(VARIANT& val);
 	// converts an IStream to an instance of a COM class
@@ -174,6 +174,7 @@ private:
 	STDMETHODIMP ReadConfigFromWebConfig();
 	STDMETHODIMP InitializeDataSource();
 	STDMETHODIMP PersistApplication();
+	STDMETHODIMP EnsureBuffer(INT newBuffer);
 	
 };
 

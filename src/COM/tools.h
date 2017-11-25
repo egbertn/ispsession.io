@@ -9,6 +9,7 @@
 #include <functional> 
 #include <cctype>
 #include <locale>
+#include "IDatabase.h"
 
 std::wstring& __stdcall ltrim(std::wstring &s);
 std::string& __stdcall ltrim(std::string &s);
@@ -57,3 +58,4 @@ STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm
 STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj);
 
 void __stdcall FreeString(BSTR * theString);
+STDMETHODIMP SerializeKey(std::vector<char*> &keys, IDatabase* pDictionary, command& cmd, string& appkeyPrefix);

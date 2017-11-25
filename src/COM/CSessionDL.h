@@ -7,7 +7,7 @@
 #include "CSession.h"
 #include "CStream.h"
 #include "Application.h"
-
+#include <sstream>
 
 //initializes from SystemTime
 struct DBTIMESTAMP 
@@ -185,60 +185,38 @@ public:
 			}
 			if (removedKeys.size() > 0)
 			{
+				command del("DEL");
 				command srem("SREM");//redis 2.4+ supports multiples
 				srem << appkey;
+				
 				string k;
 				for (auto sremoveKey = removedKeys.begin(); sremoveKey != removedKeys.end(); ++sremoveKey)
 				{					
 					k = appkeyPrefix + str_toupper(*sremoveKey);
 					srem << k;
+					del << k;
 				}
-				auto reply = conn->run(srem);
-				auto result = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
+				reply = conn->run(del);
+				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
+				reply = conn->run(srem);
+				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
 			}
 
 			//3. serialize individual keys
 			
 			if (newKeys.size() > 0)
 			{
-				string k;
-				string binary;
-				CComBSTR bstrKey;
-				for (auto saddKey = 0; saddKey < newKeys.size(); ++saddKey)
-				{
-					//only set redis keys to upper, not the serialized one
-					k = appkeyPrefix + str_toupper(newKeys[saddKey]);
-					bstrKey = newKeys[saddKey];
-					hr = pDictionary->SerializeKey(bstrKey, binary);
-					logModule.Write(L"Serialize key %s %x", bstrKey, hr);
-					if (SUCCEEDED(hr))
-					{
-						multipleSet << k << binary;
-					}
-				}			
+				SerializeKey(newKeys, pDictionary, multipleSet, appkeyPrefix);
 			}
 			if (changedKeys.size() > 0)
 			{
-				string k;
-				string binary;
-				CComBSTR bstrKey;
-				for (auto saddKey = 0; saddKey < changedKeys.size(); ++saddKey)
-				{
-					//only set redis keys to upper, not the serialized one
-					k = appkeyPrefix + str_toupper(changedKeys[saddKey]);
-					bstrKey = changedKeys[saddKey];
-					hr = pDictionary->SerializeKey(bstrKey, binary);
-					logModule.Write(L"Serialize key %s %x", bstrKey, hr);
-					if (SUCCEEDED(hr))
-					{
-						multipleSet << k << binary;
-					}
-				}				
+				SerializeKey(changedKeys, pDictionary, multipleSet, appkeyPrefix);			
+			}
+			if (changedKeys.size() > 0 || newKeys.size() > 0)
+			{
 				reply = conn->run(multipleSet);
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
 			}
-
-
 			
 			if (hr == S_OK)
 			{
@@ -258,6 +236,7 @@ public:
 			}
 
 			reply = conn->run(command("EXEC")); //commit transaction
+			hr =   reply.str() == "" ? S_OK : E_FAIL;
 			pool->put(conn);
 		}
 

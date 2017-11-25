@@ -675,68 +675,6 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 			case VT_I8:	case VT_UI8: case VT_CY: case VT_R8: case VT_DATE:
 				cBytes = sizeof(LONGLONG);
 				break;
-			//case VT_RECORD: //mainly only with .NET structs
-			//	{					
-			//		// create a shorter cut
-			//		IRecordInfo * pRecordInfo = TheVal->pRecInfo;
-
-			//		//prepare our own structure for persistence
-			//		wire_UDT nfo = {0};
-			//		
-			//		if (pRecordInfo == nullptr)
-			//			hr = E_POINTER;
-			//		// get the recordsize
-			//		if (hr == S_OK) 
-			//			hr = TheVal->pRecInfo->GetSize(&nfo.clSize);
-
-			//		if (hr == S_OK)	
-			//			hr = CoGetMarshalSizeMax(&nfo.ifaceSize, 
-			//				IID_IRecordInfo,
-			//				TheVal->pRecInfo,
-			//				MSHCTX_NOSHAREDMEM,
-			//				nullptr,
-			//				MSHLFLAGS_NORMAL);
-
-			//			logModule.Write(L"GetMarshalSizeMax %x %d", hr, nfo.ifaceSize);
-
-			//		//put our stuff on the line
-			//		if (hr != S_OK) 
-			//		{
-			//			nfo.clSize =
-			//			nfo.ifaceSize = 0;
-			//		}
-			//		pStream->Write(&nfo, sizeof(wire_UDT), nullptr);
-			//		
-			//		if (hr == S_OK)
-			//		{
-			//			HGLOBAL hglob = GlobalAlloc(GMEM_MOVEABLE, nfo.ifaceSize);
-			//			CComPtr<IStream> pstream;
-			//			if (hglob != nullptr)
-			//				hr = CreateStreamOnHGlobal(hglob, TRUE, &pstream);
-			//			else hr = E_OUTOFMEMORY;
-			//			if (hr == S_OK)
-			//				hr = CoMarshalInterface(pstream, 
-			//					IID_IRecordInfo, 
-			//					pRecordInfo, 
-			//					MSHCTX_NOSHAREDMEM, 
-			//					nullptr,
-			//					MSHLFLAGS_NORMAL);						
-			//			//copy to main stream
-			//			if (hr == S_OK) 
-			//			{
-			//				pStream->Write(GlobalLock(hglob), nfo.ifaceSize, nullptr);
-			//				GlobalUnlock(hglob);
-			//			}
-			//		}
-
-			//		logModule.Write(L"CoMarshalInterface %x", hr);
-			//		// now copy the raw record data
-			//		if (hr == S_OK)
-			//			hr = pStream->Write(TheVal->pvRecord, nfo.clSize, nullptr);
-			//		
-			//	}	
-			//	cBytes=0;
-			//	break;
 			case VT_DECIMAL:
 				//correct because decimal eats the whole variant !
 				cBytes = sizeof(DECIMAL);
@@ -1175,9 +1113,11 @@ STDMETHODIMP CVariantDictionary::LocalContents(DWORD * lSize, IStream **pSequent
 
 		// get current seek pointer, ie, the current size.
 		//		hr = (*pSequentialStream)->Length(lSize);
-		STATSTG pstatstg = { 0 };
-		(*pSequentialStream)->Stat(&pstatstg, STATFLAG_NONAME);
-		*lSize = pstatstg.cbSize.LowPart;
+		ul.QuadPart = 0;
+		LARGE_INTEGER set = { 0 };
+		(*pSequentialStream)->Seek(set, STREAM_SEEK_CUR, &ul);
+		cseqs->SetSize(ul);
+		*lSize = ul.LowPart;
 
 		LARGE_INTEGER li;
 		li.QuadPart = 0;
@@ -1309,14 +1249,7 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 
 	UINT lTempSize = ::SysStringLen(TheVal);
 	UINT test  = 0;
-#ifdef DEBUG
-	UINT testlen = (UINT)wcslen(TheVal);
-	if (testlen != lTempSize) 
-	{
-		logModule.Write(L"wcslen(TheValue != SysStringLen(TheVal) %d, %d\n", testlen, lTempSize);
-		return E_FAIL;
-	}
-#endif
+
 	
 	//WideCharToMultiByte includes the terminating \0
 	// lTempSize must be + 1 because of the terminating 0!
@@ -1327,26 +1260,15 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 			hr = ATL::AtlHresultFromLastError();
 		else
 		{
-			if (byteswritten > m_lpstrMulti.capacity())
-			{
-				m_lpstrMulti.reserve((byteswritten / 512) * 512 + 1024);			
-				logModule.Write(L"bufsize %d, bytes written %d in AllocPSTR %x", m_lpstrMulti.capacity(), byteswritten, hr);
-				if (FAILED(hr))
-				{
-					test = 0;
-					pStream->Write(&test, sizeof(UINT), nullptr);
-					return hr;
-				}
-			}
-			m_lpstrMulti.resize(byteswritten);
-			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti.data(), byteswritten, nullptr, nullptr);
+			EnsureBuffer(byteswritten);		
+			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti.m_pData, byteswritten, nullptr, nullptr);
 			if (test > 0)
 			{
 				test--; //exclude terminating zero
 				hr = pStream->Write(&test, sizeof(UINT), nullptr);
 				if (hr == S_OK)
-					hr = pStream->Write(m_lpstrMulti.data(), test, nullptr);
-				logModule.Write(L"S: WriteString Bytes %d", test);
+					hr = pStream->Write(m_lpstrMulti.m_pData, test, nullptr);
+				logModule.Write(L"S: WriteString Bytes %d %x", test, hr);
 			}
 		}
 	}
@@ -1379,23 +1301,20 @@ STDMETHODIMP CVariantDictionary::ReadString(IStream *pStream, BSTR *retval) thro
 		}
 		else if (lTempSize > 0) 
 		{
-			//warning! This is a multibyte encoded string!			
-			if (lTempSize > m_lpstrMulti.capacity())
-			{
-				m_lpstrMulti.reserve((lTempSize / 512) * 512 + 1024);				
-			}	
+			//warning! This is a multibyte encoded string!		
+			EnsureBuffer(lTempSize);
+			
 			if (hr == S_OK)
-			{
-				m_lpstrMulti.resize(lTempSize);
-				hr = pStream->Read((PSTR)m_lpstrMulti.data(), lTempSize, nullptr);
+			{				
+				hr = pStream->Read(m_lpstrMulti.m_pData, lTempSize, nullptr);
 				//because we specify the exact length, writtenbytes is excluding the terminating 0
-				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti.data(), lTempSize, nullptr, 0);	
+				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, (PSTR) m_lpstrMulti.m_pData, lTempSize, nullptr, 0);
 				if (writtenbytes == 0)
 					hr = ATL::AtlHresultFromLastError();
 				else
 				{
 					if (::SysReAllocStringLen(retval, nullptr, writtenbytes) != FALSE)
-						::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti.data(), lTempSize, *retval, writtenbytes);
+						::MultiByteToWideChar(CP_UTF8, 0, (PSTR)m_lpstrMulti.m_pData, lTempSize, *retval, writtenbytes);
 					else
 						hr = E_OUTOFMEMORY;
 				}//succeed utf-8 to utf-16
@@ -1412,3 +1331,13 @@ STDMETHODIMP CVariantDictionary::ReadString(IStream *pStream, BSTR *retval) thro
 	return hr;
 }
 
+STDMETHODIMP CVariantDictionary::EnsureBuffer(INT newBuffer) throw()
+{
+	if (newBuffer > m_currentBufLen)
+	{
+		m_currentBufLen = (newBuffer / 512) * 512 + 1024;
+		auto result = m_lpstrMulti.ReallocateBytes(m_currentBufLen);
+	}
+
+	return S_OK;
+}

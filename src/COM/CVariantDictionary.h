@@ -40,8 +40,9 @@ public:
 		
 		SEEK_NULL.QuadPart = (0L);
 		//allocate predified buffer
-
-		m_lpstrMulti.reserve(0x1000);
+		
+		m_lpstrMulti.AllocateBytes(0x1000/2);
+		m_currentBufLen = 0x1000 / 2;
 		return S_OK;
 	}
 
@@ -50,7 +51,7 @@ public:
 		_dictionary.clear();
 		_isserialized.clear();
 		//RELEASE(m_Stream)
-		m_lpstrMulti.clear();
+		m_lpstrMulti.Free();
 		
 	}
 	// NOT STDMETHOD because we don't support aggregation (we are sealed)
@@ -79,6 +80,7 @@ public:
 	STDMETHODIMP put_Readonly(const VARIANT_BOOL newVal);
 	STDMETHODIMP WriteString(IStream *pStream, const BSTR TheVal);
 	STDMETHODIMP ReadString(IStream *pStream, BSTR *retval);
+	STDMETHODIMP EnsureBuffer(INT newSize);
 	//STDMETHODIMP ReadUnsupportedValue(IStream *pStream, VARIANT* TheValue, DWORD size);
 	//STDMETHODIMP WriteUnsupportedValue(IStream *pStream, VARIANT* TheValue);
 private:
@@ -93,9 +95,10 @@ private:
 	// however, a set is not gettable by ordinal, the problem that get_Key sucks remains more or less
 	// still, iterating throught 10.000 keys (and assigning them to a copy), just took 15 ms. 
 	std::map<CComBSTR, CComVariant, TextComparer> _dictionary;
-	std::map<CComBSTR, bool, TextComparer> _isserialized;
-
-	std::string m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
+	std::map<CComBSTR, bool, TextComparer> _isserialized;	
+	
+	CHeapPtr<byte> m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
+	INT m_currentBufLen = 0;
 	LARGE_INTEGER SEEK_NULL;	
 };
 OBJECT_ENTRY_NON_CREATEABLE_EX_AUTO(CLSID_CVariantDictionary, CVariantDictionary)

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include <string>
 #include "tools.h"
+
+#include "CStream.h"
 #include "ConfigurationManager.h"
 
 std::wstring& __stdcall ltrim(std::wstring &s) 
@@ -574,5 +576,58 @@ void __stdcall FreeString(BSTR * theString) throw()
 	{
 		SysFreeString(*theString);
 		*theString = NULL;
+	}
+}
+
+
+STDMETHODIMP SerializeKey(std::vector<char*> &keys, IDatabase* pDictionary, command& cmd, string& appkeyPrefix) throw()
+{
+
+	string k(appkeyPrefix);
+	string baseString;
+	CComObject<CStream>* cseqs;
+	CComObject<CStream>::CreateInstance(&cseqs);
+	CComPtr<IStream> stream;
+
+	stream = cseqs;
+	HRESULT hr = S_OK;
+	CComBSTR bstrKey;
+	for (auto saddKey = 0; saddKey < keys.size(); ++saddKey)
+	{
+		ULARGE_INTEGER sze;
+		sze.QuadPart = 128;
+		stream->SetSize(sze);
+
+
+		//only set redis keys to upper, not the serialized one
+		k.resize(appkeyPrefix.size());
+		k.append( str_toupper(keys[saddKey]));
+
+		bstrKey = keys[saddKey];
+		hr = pDictionary->SerializeKey(bstrKey, stream);
+		STATSTG stat = { 0 };
+		LARGE_INTEGER set = { 0 };
+		ULARGE_INTEGER newpos = { 0 };
+		hr = stream->Seek(set, STREAM_SEEK_CUR, &newpos);
+		auto cBytes = newpos.LowPart;
+		logModule.Write(L"Serialize key %s %x len %d", bstrKey, hr, cBytes);
+		BYTE buf[512] = { 0 };
+		stream->SetSize(newpos);
+		stream->Seek(set, STREAM_SEEK_SET, nullptr);
+		ULONG read = 0;
+		while (hr == S_OK)
+		{
+			hr = stream->Read(buf, sizeof(buf), &read);
+			if (read > 0)
+			{
+				baseString.append((char*)buf, read);
+			}
+		}
+		if (SUCCEEDED(hr))
+		{
+			cmd << k << baseString;
+			hr = S_OK;
+		}
+		return hr;
 	}
 }

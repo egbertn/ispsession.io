@@ -628,6 +628,7 @@ STDMETHODIMP SerializeKey(std::vector<char*> &keys, IDatabase* pDictionary, comm
 			cmd << k << baseString;
 			hr = S_OK;
 		}
-		return hr;
-	}
+	}	
+	return hr;
+
 }

@@ -20,7 +20,7 @@ namespace ispsession.io
         public ISPSessionIDManager(SessionAppSettings settings)
         {
             _settings = settings;
-        }
+        }      
        
         public string GetSessionID(HttpContext context)
         {

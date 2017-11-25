@@ -1,4 +1,5 @@
-﻿using System.Web;
+﻿using System;
+using System.Web;
 using System.Web.Configuration;
 namespace ispsession.io
 {
@@ -8,7 +9,20 @@ namespace ispsession.io
     /// </summary>
     public class SessionAppSettings
     {
-        private const string ispsession_io_pref = "ispsession_io:";
+        internal const string ispsession_io_pref = "ispsession_io:";
+        internal static string GetDBFromConnString(string connectionstring, string item)
+        {
+            var parts = connectionstring.Split(',');
+            foreach (var p in parts)
+            {
+                if (p.StartsWith(string.Format("{0}", item), StringComparison.OrdinalIgnoreCase))
+                {
+                    return p.Split(new char[]{'='}, 2)[1].Trim();
+                }
+            }
+            return null;
+
+        }
         public SessionAppSettings()
         {
             var cfg = WebConfigurationManager.AppSettings; 
@@ -26,8 +40,7 @@ namespace ispsession.io
             SessionTimeout = cfg.GetAppValue(ispsession_io_pref + "SessionTimeout", 30);
             Liquid = cfg.GetAppValue(ispsession_io_pref + "LiquidSession", false);
             ReEntrance = cfg.GetAppValue(ispsession_io_pref + "ReEntrance", false);
-            Compress = cfg.GetAppValue(ispsession_io_pref + "Compress", false);
-            DataBase = cfg.GetAppValue(ispsession_io_pref + "DataBase", -1);
+            Compress = cfg.GetAppValue(ispsession_io_pref + "Compress", false);           
             // do not try to parse apx/mvc pages to find the EnableSessionState Meta Tag
             //SkipMetaTagParsing = cfg.GetAppValue("SkipMetaTagParsing", false);
             if (SessionTimeout == 0)
@@ -50,11 +63,11 @@ namespace ispsession.io
             StreamManager.TraceInformation(@"Cookie ({0}), AppKey({1}), Path({2}), 
                                     Domain({3}), SnifQ({4}), CookieNoSSL({5}), 
                                     CookieExpires({6}), SessionTimeout({7}), Liquid({8}), 
-                                    ReEntrance({9}), Compress({10}) , Db {11}
-                                    Connection({12})", this.CookieName, this.AppKey, this.Path,
+                                    ReEntrance({9}), Compress({10}) , 
+                                    Connection({11})", this.CookieName, this.AppKey, this.Path,
                                                        this.Domain, this.SnifQueryStringFirst, this.CookieNoSSL,
                                                         this.CookieExpires, this.SessionTimeout, this.Liquid,
-                                                        this.ReEntrance, this.Compress, this.DataBase,
+                                                        this.ReEntrance, this.Compress, 
                                                         this.DatabaseConnection);
         }
         //defaults to GUID
@@ -79,7 +92,7 @@ namespace ispsession.io
         
         //defaults to 30 minutes
         public int SessionTimeout;
-
+        private int? _dbNo;
         public bool Liquid;
         /// <summary>
         /// Difference with ISP Sesssion classic 
@@ -98,10 +111,38 @@ namespace ispsession.io
         /// Redis, mostly, such as "localhost:6379"
         /// </summary>
         public string DatabaseConnection;
-        /// <summary>
-        /// default -1 which Redis database number to use
-        /// </summary>
-        public int DataBase;
+        ///// <summary>
+        ///// default -1 which Redis database number to use
+        ///// </summary>
+        public int DataBase
+        {
+            get
+            {
+                if (_dbNo == null)
+                {
+                    var dbstr = GetDBFromConnString(DatabaseConnection, "database");
+                    var dbNo = int.Parse(dbstr ?? "1");
+                    //because of a bug in stackexchange that does not recognize the password
+                    if (!string.IsNullOrEmpty(dbstr))
+                    {
+                        var parts = DatabaseConnection.Split(',');
+                        var newParts = new string[parts.Length -1];
+                        var x=0;
+                        foreach(var part in parts)
+                        {
+                            if (!part.StartsWith("database", StringComparison.InvariantCultureIgnoreCase))
+                            {
+                                newParts[x++] = part;
+                            }
+                        }
+                        DatabaseConnection = string.Join(",", newParts);
+                         
+                    }
+                    _dbNo = dbNo;
+                }
+                return _dbNo.Value;
+            }
+        }
 
         /// <summary>
         /// creates a copy of Settings. So, we can dabble with the settings, without disturbing globals
@@ -117,7 +158,7 @@ namespace ispsession.io
                 CookieExpires = this.CookieExpires,
                 CookieName = this.CookieName,
                 CookieNoSSL = this.CookieNoSSL,
-                DataBase = this.DataBase,
+                //DataBase = this.DataBase,
                 DatabaseConnection = this.DatabaseConnection,
                 Domain = this.Domain,
                 Lic = this.Lic,

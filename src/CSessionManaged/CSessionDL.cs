@@ -15,16 +15,26 @@ namespace ispsession.io
     {
           private static readonly Lazy<ConfigurationOptions> configOptions = new Lazy<ConfigurationOptions>(() =>
             {
-                var appSettings = WebConfigurationManager.AppSettings["DataSource"] ?? "localhost:6379";
-                
+                var appSettings = WebConfigurationManager.AppSettings[SessionAppSettings.ispsession_io_pref + "DataSource"] ?? "localhost:6379";
+                var pw = SessionAppSettings.GetDBFromConnString(appSettings, "password");
+                var dbNo = SessionAppSettings.GetDBFromConnString(appSettings, "database");
+                var db = (int?) -1;
+                if (!string.IsNullOrEmpty(dbNo))
+                {
+                    db = int.Parse(dbNo);
+                }
+                var parts = appSettings.Split(',');
+                var hostandPort = parts[0];//assumption, the first one
                 var configOptions = new ConfigurationOptions()
                 {
                     ClientName = "ISP Session Connection",
                     ConnectTimeout = 100000,
                     SyncTimeout = 100000,
-                    AbortOnConnectFail = false
+                    AbortOnConnectFail = false,
+                    Password = pw,
+                    DefaultDatabase = db
                 };
-                configOptions.EndPoints.Add(appSettings);
+                configOptions.EndPoints.Add(hostandPort);
                 return configOptions;
             });
 

@@ -58,4 +58,5 @@ STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm
 STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj);
 
 void __stdcall FreeString(BSTR * theString);
-STDMETHODIMP SerializeKey(std::vector<char*> &keys, IDatabase* pDictionary, command& cmd, string& appkeyPrefix);
+STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IDatabase* pDictionary, command& cmd, const string& appkeyPrefix);
+bool __stdcall LicentieCheck(GUID *licence, BSTR licenseContents);

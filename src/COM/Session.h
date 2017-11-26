@@ -7,7 +7,7 @@
 #include "CVariantDictionary.h"
 
 
-bool __stdcall LicentieCheck(GUID *licence, BSTR licenseContents);
+
 
 
 LONG dwInstanceCount = 0; // keep track of the nr of instances that depend on connection

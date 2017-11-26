@@ -35,8 +35,9 @@ STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 
 	if (FAILED(hr))
 	{
-		m_piResponse->Write(CComVariant(L"Application: Redis Server is not running."));
 		hr = E_FAIL;
+		Error(L"Application: Redis Server is not running.", this->GetObjectCLSID(), hr);
+		m_piResponse->Write(CComVariant(L"Application: Redis Server is not running."));
 	}
 //#ifndef Demo
 //	if (licenseOK == false)
@@ -564,10 +565,13 @@ STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 		ReportComError2(hr, location);
 		m_bErrState = TRUE;
 	}
+	else
+	{
+		CComPtr<IDatabase> database = this;
+		CApplicationDL applicationDl;
+		hr = applicationDl.ApplicationGet(pool, m_AppKey, database);
+	}
 	dlm = new CRedLock();
-	CApplicationDL applicationDl;
-	CComPtr<IDatabase> database = this;
-	hr = applicationDl.ApplicationGet(pool, m_AppKey, database);
 	
 	return hr;
 }
@@ -968,7 +972,7 @@ STDMETHODIMP NWCApplication::ConvertVStreamToObject(ElementModel &var) throw()
 }
 STDMETHODIMP NWCApplication::ConvertObjectToStream( VARIANT &var) throw()
 {
-	if (var.vt != VT_UNKNOWN || var.punkVal == nullptr)
+	if ((var.vt != VT_UNKNOWN || var.vt != VT_DISPATCH)|| var.punkVal == nullptr)
 	{
 		return E_INVALIDARG;
 	}
@@ -1259,17 +1263,14 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream*
 				hr = l_pIStr->Stat(&pstatstg, STATFLAG_NONAME);
 				cBytes = pstatstg.cbSize.LowPart;
 				logModule.Write(L"Streamsize %d", cBytes);
-				// copy the persisted object as bytestream to the main stream	and prefix with stream length	
-				binaryString->Write((char*)&cBytes, sizeof(pstatstg.cbSize.LowPart), nullptr);
-				unsigned char buf[2048];
-				ULONG actualRead = 0;
-				HRESULT hr2 = S_OK;
-				while (hr2 == S_OK)
+				hr = binaryString->Write(&cBytes, sizeof(pstatstg.cbSize.LowPart), nullptr);
+				// copy the persisted object as bytestream to the main stream		
+				l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
+				hr = l_pIStr->CopyTo(binaryString, pstatstg.cbSize, nullptr, nullptr);
+				if (FAILED(hr))
 				{
-					hr2 = l_pIStr->Read(buf, sizeof(buf), &actualRead);
-					binaryString->Write(buf, actualRead, nullptr);
-				}			
-				
+					logModule.Write(L"FATAL: cannot copy stream %x", hr);
+				}
 			}
 			else
 			{
@@ -1338,7 +1339,7 @@ STDMETHODIMP NWCApplication::SerializeKey(BSTR Key, IStream* binaryString) throw
 	}
 	return hr;
 }
-STDMETHODIMP NWCApplication::DeserializeKey(std::string& binaryString) throw()
+STDMETHODIMP NWCApplication::DeserializeKey(const std::string& binaryString) throw()
 {
 	HRESULT hr = S_OK;
 	auto stream = std::stringstream(binaryString, ios_base::in || ios_base::binary);
@@ -1373,11 +1374,11 @@ STDMETHODIMP NWCApplication::DeserializeKey(std::string& binaryString) throw()
 }
 
 STDMETHODIMP NWCApplication::get_KeyStates(
-	std::vector<char*> &dirty_keys, 
-	std::vector<char*> &new_keys,
-	std::vector<char*> &other_keys,
+	std::vector<string> &dirty_keys,
+	std::vector<string> &new_keys,
+	std::vector<string> &other_keys,
 	std::vector<std::pair<char*, INT>> &expire_keys,
-	std::vector<char*> &removed_keys) throw()
+	std::vector<string> &removed_keys) throw()
 {
 	//USES_CONVERSION;
 	HRESULT hr = S_OK;

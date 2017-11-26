@@ -78,10 +78,9 @@ public:
 	{
 		m_OnStartPageCalled = FALSE;
 		m_bErrState = FALSE;
-		m_Dirty = FALSE;
 
 		SEEK_NULL.QuadPart = 0;
-	
+		m_currentBufLen = 0;
 		
 		return S_OK;
 	}
@@ -106,15 +105,14 @@ private:
 	BYTE m_dbTimeStamp[8];
 	BOOL m_bErrState;
 	BOOL m_doLogging;
-	BOOL m_Dirty;
 	BOOL m_OnStartPageCalled ;
 	GUID m_AppKey;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 	std::map<CComBSTR, ElementModel, KeyComparer> _dictionary;
-	std::vector<string> _removed;
+	std::vector<string> _removed; // do not change to char* for some unknown reason, this gets corrupted
 	LARGE_INTEGER SEEK_NULL;	
 	CHeapPtr<byte> m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
-	INT m_currentBufLen = 0;
+	INT m_currentBufLen;
 
 public:
 	//IApplicationObject
@@ -138,14 +136,14 @@ public:
 	////IDatabase
 	STDMETHOD( get_KeyCount)(PINT pval);
 	STDMETHOD (get_KeyStates)(
-		std::vector<char*> &dirty_keys, 
-		std::vector<char*> &new_keys, 
-		std::vector<char*> &other_keys, 
+		std::vector<string> &dirty_keys,
+		std::vector<string> &new_keys,
+		std::vector<string> &other_keys,
 		std::vector<std::pair<char*, INT>> & expireKeys,
-		std::vector<char*> &removed_keys);
+		std::vector<string> &removed_keys);
 	STDMETHOD(SerializeKey)(BSTR key, IStream* binaryString);
 	//unpacks key & value from the blob       
-	STDMETHOD (DeserializeKey)(std::string& binaryString);
+	STDMETHOD (DeserializeKey)(const std::string& binaryString);
 
 
 

@@ -580,7 +580,7 @@ void __stdcall FreeString(BSTR * theString) throw()
 }
 
 
-STDMETHODIMP SerializeKey(std::vector<char*> &keys, IDatabase* pDictionary, command& cmd, string& appkeyPrefix) throw()
+STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IDatabase* pDictionary, command& cmd, const string& appkeyPrefix) throw()
 {
 
 	string k(appkeyPrefix);
@@ -603,9 +603,9 @@ STDMETHODIMP SerializeKey(std::vector<char*> &keys, IDatabase* pDictionary, comm
 		k.resize(appkeyPrefix.size());
 		k.append( str_toupper(keys[saddKey]));
 
-		bstrKey = keys[saddKey];
+		bstrKey = keys[saddKey].c_str();
 		hr = pDictionary->SerializeKey(bstrKey, stream);
-		STATSTG stat = { 0 };
+
 		LARGE_INTEGER set = { 0 };
 		ULARGE_INTEGER newpos = { 0 };
 		hr = stream->Seek(set, STREAM_SEEK_CUR, &newpos);
@@ -631,4 +631,135 @@ STDMETHODIMP SerializeKey(std::vector<char*> &keys, IDatabase* pDictionary, comm
 	}	
 	return hr;
 
+}
+// LicentieCheck
+// do not modify these lines. It is illegal.
+// position - 
+// meaning
+// position 1: License
+// position 2-5 calculated license
+// position 6-9 calculated hash on license (if license type = 4)
+bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
+{
+	bool retVal = false;
+	char licenseType = 0;
+	//most left byte is license type.
+	memcpy(&licenseType, license, sizeof(licenseType));
+	// the domain name or PC name
+	// prefer dns name, then NT4 Domain Name, then PC name.
+	DWORD compName = MAX_COMPUTERNAME_LENGTH + 1;
+	CComBSTR cwName, NT4NETBIOSNAME(compName), WORKGROUPNAME(L"");
+	NT4NETBIOSNAME.Attach(GetNetBIOSName(false));
+
+	// try to get the computer name through another API
+	if (NT4NETBIOSNAME.Length() == 0)
+	{
+		logModule.Write(L"NO NETBIOS Name (%d)", GetLastError());
+		NT4NETBIOSNAME.Attach(GetNetBIOSName(true));
+
+	}
+	//mostly ERROR_NO_SUCH_DOMAIN		
+	PDOMAIN_CONTROLLER_INFOW pdomInfo;
+	DWORD result1 = DsGetDcNameW(NT4NETBIOSNAME, nullptr, nullptr, nullptr, DS_DIRECTORY_SERVICE_PREFERRED | DS_RETURN_DNS_NAME, &pdomInfo);
+	if (result1 != ERROR_SUCCESS)
+	{
+		logModule.Write(L"NO AD DOMAIN (%d)", result1);		//mostly ERROR_NO_SUCH_DOMAIN
+		NETSETUP_JOIN_STATUS status;
+		PWSTR wgname = nullptr;
+		NET_API_STATUS apistatus = ::NetGetJoinInformation(nullptr, &wgname, &status);
+		if (apistatus == NERR_Success)
+		{
+			if (status == NetSetupUnjoined || status == NetSetupUnknownStatus)
+			{
+				cwName.Attach(NT4NETBIOSNAME.Detach());
+			}
+			else if (status == NetSetupWorkgroupName)
+			{
+				cwName = wgname;
+			}
+			::NetApiBufferFree(wgname);
+		}
+		else
+		{
+			cwName.Attach(NT4NETBIOSNAME.Detach());
+		}
+	}
+	else
+	{
+		cwName = pdomInfo->DomainName;
+		::NetApiBufferFree(pdomInfo);
+	}
+	logModule.Write(L"Names %s, %s", NT4NETBIOSNAME, cwName);
+
+	CComBSTR buf(strLicensedFor);
+
+
+	// split since this is a CR LF line separated text file (notepad format)
+	// our Control Number is and should be the last line!
+	// should be a hidden string!
+
+	CComSafeArray<BSTR> lines;
+	//backward compat for line separated licenses
+	if (buf.IndexOf(L"\r\n") > 0)
+	{
+		buf.Insert(0, L"\r\n");
+		lines.Attach(buf.Split(L"\r\n"));
+	}
+	else
+	{
+		buf.Insert(0, L" ");
+		lines.Attach(buf.Split(L" "));
+	}
+	lines.SetAt(0, ::SysAllocString(L"ISP Session Version 8.0"), false);
+
+	ULONG arraySize = lines.GetCount();
+	bool foundLicensedItem = false;
+	while (arraySize-- != 1) // line 0 contains 
+	{
+		if (cwName.CompareTo(lines.GetAt(arraySize), true) == 0
+			|| NT4NETBIOSNAME.CompareTo(lines.GetAt(arraySize), true) == 0
+			|| WORKGROUPNAME.CompareTo(lines.GetAt(arraySize), true) == 0)
+		{
+			foundLicensedItem = true;
+			break;
+		}
+	}
+	if (foundLicensedItem == false && licenseType != 4)
+	{
+		logModule.Write(L"Could not find licensedItem %s in allowed licensee %s", cwName, buf);
+		return false;
+	}
+	CComBSTR space(L" "); // reuse variable
+	buf.Attach(CComBSTR::Join(lines.m_psa, space));
+	ULONG hashcode = buf.GetHashCode(),
+		checkCode, checkCode2;
+	//offset 4
+	memcpy(&checkCode, (PBYTE)license + sizeof(unsigned char),
+		sizeof(checkCode));
+	//offset 5
+	memcpy(&checkCode2,
+		(PBYTE)license + sizeof(unsigned char) + sizeof(checkCode),
+		sizeof(checkCode2));
+	logModule.Write(L"given license %d calculated license %d license hash %d",
+		checkCode, hashcode, checkCode2);
+	switch (licenseType)
+	{
+	case 1: case 2: case 3://isp session simple / advanced & ent
+		if (hashcode == checkCode)
+			retVal = true;
+
+		break;
+	case 4://isp session blk this just checks the GUID, not the given domain name
+
+		buf = (LONG)licenseType;
+		space = checkCode; //reuse variable
+		buf += space;
+		if (buf.GetHashCode() == checkCode2)
+			retVal = true;
+		break;
+	default:
+		retVal = false;
+	}
+
+	return retVal;
 }

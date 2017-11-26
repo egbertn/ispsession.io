@@ -6,11 +6,11 @@ IDatabase: public IUnknown
 public:
 	STDMETHOD(get_KeyCount)(INT * count) = 0;
 	STDMETHOD(get_KeyStates)(
-		std::vector<char*> &changedKeys, 
-		std::vector<char*> &newKeys, 
-		std::vector<char*> &otherKeys,
+		std::vector<string> &changedKeys,
+		std::vector<string> &newKeys,
+		std::vector<string> &otherKeys,
 		std::vector<std::pair<char*, INT>> & expireKeys,
-		std::vector<char*> &removedKeys) = 0;
+		std::vector<string> &removedKeys) = 0;
 	STDMETHOD(SerializeKey)(BSTR Key, IStream* binaryString) = 0;
-	STDMETHOD(DeserializeKey)(std::string& binaryString) = 0;
+	STDMETHOD(DeserializeKey)(const std::string& binaryString) = 0;
 };

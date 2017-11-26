@@ -134,7 +134,8 @@ public:
 	{
 		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));
 		auto appkeyPrefix = appkey + ":";
-		
+		string k(appkeyPrefix);
+
 		
 		//write binary safe string
 		HRESULT hr = S_OK;
@@ -146,11 +147,11 @@ public:
 		command multipleSet("MSET");
 		command redisSAdd("SADD");
 		
-		std::vector<char*> changedKeys;
-		std::vector<char*> newKeys;
-		std::vector<char*> otherKeys;
+		std::vector<string> changedKeys;
+		std::vector<string> newKeys;
+		std::vector<string> otherKeys;
 		std::vector<pair<char*, INT>> expireKeys;
-		std::vector<char*> removedKeys;
+		std::vector<string> removedKeys;
 		pDictionary->get_KeyStates(changedKeys, newKeys, otherKeys, expireKeys, removedKeys);
 		
 		
@@ -173,11 +174,11 @@ public:
 			//2. the key set must be expanded
 			if (newKeys.size() > 0)
 			{
-				redisSAdd << appkey; //SADD appkey KEY, [KEY...]
-				string k;
+				redisSAdd << appkey; //SADD appkey KEY, [KEY...]				
 				for (auto saddKey = 0; saddKey < newKeys.size(); ++saddKey)
 				{
-					k = appkeyPrefix + str_toupper(newKeys[saddKey]);
+					k.resize(appkeyPrefix.length());
+					k.append(str_toupper(newKeys[saddKey]));
 					redisSAdd << k;
 				}
 				reply = conn->run(redisSAdd);
@@ -189,10 +190,10 @@ public:
 				command srem("SREM");//redis 2.4+ supports multiples
 				srem << appkey;
 				
-				string k;
 				for (auto sremoveKey = removedKeys.begin(); sremoveKey != removedKeys.end(); ++sremoveKey)
-				{					
-					k = appkeyPrefix + str_toupper(*sremoveKey);
+				{		
+					k.resize(appkeyPrefix.length());;
+					k.append(str_toupper(*sremoveKey));
 					srem << k;
 					del << k;
 				}
@@ -203,7 +204,7 @@ public:
 			}
 
 			//3. serialize individual keys
-			
+			// non changed keys need no touch
 			if (newKeys.size() > 0)
 			{
 				SerializeKey(newKeys, pDictionary, multipleSet, appkeyPrefix);
@@ -223,15 +224,9 @@ public:
 				for (auto expireKey = 0; expireKey < expireKeys.size(); ++expireKey)
 				{
 					//ms instead of EXPIRE seconds
-				
-					reply = conn->run(command("PEXPIRE")
-						(appkeyPrefix + std::string(expireKeys[expireKey].first))
-						(expireKeys[expireKey].second));
-					/*conn->run_with_connection<void>([&](connection::ptr_t conn)
-						       {
-						conn->run(command("SET")("foo")("bar"));
-						});*/
-
+					k.resize(appkeyPrefix.length());
+					k.append(str_toupper( expireKeys[expireKey].first));
+					reply = conn->run(command("PEXPIRE")(k)(expireKeys[expireKey].second));
 				}
 			}
 
@@ -248,7 +243,8 @@ public:
 	{
 		HRESULT hr = S_OK;
 		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));
-		auto applicationPrefix = appkey + ':';
+		string applicationPrefix(appkey); 
+		applicationPrefix.append(":");
 		auto conn = pool->get();
 		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
 		{
@@ -298,7 +294,7 @@ public:
 				{
 					auto subRepl = repl.elements()[it];
 					//key is format "{appkey}:{key}"
-					hr = pDictionary->DeserializeKey((string)subRepl.str());
+					hr = pDictionary->DeserializeKey(subRepl.str());
 				}
 			}
 		}

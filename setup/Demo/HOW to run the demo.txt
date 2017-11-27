@@ -1,4 +1,10 @@
 These samples, are not compiled. Make sure you compile them first.
+In addition, you need the following package from Nuget "StackExchange.Redis.StrongName" version 1.2.6.
+Also, you need Redis either on Windows, which is an old Redis build 3.0.
+We have included a Redis executable which runs as a service on Windows.
+Microsoft now also supports Linux Bash on Windows 10 anniversary update, 
+so you could run Redis server (say version 4.0) for Linux on Windows as well.
+ISP Session cannot yet connect to Redis on Microsoft Azure.
 
 Install the demo website e.g. on IIS on 
 http://localhost/CookieWeb
@@ -16,6 +22,7 @@ Now, for CookieWeb you have 3 entry points.
 	(testing ASP.NET Classic)
 3) http://localhost/CookieWeb/home/default 
 	(testing MVC 5.2)
+
 
 If you switch pages, say, from asp to aspx, you should see that all session variables are maintained.
 

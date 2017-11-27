@@ -1,6 +1,6 @@
-#pragma once
 #include <xmllite.h>
 #include <map>
+#pragma once
 
 
 using namespace ATL;

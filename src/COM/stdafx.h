@@ -14,8 +14,9 @@
 #define _UNICODE
 #define NOCOMM 
 //support Windows Server 2003 with SP1,
-#define WINVER _WIN32_WINNT_WIN7	
-#define _WIN32_WINNT _WIN32_WINNT_WIN7
+#define WINVER _WIN32_WINNT_WIN8	
+#define _WIN32_WINNT _WIN32_WINNT_WIN8
+ #define INCL_WINSOCK_API_TYPEDEFS
 #define WIN32_MEAN_AND_LEAN
 #define VC_EXTRALEAN 
 #define _ATL_FREE_THREADED
@@ -38,40 +39,27 @@ using namespace ATL;
 using namespace redis3m;
 
 
-//#pragma comment(lib, "Ws2_32.lib")
+
 //#ifdef DEBUG
 #pragma comment(lib, "netapi32.lib") // for DsGetDcNameW and such
 
 
 #ifdef WIN64
 #if _DEBUG
-#pragma comment(lib, "Win32_Interop64D.lib")
 #pragma comment(lib, "hiredis64D.lib")
-//#pragma comment(lib, "redis3m64D.lib")
-
 #else
-#pragma comment(lib, "Win32_Interop64.lib")
 #pragma comment(lib, "hiredis64.lib")
-//#pragma comment(lib, "redis3m64.lib")
 #endif
-//#pragma comment(lib, "zlib64.lib")
 #else
 #if _DEBUG
-#pragma comment(lib, "Win32_InteropD.lib")
 #pragma comment(lib, "hiredisD.lib")
-//#pragma comment(lib, "redis3mD.lib")
 #else
-#pragma comment(lib, "Win32_Interop.lib")
 #pragma comment(lib, "hiredis.lib")
-//#pragma comment(lib, "redis3m.lib")
 #endif
-//	#pragma comment(lib, "zlib.lib")
+
 #endif
 
 #include <asptlb.h>         // Active Server Pages Definitions
-//#pragma comment(lib, "Secur32.lib")
-//#define SECURITY_WIN32
-//#include <security.h>
 #include <atlsecurity.h>
 #include <atlsafe.h>
 #include <lm.h>

@@ -3,12 +3,12 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 8.00.0603 */
-/* at Sun Nov 26 16:09:10 2017
+ /* File created by MIDL compiler version 8.01.0622 */
+/* at Tue Jan 19 04:14:07 2038
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.00.0603 
-    protocol : dce , ms_ext, app_config, c_ext, robust
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0622 
+    protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -29,7 +29,7 @@
 
 #ifndef __RPCNDR_H_VERSION__
 #error this stub requires an updated version of <rpcndr.h>
-#endif // __RPCNDR_H_VERSION__
+#endif /* __RPCNDR_H_VERSION__ */
 
 #ifndef COM_NO_WINDOWS_H
 #include "windows.h"

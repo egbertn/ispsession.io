@@ -1,17 +1,21 @@
 // Copyright (c) 2014 Luca Marturana. All rights reserved.
 // Licensed under Apache 2.0, see LICENSE for details
-#ifndef WIN64
-#pragma comment(lib, "Ws2_32.lib")
-#endif
+
+
+
+
 #include "..\include\redis3m\utils\resolv.h"
 #ifndef _MSC_VER
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
 #include <arpa/inet.h>
+
 #else
+#include "..\include\hiredis\hiredis.h"
+#include "..\include\Win32_Interop\Win32_FDAPI.h"
 #include <WinSock2.h>
-#include <WS2tcpip.h>
+//#include <WS2tcpip.h> //don't se use Win32_Interop.lib
 #endif
 #include <string.h>
 
@@ -35,8 +39,8 @@ std::vector<std::string> resolv::get_addresses(const std::string &hostname)
     struct addrinfo *ret_ptr = ret_addrinfo;
     while(ret_ptr)
     {
-        char addrstr[100];
-        inet_ntop (ret_ptr->ai_family, &((struct sockaddr_in *) ret_ptr->ai_addr)->sin_addr, addrstr, 100);
+        char addrstr[100];		
+        inet_ntop (ret_ptr->ai_family, &((struct sockaddr_in *) ret_ptr->ai_addr)->sin_addr, addrstr, sizeof(addrstr));
         ret_v.push_back(addrstr);
         ret_ptr = ret_ptr->ai_next;
     }

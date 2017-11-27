@@ -429,7 +429,8 @@ STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
 		{
 			break;
 		}
-		logModule.Write(L"logic %s, phys %s", configFile, retVal);
+	
+		logModule.Write(L"logic %s, phys %s", configFile.m_str, retVal);
 		//avoid going beyond the root of this IIS website
 		if (CComBSTR::Compare(retVal, root, true, false, false) == 0)
 		{
@@ -452,7 +453,7 @@ STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
 	}
 	if (exists == FALSE || FAILED(hr))
 	{
-		logModule.Write(L"Application: searched web.Config up to: (%s) none found %x", retVal, hr);
+		logModule.Write(L"Application: searched web.Config up to: (%s) none found %x", retVal.m_str, hr);
 		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
 	}
 	ConfigurationManager config(retVal);
@@ -462,7 +463,7 @@ STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	
-	logModule.Write(L"AppKey: (%s)", bstrProp);
+	logModule.Write(L"AppKey: (%s)", bstrProp.m_str);
 	
 
 	if (setstring(reinterpret_cast<PUCHAR>(&m_AppKey), bstrProp) == FALSE)
@@ -501,7 +502,7 @@ STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 		{
 			break;
 		}
-		logModule.Write(L"logic %s, phys %s", configFile, retVal);
+		logModule.Write(L"logic %s, phys %s", configFile.m_str, retVal);
 		//avoid going beyond the root of this IIS website
 		if (CComBSTR::Compare(retVal, root, true, false, false) == 0)
 		{
@@ -525,7 +526,7 @@ STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 	}
 	if (exists == FALSE || FAILED(hr))
 	{
-		logModule.Write(L"searched web.Config up to: (%s) none found %x", retVal, hr);
+		logModule.Write(L"searched web.Config up to: (%s) none found %x", retVal.m_str, hr);
 		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
 	}
 	ConfigurationManager config(retVal);

@@ -34,8 +34,13 @@
 #ifndef __HIREDIS_H
 #define __HIREDIS_H
 #include "read.h"
+#include <stdio.h> /* for size_t */
 #include <stdarg.h> /* for va_list */
-#include <time.h> /* for struct timeval */
+#ifndef _WIN32
+#include <sys/time.h> /* for struct timeval */
+#else
+#include "../Win32_Interop/win32_types_hiredis.h"
+#endif
 #include <stdint.h> /* uintXX_t, etc */
 #include "sds.h" /* for sds */
 
@@ -98,8 +103,8 @@
          * then GNU strerror_r returned an internal static buffer and we       \
          * need to copy the result into our private buffer. */                 \
         if (err_str != (buf)) {                                                \
-            buf[(len)] = '\0';                                                 \
-            strncat((buf), err_str, ((len) - 1));                              \
+            strncpy((buf), err_str, ((len) - 1));                              \
+            buf[(len)-1] = '\0';                                               \
         }                                                                      \
     } while (0)
 #endif
@@ -111,7 +116,7 @@ extern "C" {
 /* This is the reply object returned by redisCommand() */
 typedef struct redisReply {
     int type; /* REDIS_REPLY_* */
-    long long integer; /* The integer when type is REDIS_REPLY_INTEGER */
+    PORT_LONGLONG integer; /* The integer when type is REDIS_REPLY_INTEGER */
     int len; /* Length of string */
     char *str; /* Used for both REDIS_REPLY_ERROR and REDIS_REPLY_STRING */
     size_t elements; /* number of elements, for REDIS_REPLY_ARRAY */
@@ -133,7 +138,7 @@ void redisFreeSdsCommand(sds cmd);
 
 enum redisConnectionType {
     REDIS_CONN_TCP,
-    REDIS_CONN_UNIX,
+    REDIS_CONN_UNIX
 };
 
 /* Context for a connection to Redis */

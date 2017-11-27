@@ -3132,19 +3132,7 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 	return hr;
 }
 
-inline ATL_DEPRECATED("GetSize has been replaced by GetSizeMax")
-ULONG CComVariant2::GetSize() const
-{
-	ULARGE_INTEGER nSize;
-	HRESULT hr = GetSizeMax(&nSize);
-	
-	if (SUCCEEDED(hr) && nSize.QuadPart <= ULONG_MAX)
-	{
-		return nSize.LowPart;	
-	}
-	
-	return sizeof(VARTYPE);
-}
+
 
 #endif // _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
 

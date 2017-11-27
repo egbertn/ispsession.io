@@ -7,11 +7,6 @@
 #include "CVariantDictionary.h"
 
 
-
-
-
-LONG dwInstanceCount = 0; // keep track of the nr of instances that depend on connection
-
 // NWCSession
 class ATL_NO_VTABLE NWCSession : 
 	public CComObjectRootEx<CComMultiThreadModel>,
@@ -57,17 +52,15 @@ public:
 		#endif
 		lngTimeOutSetting = 0;		
 		HRESULT hr = S_OK;
-		::InterlockedIncrement(&dwInstanceCount);
 
-		int diff = MAXINSTANCES - dwInstanceCount;
-		if (diff < 0)
+	/*	if (diff < 0)
 
 		{
 			PCWSTR msg[] = { L"Session" };
 			logModule.Write(L"Sorry, out of licenses.");
 			LogMessage(MSG_OUTOF_LICENSES, msg, 1);
 			Sleep(-diff * 500);
-		}
+		}*/
 		//early creation not in initialize!
 		if (CComObject<CVariantDictionary>::CreateInstance(&m_piVarDict) == S_OK)
 		{
@@ -95,12 +88,12 @@ public:
 		m_bstrToken.Empty();
 		strAppPath.Empty();
 		m_OldSessionId.Empty();
-		if (bErrState == FALSE)
+		/*if (bErrState == FALSE)
 		{
 			InterlockedDecrement(&dwInstanceCount);
 			
 			
-		}
+		}*/
 		/*if (bIsDBOpen == TRUE) 
 			pool->;*/
 		strConstruct.Empty();
@@ -122,7 +115,6 @@ private:
 
 	//redis connection pool
 	simple_pool::ptr_t pool;
-	//unique connection with sql	
 
 	bool licenseOK;
 	BOOL blnCancel,

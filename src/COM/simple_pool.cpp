@@ -16,7 +16,7 @@ DWORD __stdcall  redis3m::TimerThread(void* param)
 	liDueTime.QuadPart = -10 * _SECOND;
 
 	::SetWaitableTimer(_timer, &liDueTime, 2000, NULL, NULL, 0);
-	do
+	for(;;)
 	{
 		if (::WaitForSingleObject(_timer, INFINITE) != WAIT_OBJECT_0)
 		{
@@ -27,7 +27,7 @@ DWORD __stdcall  redis3m::TimerThread(void* param)
 		{
 			TimerAPCProc();
 		}
-	} while (true);
+	} 
 	return 0;
 }
 //we must clean up connections before Redis disconnects itself
@@ -44,6 +44,7 @@ void __stdcall redis3m::TimerAPCProc() throw()
 		if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - con->_startSessionRequest).count() > KEEPCONNECTION_IN_POOL_SEC)
 		{
 			connections.erase(x++);// the ++ seems to work, do not change
+			logModule.Write(L"Removed Redis conn from pool, left over %d", connections.size());
 		}
 		else
 		{
@@ -62,58 +63,58 @@ void __stdcall redis3m::TimerAPCProc() throw()
 
 connection::ptr_t simple_pool::get()
 {
-	
-    connection::ptr_t ret;
 
-    {
-        //std::lock_guard<std::mutex> lock(access_mutex);
-		_access_mutex.Enter();
-        std::set<connection::ptr_t>::iterator it = connections.begin();
-		
-        if (it != connections.end())
-        {
-            ret = *it;			
-            connections.erase(it);
-        }
-    }
+	connection::ptr_t ret;
+
+	_access_mutex.Enter();
+	std::set<connection::ptr_t>::iterator it = connections.begin();
+
+	if (it != connections.end())
+	{
+		ret = *it;
+		connections.erase(it);
+	}
+
 	if (_timer == NULL)
 	{
-		
+
 		_threadHandle.Attach(::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL));
 		//std::thread trh(TimerThread);
 	}
-    if (!ret)
-    {
-      /*  if (!_path.empty())
-        {
-            ret = connection::create_unix(_path);
-        }
-        else
-        {*/
-            ret = connection::create(_host, _port);
-        //}
-        // Setup connections selecting db
-			if (!_password.empty())
-			{
-				auto response = ret->run(command("AUTH") (_password ));
-				if (response.type() == reply::type_t::_ERROR)
-				{					
-					logModule.Write(L"AUTH failed");
-					ret.reset();
-				}
-			}
-			if (_database != 0 && ret != connection::ptr_t())
-			{
-				auto response = ret->run(command("SELECT")( _database));
-				if (response.type() == reply::type_t::_ERROR)
-				{
-					logModule.Write(L"SELECT database %s", response.str());
-				}
-			}
-    }
-	ret->_startSessionRequest = std::chrono::system_clock::now();
 	_access_mutex.Leave();
-    return ret;
+	if (!ret)
+	{
+		/*  if (!_path.empty())
+		  {
+			  ret = connection::create_unix(_path);
+		  }
+		  else
+		  {*/
+		ret = connection::create(_host, _port);
+		//}
+		// Setup connections selecting db
+		if (!_password.empty())
+		{
+			auto response = ret->run(command("AUTH") (_password));
+			if (response.type() == reply::type_t::_ERROR)
+			{
+				logModule.Write(L"AUTH failed");
+				ret.reset();
+			}
+		}
+		if (_database != 0 && ret != connection::ptr_t())
+		{
+			auto response = ret->run(command("SELECT")(_database));
+			if (response.type() == reply::type_t::_ERROR)
+			{
+				logModule.Write(L"SELECT database %s", response.str());
+			}
+		}
+		logModule.Write(L"Add Redis Conn to pool %d, %s, %d", _database, string(_host.begin(), _host.end()), _port);
+	}
+	ret->_startSessionRequest = std::chrono::system_clock::now();
+
+	return ret;
 }
 
 
@@ -121,8 +122,7 @@ void simple_pool::put(connection::ptr_t conn)
 {
     if (conn->is_valid())
     {
-        //std::lock_guard<std::mutex> lock(access_mutex);
-		_access_mutex.Enter();
+    	_access_mutex.Enter();
         connections.insert(conn);
 		_access_mutex.Leave();
     }

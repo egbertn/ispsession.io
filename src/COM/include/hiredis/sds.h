@@ -38,6 +38,9 @@
 #ifdef _MSC_VER
 #include "win32.h"
 #endif
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 typedef char *sds;
 
@@ -56,6 +59,7 @@ static inline size_t sdsavail(const sds s) {
     struct sdshdr *sh = (struct sdshdr *)(s-sizeof *sh);
     return sh->free;
 }
+
 
 sds sdsnewlen(const void *init, size_t initlen);
 sds sdsnew(const char *init);
@@ -101,5 +105,8 @@ sds sdsMakeRoomFor(sds s, size_t addlen);
 void sdsIncrLen(sds s, int incr);
 sds sdsRemoveFreeSpace(sds s);
 size_t sdsAllocSize(sds s);
+#ifdef __cplusplus
+ }
+#endif
 
 #endif

@@ -1,5 +1,5 @@
 <%
-Public Session
+Public Session, Cache
 ' you might disable this line if you do 
 ' not wish to use the application replacement object
 On Error Resume Next
@@ -7,7 +7,7 @@ On Error Resume Next
 Set Session = Server.CreateObject("NWCTools.CSession")
 Set Cache = Server.CreateObject("NWCTools.CApplication")
 Cache("count") = Cache("count") + 1
-'Session.Initialize Request, Response, Server, Application
+'Cache.RemoveKey "count" 'bu
 if Err.Number = &H80020009 Then
    Response.Write "Access to Redis is denied, Check your password"
    Response.End

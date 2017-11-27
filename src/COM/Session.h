@@ -17,7 +17,7 @@ class ATL_NO_VTABLE NWCSession :
 	public CComObjectRootEx<CComMultiThreadModel>,
 	public CComCoClass<NWCSession, &CLSID_NWCSession>,
 	public IDispatchImpl<INWCSession, &IID_INWCSession, &LIBID_ISPCSession>	,	
-	public ISupportErrorInfoImpl<&IID_IDispatch>
+	public ISupportErrorInfoImpl<&IID_INWCSession>
 	
 {
 public:

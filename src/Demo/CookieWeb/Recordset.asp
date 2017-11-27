@@ -23,7 +23,8 @@ TT = Timer
 Dim testPersist
 'Response.Write "<html></html>"
 'REsponse.End
-If Session("washere") <> True Then
+    
+If Cache("washere") <> True Then
 	Set Rs = CreateObject("ADODB.Recordset")
 	' Session.CreateInstance also cares for calling the InitNew method!	
 	' you must register CPPPersist.DLL (on 32 bit systems) before you run this!
@@ -32,7 +33,7 @@ If Session("washere") <> True Then
     testPersist.loadxml "<blah>Contents</blah>"
 	Dim sXMLData
 	sXMLData=Server.MapPath(".") + "\thestuff.xml"	
-	Session("washere") = True
+	Cache("washere") = True
 	Rs.CursorLocation = 3
 
 	'to get the recordset persisted.
@@ -42,22 +43,22 @@ If Session("washere") <> True Then
 	'Disconnect now	but keep the recordset still open
 	Set Rs.ActiveConnection = Nothing
 	Rs.MoveFirst
-	Set Session("CachedRs") = Rs
-	Set Session("TestPersist") = testPersist
+	Set Cache("CachedRs") = Rs
+	Set Cache("TestPersist") = testPersist
 	
 	blnNew = True
 Else
 	'Activate the ADO rs JIT
 
-	Set Rs = Session("CachedRs")
+	Set Rs = Cache("CachedRs")
 
-	Set testPersist = Session("TestPersist")
+	Set testPersist = Cache("TestPersist")
 	
 	Rs.Delete ' this proves that modified data also is persisted
 	Rs.MoveNext ' avoid no current record position error
 
 	blnNew = False
-	Session("blah") = Now()
+	Cache("blah") = Now()
 	
 End If
 Set RQ = Request.QueryString

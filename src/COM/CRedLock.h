@@ -37,9 +37,9 @@
 #include <io.h>
 #include <vector>
 #include  "include\hiredis\hiredis.h"
-extern "C" {
-#include "sds.h"
-}
+
+#include "include\hiredis\sds.h"
+
 
 using namespace std;
 

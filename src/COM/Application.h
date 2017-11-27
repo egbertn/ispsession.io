@@ -58,7 +58,7 @@ class ATL_NO_VTABLE NWCApplication :
 	public CComObjectRootEx<CComMultiThreadModel>,
 	public CComCoClass<NWCApplication, &CLSID_NWCApplication>,
 	public IDispatchImpl<IApplicationCache, &IID_IApplicationCache, &LIBID_ISPCSession>,
-	public ISupportErrorInfoImpl<&IID_IDispatch>,
+	public ISupportErrorInfoImpl<&IID_IApplicationCache>,
 	public IDatabase
 {
 public:

@@ -1,14 +1,13 @@
-﻿using System;
+﻿using ispsession.io.Interfaces;
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Globalization;
-using System.Runtime.InteropServices.ComTypes;
-using ispsession.io.Interfaces;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Reflection;
-using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Text;
 
 namespace ispsession.io
 {
@@ -772,14 +771,12 @@ namespace ispsession.io
                         if (isComObject)
                         {
                             TraceInformation("Ser Com Object type {0}", TraceInfo.TraceInfo ? data.GetType().FullName : null);
-                            IStream pstr;
-                            int hr = NativeMethods.CreateStreamOnHGlobal(IntPtr.Zero, true, out pstr);
+                            int hr = NativeMethods.CreateStreamOnHGlobal(IntPtr.Zero, true, out IStream pstr);
                             if (hr != 0)
                             {
                                 Marshal.ThrowExceptionForHR(hr);
                             }
-                            var persist = data as IPersistStream;
-                            if (persist != null)
+                            if (data is IPersistStream persist)
                             {
                                 hr = NativeMethods.OleSaveToStream(persist, pstr);
                                 Marshal.ReleaseComObject(persist);
@@ -792,8 +789,7 @@ namespace ispsession.io
                             //Try IPersistStreamInit
                             else
                             {
-                                var persistInit = data as IPersistStreamInit;
-                                if (persistInit != null)
+                                if (data is IPersistStreamInit persistInit)
                                 {
                                     OleSaveToStream2(persistInit, pstr);
                                     Marshal.ReleaseComObject(persistInit);
@@ -807,8 +803,7 @@ namespace ispsession.io
                                 }
                             }
                             pstr.Commit(0);//STGC_DEFAULT
-                            System.Runtime.InteropServices.ComTypes.STATSTG stats;
-                            pstr.Stat(out stats, 1);//STATFLAG_NONAME
+                            pstr.Stat(out System.Runtime.InteropServices.ComTypes.STATSTG stats, 1);//STATFLAG_NONAME
                             var streamLen = (int)stats.cbSize;
                             EnsureMemory(streamLen);
                             pstr.Seek(0, 0, IntPtr.Zero);//Position = 0
@@ -822,10 +817,12 @@ namespace ispsession.io
                         }
                         else if (data.GetType().IsSerializable)
                         {
-                            
-                            var bFormatter = new BinaryFormatter();
-                            bFormatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
-                            bFormatter.TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded;
+
+                            var bFormatter = new BinaryFormatter
+                            {
+                                AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
+                                TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded
+                            };
                             using (var serializedObject = new MemoryStream())
                             {
                                 bFormatter.Serialize(serializedObject, data);
@@ -1181,8 +1178,7 @@ namespace ispsession.io
                             TraceInformation("Deser Com Object");
                             var hglob = Marshal.AllocHGlobal(bytesInStream);
                             Marshal.Copy(_memoryBuff, 0, hglob, bytesInStream);
-                            IStream pstr;
-                            var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out pstr);
+                            var hr = GetHr(hglob, out IStream pstr);
                             if (hr != 0) Marshal.ThrowExceptionForHR(hr);
                             var uknown = new Guid("00000000-0000-0000-C000-000000000046");
 
@@ -1198,9 +1194,11 @@ namespace ispsession.io
                         else // it is a .NET serializable object
                         {
                             TraceInformation("deser .NET");
-                            var bFormatter = new BinaryFormatter();
-                            bFormatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
-                            bFormatter.TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded;
+                            var bFormatter = new BinaryFormatter
+                            {
+                                AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
+                                TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded
+                            };
                             using (var mem = new MemoryStream(_memoryBuff, 0, bytesInStream))
                             {
                                 data = bFormatter.Deserialize(mem);
@@ -1211,7 +1209,13 @@ namespace ispsession.io
                 }
             }
             throw new NotImplementedException(string.Format("this type VarEum = {0} cannot (yet?) be deserialized by CSessionManaged", vT));
-        }        
+        }
+
+        private static int GetHr(IntPtr hglob, out IStream pstr)
+        {
+            return NativeMethods.CreateStreamOnHGlobal(hglob, true, out pstr);
+        }
+
         //TODO: support jagged arrays.
         internal static VarEnum ConvertTypeToVtEnum(object typObj)
         {
@@ -1334,9 +1338,8 @@ namespace ispsession.io
             if (pPersistStmInit == null || pStm == null)
                 throw new ArgumentNullException();
 
-            Guid clsd;
             var persist = (IPersist)pPersistStmInit;
-            persist.GetClassID(out clsd);
+            persist.GetClassID(out Guid clsd);
             NativeMethods.WriteClassStm(pStm, ref clsd);
             pPersistStmInit.Save(pStm, true);
 
@@ -1348,8 +1351,7 @@ namespace ispsession.io
         {
             if (pStm == null || iidInterface == null) throw new ArgumentNullException("pStm");
 
-            Guid clsd;
-            NativeMethods.ReadClassStm(pStm, out clsd);
+            NativeMethods.ReadClassStm(pStm, out Guid clsd);
             var typ = Marshal.GetTypeFromCLSID(clsd);
             var obj = Activator.CreateInstance(typ);
             var pPersist = obj as IPersistStreamInit;

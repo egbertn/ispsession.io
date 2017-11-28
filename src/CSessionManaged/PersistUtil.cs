@@ -1,14 +1,13 @@
-﻿using System.Diagnostics;
+﻿using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.IO;
 using System.Runtime.InteropServices;
-using System.Web.SessionState;
 using System.Web;
+using System.Web.SessionState;
 /*
- * Some useful docs type mapping from Ole to .NET
- http://technet.microsoft.com/en-us/video/2x07fbw8(v=vs.60).aspx
- */
+* Some useful docs type mapping from Ole to .NET
+http://technet.microsoft.com/en-us/video/2x07fbw8(v=vs.60).aspx
+*/
 namespace ispsession.io
 {
     public sealed class PersistUtil: StreamManager
@@ -85,9 +84,8 @@ namespace ispsession.io
         {
             var persistUtil = new PersistUtil(pSequentialStream);
 
-            var retVal = new SessionStateItemCollection();         
-            object varTemp;
-            string sTemp = persistUtil.ReadProperty(out varTemp);
+            var retVal = new SessionStateItemCollection();
+            string sTemp = persistUtil.ReadProperty(out object varTemp);
             if (sTemp != "Els")
             {
                 throw new HttpException("Corrupt Session State");
@@ -107,7 +105,6 @@ namespace ispsession.io
 
             return retVal;
         }
-     
 
         internal void WriteProperty(string propName, object data)
         {

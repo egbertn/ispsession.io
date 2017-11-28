@@ -70,15 +70,17 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationCache.cs" />
     <Compile Include="ConfigHelper.cs" />
     <Compile Include="CSessionDL.cs" />
+    <Compile Include="ISPApplicationModule.cs" />
     <Compile Include="SessionAppSettings.cs" />
     <Compile Include="StreamManager.cs" />
     <Compile Include="Interfaces.cs" />
     <Compile Include="ISPSessionIDManager.cs" />
     <Compile Include="ISPSessionModule.cs" />
     <Compile Include="NativeMethods.cs" />
-    <Compile Include="Structs.cs" />
+    <Compile Include="Data.cs" />
     <Compile Include="PersistUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

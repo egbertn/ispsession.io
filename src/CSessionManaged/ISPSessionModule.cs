@@ -156,7 +156,7 @@ namespace ispsession.io
             }
 
 #endif
-            bool redirected, cookieAdded;
+         
             if (_appSettings.Liquid || sessionID == null)
             {
                 sessionID = _sessionIDManager.CreateSessionID(context);
@@ -166,7 +166,7 @@ namespace ispsession.io
                 //    return;
             }
 
-            _sessionIDManager.SaveSessionID(context, sessionID, out redirected, out cookieAdded);
+            _sessionIDManager.SaveSessionID(context, sessionID, out bool redirected, out bool cookieAdded);
             if (sessionItems == null)
             {
                 // Identify the session as a new session state instance. Create a new SessionItem

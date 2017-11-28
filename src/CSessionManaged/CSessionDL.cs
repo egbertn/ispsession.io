@@ -6,6 +6,10 @@ using System.Web.Configuration;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.IO.Compression;
+using ispsession.io.Interfaces;
+using System.Linq;
+using System.Collections.Generic;
+
 namespace ispsession.io
 {
     /// <summary>
@@ -13,7 +17,73 @@ namespace ispsession.io
     /// </summary>
     internal static class CSessionDL
     {
-          private static readonly Lazy<ConfigurationOptions> configOptions = new Lazy<ConfigurationOptions>(() =>
+        internal static void ApplicationGet(IDatabase database, Guid appKey, IKeyManager pDictionary)
+        {
+            var appkey = ISPSessionIDManager.GuidToHex(appKey.ToByteArray());
+            var applicationPrefix = appkey + ':';
+            var keymembers = database.SetMembers(appkey);
+            if (keymembers.Length > 0)
+            {
+                var values = database.StringGet(keymembers.Select(s => (RedisKey)(string)s).ToArray());
+                for (var x = 0; x < values.Length; x++)
+                {
+                    if (!values[x].IsNullOrEmpty)
+                    {
+                        pDictionary.DeserializeKey(values[x]);
+                    }
+                }
+            }
+
+        }
+
+        internal static void ApplicationSave(IDatabase database,
+                                                Guid appKey, IKeyManager pDictionary,                                        
+                                                TimeSpan totalRequestTime)
+        {
+            var appkey = ISPSessionIDManager.GuidToHex(appKey.ToByteArray());
+            var appkeyPrefix = appkey + ":";
+            var setKey = (RedisKey)appkey;
+            string k = appkeyPrefix;
+
+            pDictionary.KeyStates(out var changedKeys, out var newKeys, out var otherKeys, out var expireKeys, out var removedKeys);
+            if (newKeys.Count > 0 || changedKeys.Count > 0 || removedKeys.Count > 0 || expireKeys.Count > 0)
+            {
+                var transaction = database.CreateTransaction();
+                if (newKeys.Count > 0)
+                {
+                    database.SetAdd(setKey, newKeys.Select(s => (RedisValue)(appkeyPrefix + s)).ToArray(), CommandFlags.FireAndForget);
+                }
+
+                if (removedKeys.Count > 0)
+                {
+                    database.SetRemove(setKey, removedKeys.Select(s => (RedisValue)(appkeyPrefix + s)).ToArray(), CommandFlags.FireAndForget);
+                }
+                //KVP is a struct, therefore, values are copied by value, not by reference 
+                //make sure to use the least amount of mem footprint
+                var multipleSet = new KeyValuePair<RedisKey, RedisValue>[newKeys.Count + changedKeys.Count];
+
+                int ct = 0;
+                foreach (var key in newKeys.Concat(changedKeys))
+                {
+                    multipleSet[ct++] = new KeyValuePair<RedisKey, RedisValue>(appkeyPrefix + key, pDictionary.SerializeKey(key));
+                }
+
+                if (multipleSet.Length > 0)
+                {
+                    database.StringSet(multipleSet, When.Always, CommandFlags.FireAndForget);
+                }
+                if (expireKeys.Count > 0)
+                {
+                    foreach (var key in expireKeys)
+                    {
+                        database.KeyExpire(key.Item1, TimeSpan.FromMilliseconds(key.Item2), CommandFlags.FireAndForget);
+                    }
+                }
+                transaction.Execute(CommandFlags.FireAndForget);
+            }
+        }
+
+        private static readonly Lazy<ConfigurationOptions> configOptions = new Lazy<ConfigurationOptions>(() =>
             {
                 var appSettings = WebConfigurationManager.AppSettings[SessionAppSettings.ispsession_io_pref + "DataSource"] ?? "localhost:6379";
                 var pw = SessionAppSettings.GetDBFromConnString(appSettings, "password");
@@ -105,7 +175,7 @@ namespace ispsession.io
                 }
                 else
                 {
-                    ms = (Stream)new MemoryStream(blob, meta.SizeofMeta, blobLen - meta.SizeofMeta);
+                    ms = new MemoryStream(blob, meta.SizeofMeta, blobLen - meta.SizeofMeta);
                 }
                 
                     

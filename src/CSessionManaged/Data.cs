@@ -3,6 +3,20 @@ using System.Runtime.InteropServices;
 
 namespace ispsession.io
 {
+    internal class ElementModel
+    {
+        internal bool IsNew { get;  set; }
+
+        internal bool IsDirty { get;  set; }
+
+        internal bool IsSerialized { get;  set; }
+
+        internal int ExpireAt { get;  set; }
+
+        internal object Value { get; set; }
+       
+    }
+
     public struct DBTIMESTAMP
     {
         public DBTIMESTAMP(bool bogus = false)

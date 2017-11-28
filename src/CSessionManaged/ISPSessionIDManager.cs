@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Web;
@@ -102,7 +101,7 @@ namespace ispsession.io
             return GuidToHex(bt);
         }
 
-        private static string GuidToHex(byte[] bytes)
+        internal static string GuidToHex(byte[] bytes)
         {
             var sb = new StringBuilder(32);
             for (int x = 0; x <= 15; x++)

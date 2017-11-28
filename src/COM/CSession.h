@@ -101,7 +101,7 @@ typedef struct NWCSession NWCSession;
 #define __NWCApplication_FWD_DEFINED__
 
 #ifdef __cplusplus
-typedef class NWCApplication NWCApplication;
+typedef class CApplication NWCApplication;
 #else
 typedef struct NWCApplication NWCApplication;
 #endif /* __cplusplus */
@@ -1293,7 +1293,7 @@ EXTERN_C const CLSID CLSID_NWCApplication;
 #ifdef __cplusplus
 
 class DECLSPEC_UUID("D64ABC73-3B0E-4E85-92CD-215B03CAC998")
-NWCApplication;
+CApplication;
 #endif
 #endif /* __ISPCSession_LIBRARY_DEFINED__ */
 

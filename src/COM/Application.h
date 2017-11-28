@@ -54,9 +54,9 @@ public:
 	}
 };
 
-class ATL_NO_VTABLE NWCApplication :
+class ATL_NO_VTABLE CApplication :
 	public CComObjectRootEx<CComMultiThreadModel>,
-	public CComCoClass<NWCApplication, &CLSID_NWCApplication>,
+	public CComCoClass<CApplication, &CLSID_NWCApplication>,
 	public IDispatchImpl<IApplicationCache, &IID_IApplicationCache, &LIBID_ISPCSession>,
 	public ISupportErrorInfoImpl<&IID_IApplicationCache>,
 	public IDatabase
@@ -66,7 +66,7 @@ public:
 	DECLARE_REGISTRY_RESOURCEID(IDR_APPLICATION)
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-	BEGIN_COM_MAP(NWCApplication)
+	BEGIN_COM_MAP(CApplication)
 		COM_INTERFACE_ENTRY(IDispatch)
 		COM_INTERFACE_ENTRY(ISupportErrorInfo)	
 		COM_INTERFACE_ENTRY(IApplicationCache)
@@ -176,4 +176,4 @@ private:
 	
 };
 
-OBJECT_ENTRY_AUTO(CLSID_NWCApplication, NWCApplication)
+OBJECT_ENTRY_AUTO(CLSID_NWCApplication, CApplication)

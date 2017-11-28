@@ -9,6 +9,7 @@ using namespace redis3m;
 #define KEEPCONNECTION_IN_POOL_SEC 20
 DWORD __stdcall  redis3m::TimerThread(void* param)
 {
+
 	_timer.Attach(::CreateWaitableTimer(NULL, TRUE, NULL));
 
 	LARGE_INTEGER liDueTime;

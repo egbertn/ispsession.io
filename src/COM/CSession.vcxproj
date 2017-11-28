@@ -499,7 +499,6 @@
     <None Include="Session.rgs" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\Users\gastweb\Downloads\getopt_mb_uni_vc10\getopt_mb_uni_vc10\getopt_mb_uni_vc10\getopt.h" />
     <ClInclude Include="Application.h" />
     <ClInclude Include="CRedLock.h" />
     <ClInclude Include="IDatabase.h" />

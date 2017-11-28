@@ -183,6 +183,10 @@ public:
 				}
 				reply = conn->run(redisSAdd);
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
+				if (FAILED(hr))
+				{
+					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+				}
 			}
 			if (removedKeys.size() > 0)
 			{
@@ -199,8 +203,16 @@ public:
 				}
 				reply = conn->run(del);
 				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
+				if (FAILED(hr))
+				{
+					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+				}
 				reply = conn->run(srem);
 				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
+				if (FAILED(hr))
+				{
+					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+				}
 			}
 
 			//3. serialize individual keys
@@ -217,6 +229,10 @@ public:
 			{
 				reply = conn->run(multipleSet);
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
+				if (FAILED(hr))
+				{
+					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+				}
 			}
 			
 			if (hr == S_OK)
@@ -227,6 +243,10 @@ public:
 					k.resize(appkeyPrefix.length());
 					k.append(str_toupper( expireKeys[expireKey].first));
 					reply = conn->run(command("PEXPIRE")(k)(expireKeys[expireKey].second));
+					if (FAILED(hr))
+					{
+						logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+					}
 				}
 			}
 
@@ -273,7 +293,8 @@ public:
 			case reply::type_t::STATUS:
 			case reply::type_t::_ERROR:
 				m_blobLength = 0;
-				logModule.Write(L"ApplicationGet failed because %s", std::wstring(repl.str().begin(), repl.str().end()).c_str());
+
+				logModule.Write(L"ApplicationGet failed because %s", s2ws(repl.str()));
 				result = E_FAIL;
 				break;
 			case reply::type_t::STRING:
@@ -378,7 +399,7 @@ public:
 				catch (too_much_retries ex)
 				{
 					auto what = std::string(ex.what());
-					logModule.Write(L"Retrying to connect because of %s", std::wstring(what.begin(), what.end()));
+					logModule.Write(L"Retrying to connect because of %s", s2ws(what));
 					Sleep(200);
 				}
 			}
@@ -480,7 +501,7 @@ public:
 				auto repl = c->run(command("SET")(ansi)(strBuf) ("EX")(ExpiresPar*60));
 				if (repl.type() == reply::type_t::_ERROR)
 				{
-					logModule.Write(L"Fail CpSessionSave because of %s", std::wstring(repl.str().begin(), repl.str().end()).c_str());
+					logModule.Write(L"Fail CpSessionSave because of %s", s2ws(repl.str()));
 					hr = E_FAIL;
 				}
 			}			
@@ -532,7 +553,7 @@ public:
 
 		pool->put(conn);
 		//std::wstring wstr = s2ws(ansi); //TODO: must all be ansi
-		logModule.Write(L"insert %s", std::wstring(ansi.begin(), ansi.end()).c_str());
+		logModule.Write(L"insert %s", s2ws(ansi));
 
 		auto hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
 		return hr;
@@ -602,7 +623,7 @@ public:
 		case reply::type_t::STATUS:
 		case reply::type_t::_ERROR:
 			m_zLen = m_blobLength = 0;			
-			logModule.Write(L"CpSessionGet failed because %s", std::wstring(repl.str().begin(), repl.str().end()).c_str());
+			logModule.Write(L"CpSessionGet failed because %s", s2ws(repl));
 			result = E_FAIL;
 			break;
 		case reply::type_t::STRING:

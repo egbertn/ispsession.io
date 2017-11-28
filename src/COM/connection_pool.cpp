@@ -184,7 +184,7 @@ connection::role_t connection_pool::get_role(connection::ptr_t conn)
 		
     {
         logging::debug("Old redis, doesn't support ROLE command");
-        reply r = conn->run(command("INFO") << "replication");
+        r = conn->run(command("INFO") << "replication");
 #ifndef NO_BOOST
         boost::smatch results;
         if (boost::regex_search(r.str(), results, role_searcher))

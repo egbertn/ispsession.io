@@ -8,7 +8,7 @@
 #include "CEnum.h"
 
 //IIS stuff
-STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
+STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 {
 	logModule.Write(L"Application:OnStartPage");
 	if (aspsvc == nullptr)
@@ -50,7 +50,7 @@ STDMETHODIMP NWCApplication::OnStartPage(IUnknown *aspsvc) throw()
 }
 
 //IIS stuff
-STDMETHODIMP NWCApplication::OnEndPage() throw()
+STDMETHODIMP CApplication::OnEndPage() throw()
 {
 	HRESULT hr = PersistApplication();
 	logModule.Write(L"Application:OnEndPage");
@@ -58,7 +58,7 @@ STDMETHODIMP NWCApplication::OnEndPage() throw()
 }
 
 
-STDMETHODIMP NWCApplication::IsDirty(BOOL* pRet) throw()
+STDMETHODIMP CApplication::IsDirty(BOOL* pRet) throw()
 {
 	*pRet = FALSE;
 	if (_removed.size() > 0)
@@ -76,7 +76,7 @@ STDMETHODIMP NWCApplication::IsDirty(BOOL* pRet) throw()
 	}
 	return S_OK;
 }
-STDMETHODIMP NWCApplication::PersistApplication() throw()
+STDMETHODIMP CApplication::PersistApplication() throw()
 {
 	HRESULT hr = S_OK;
 	if (m_bErrState == TRUE)
@@ -102,7 +102,7 @@ STDMETHODIMP NWCApplication::PersistApplication() throw()
 	
 	return hr;
 }
-STDMETHODIMP NWCApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
+STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 {
 	HRESULT hr = S_OK;
 	auto pos = _dictionary.find(Key);
@@ -139,7 +139,7 @@ STDMETHODIMP NWCApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 	return hr;
 }
 
-STDMETHODIMP NWCApplication::put_Value(BSTR key, VARIANT newVal) throw()
+STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal) throw()
 {
 	HRESULT hr = S_OK;
 	auto pos = _dictionary.find(key);
@@ -194,7 +194,7 @@ STDMETHODIMP NWCApplication::put_Value(BSTR key, VARIANT newVal) throw()
 	return hr;
 }
 
-STDMETHODIMP NWCApplication::putref_Value(BSTR key, VARIANT newVal) throw()
+STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 {
 	HRESULT hr = S_OK;
 	VARIANT* valueArray = nullptr;
@@ -256,7 +256,7 @@ STDMETHODIMP NWCApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 	}
 	return hr;
 }
-STDMETHODIMP NWCApplication::get_Key(INT Index, BSTR* pVal) throw()
+STDMETHODIMP CApplication::get_Key(INT Index, BSTR* pVal) throw()
 {
 	HRESULT hr = S_OK;
 	if (SUCCEEDED(hr))
@@ -275,27 +275,27 @@ STDMETHODIMP NWCApplication::get_Key(INT Index, BSTR* pVal) throw()
 	return hr;
 }
 
-STDMETHODIMP NWCApplication::get_Count(PINT pVal) throw()
+STDMETHODIMP CApplication::get_Count(PINT pVal) throw()
 {
 	*pVal = (int)_dictionary.size();
 	return S_OK;
 }
 
 
-STDMETHODIMP NWCApplication::get_KeyExists(BSTR Key, VARIANT_BOOL* pVal) throw()
+STDMETHODIMP CApplication::get_KeyExists(BSTR Key, VARIANT_BOOL* pVal) throw()
 {
 	auto pos = _dictionary.find(Key);
 	*pVal = pos == _dictionary.end() ? VARIANT_FALSE : VARIANT_TRUE;
 	return S_OK;
 }
 
-STDMETHODIMP NWCApplication::get_KeyType(BSTR Key, SHORT* pVal) throw()
+STDMETHODIMP CApplication::get_KeyType(BSTR Key, SHORT* pVal) throw()
 {
 	auto pos = _dictionary.find(Key);
 	*pVal = pos->second.val.vt;
 	return S_OK;
 }
-STDMETHODIMP NWCApplication::_NewEnum(IUnknown **ppRet) throw()
+STDMETHODIMP CApplication::_NewEnum(IUnknown **ppRet) throw()
 {
 	HRESULT hr = S_OK;
 	ULONG size = (ULONG)_dictionary.size();
@@ -321,7 +321,7 @@ STDMETHODIMP NWCApplication::_NewEnum(IUnknown **ppRet) throw()
 	hr = m_enum->QueryInterface(IID_IUnknown, (void**)ppRet);
 	return hr;
 }
-STDMETHODIMP NWCApplication::RemoveKey(BSTR Key) throw()
+STDMETHODIMP CApplication::RemoveKey(BSTR Key) throw()
 {
 	HRESULT hr = S_OK;
 	auto pos = _dictionary.find(Key);
@@ -352,7 +352,7 @@ STDMETHODIMP NWCApplication::RemoveKey(BSTR Key) throw()
 	
 	return hr;
 }
-STDMETHODIMP NWCApplication::RemoveAll() throw()
+STDMETHODIMP CApplication::RemoveAll() throw()
 {
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
@@ -374,7 +374,7 @@ STDMETHODIMP NWCApplication::RemoveAll() throw()
 	return S_OK;
 }
 
-STDMETHODIMP  NWCApplication::LockKey(BSTR Key) throw()
+STDMETHODIMP  CApplication::LockKey(BSTR Key) throw()
 {//will perform a PUT [Guid]:lock 1 command to redis 2.2+
 	
 	
@@ -388,13 +388,13 @@ STDMETHODIMP  NWCApplication::LockKey(BSTR Key) throw()
 	return S_OK;	
 }
 
-STDMETHODIMP NWCApplication::UnlockKey(BSTR key) throw()
+STDMETHODIMP CApplication::UnlockKey(BSTR key) throw()
 {
 	
 	return S_OK;
 }
 
-STDMETHODIMP NWCApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
+STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
 {
 	auto pos = _dictionary.find(Key);
 	if (pos != _dictionary.end())
@@ -407,7 +407,7 @@ STDMETHODIMP NWCApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
 	return S_OK;
 }
 
-STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
+STDMETHODIMP CApplication::ReadConfigFromWebConfig() throw()
 {
 	HRESULT hr = S_OK;
 	CComBSTR retVal, configFile(L"/web.Config");
@@ -477,7 +477,7 @@ STDMETHODIMP NWCApplication::ReadConfigFromWebConfig() throw()
 
 
 // Opens a DB Connection and initialises the Dictionary with the binary contents
-STDMETHODIMP NWCApplication::InitializeDataSource() throw()
+STDMETHODIMP CApplication::InitializeDataSource() throw()
 {
 	PCWSTR location = L"InitializeDataSource";
 	int port = 5578;
@@ -576,7 +576,7 @@ STDMETHODIMP NWCApplication::InitializeDataSource() throw()
 	
 	return hr;
 }
-STDMETHODIMP NWCApplication::ReadString(std::istream& pStream, BSTR *retval) throw()
+STDMETHODIMP CApplication::ReadString(std::istream& pStream, BSTR *retval) throw()
 {
 	HRESULT hr = S_OK;
 	UINT lTempSize = 0;
@@ -635,7 +635,7 @@ STDMETHODIMP NWCApplication::ReadString(std::istream& pStream, BSTR *retval) thr
 ///<param name="TheValue">asdf</param>
 ///<param name="vtype">VT variant type</param>
 ///<returns>a HRESULT</returns>
-STDMETHODIMP NWCApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype) throw()
+STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype) throw()
 {
 	LONG cBytes = 0,
 		ElSize = 0,
@@ -910,7 +910,7 @@ STDMETHODIMP NWCApplication::ReadValue(std::istream& pStream, VARIANT* TheValue,
 *writes a string in utf-8 compressed format
 *
 ***/
-STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, IStream* pStream) throw()
+STDMETHODIMP CApplication::WriteString(BSTR TheVal, IStream* pStream) throw()
 {
 	HRESULT hr = S_OK;
 
@@ -948,7 +948,7 @@ STDMETHODIMP NWCApplication::WriteString(BSTR TheVal, IStream* pStream) throw()
 	}
 	return hr;
 }
-STDMETHODIMP NWCApplication::ConvertVStreamToObject(ElementModel &var) throw()
+STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var) throw()
 {
 	HRESULT hr = S_OK;
 	CComQIPtr<IStream> l_pIStr(var.val.punkVal);
@@ -971,7 +971,7 @@ STDMETHODIMP NWCApplication::ConvertVStreamToObject(ElementModel &var) throw()
 	
 	return hr;
 }
-STDMETHODIMP NWCApplication::ConvertObjectToStream( VARIANT &var) throw()
+STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var) throw()
 {
 	if ((var.vt != VT_UNKNOWN || var.vt != VT_DISPATCH)|| var.punkVal == nullptr)
 	{
@@ -1009,7 +1009,7 @@ STDMETHODIMP NWCApplication::ConvertObjectToStream( VARIANT &var) throw()
 }
 
 
-STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* binaryString) throw()
+STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* binaryString) throw()
 {
 
 	LONG cBytes = 0,
@@ -1293,17 +1293,17 @@ STDMETHODIMP NWCApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream*
 
 	return hr;
 }
-STDMETHODIMP NWCApplication::get_Contents(IVariantDictionary2 **ppVal) throw()
+STDMETHODIMP CApplication::get_Contents(IVariantDictionary2 **ppVal) throw()
 {
 	return E_NOTIMPL;
 }
 /* IDatabase implementation*/
-STDMETHODIMP NWCApplication::get_KeyCount(PINT pVal)  throw()
+STDMETHODIMP CApplication::get_KeyCount(PINT pVal)  throw()
 {
 	*pVal = (INT)_dictionary.size();
 	return S_OK;
 }
-STDMETHODIMP NWCApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
+STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
 {
 	HRESULT hr = S_OK;
 	binaryString->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
@@ -1340,7 +1340,7 @@ STDMETHODIMP NWCApplication::SerializeKey(BSTR Key, IStream* binaryString) throw
 	}
 	return hr;
 }
-STDMETHODIMP NWCApplication::DeserializeKey(const std::string& binaryString) throw()
+STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString) throw()
 {
 	HRESULT hr = S_OK;
 	auto stream = std::stringstream(binaryString, ios_base::in || ios_base::binary);
@@ -1374,7 +1374,7 @@ STDMETHODIMP NWCApplication::DeserializeKey(const std::string& binaryString) thr
 	return hr;
 }
 
-STDMETHODIMP NWCApplication::get_KeyStates(
+STDMETHODIMP CApplication::get_KeyStates(
 	std::vector<string> &dirty_keys,
 	std::vector<string> &new_keys,
 	std::vector<string> &other_keys,
@@ -1419,7 +1419,7 @@ STDMETHODIMP NWCApplication::get_KeyStates(
 
 /* END IDatabase*/
 
-STDMETHODIMP NWCApplication::EnsureBuffer(INT newBuffer) throw()
+STDMETHODIMP CApplication::EnsureBuffer(INT newBuffer) throw()
 {
 	if (newBuffer > m_currentBufLen)
 	{

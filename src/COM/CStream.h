@@ -5,8 +5,7 @@
 class ATL_NO_VTABLE  CStream: 
 	public CComObjectRoot,
 	public CComCoClass<CStream>,
-	public IStream//,
-//	public IStreamPointer
+	public IStream
 {
 
 public:	
@@ -18,7 +17,6 @@ public:
 
 	BEGIN_COM_MAP(CStream)
 		COM_INTERFACE_ENTRY(IStream)
-	//	COM_INTERFACE_ENTRY(IStreamPointer)
 	END_COM_MAP()
 	//	Implementation of ISequentialStream
 	STDMETHOD(Read)(void*, ULONG, ULONG *);
@@ -33,10 +31,6 @@ public:
 	STDMETHOD(UnlockRegion)(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType);
 	STDMETHOD(Stat)(STATSTG *pstatstg, DWORD grfStatFlag);
 	STDMETHOD(Clone)(IStream **ppstm);
-
-	////*IStreamPointer
-	//STDMETHOD(get_Pointer)(PBYTE *pointer);
-	//STDMETHOD(put_Pointer)(PBYTE pointer);
 
 	void Clear();
 private:

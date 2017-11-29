@@ -21,6 +21,8 @@
     <modules>
       <remove name="Session"  xdt:Transform="Insert" />      
       <add name="ISPSession" preCondition="managedHandler" type="ispsession.io.ISPSessionModule, ispsession.io, Version=8.5.4, PublicKeyToken=9e8b40b682d8c05a" xdt:Transform="Insert" />
+      <add name="ISPApplication" preCondition="managedHandler" type="ispsession.io.ISPApplicationModule, ispsession.io, Version=8.5.4, PublicKeyToken=9e8b40b682d8c05a"  xdt:Transform="Insert"/>
+
     </modules>
   </system.webServer>
 </configuration>

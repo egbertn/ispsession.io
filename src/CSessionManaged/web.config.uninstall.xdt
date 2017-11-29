@@ -15,12 +15,15 @@
     <add key="ispsession_io:Compress" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
     <add key="ispsession_io:Csession.LIC" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
     <add key="ispsession_io:License" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:ClassicCsession.LIC" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
+    <add key="ispsession_io:ClassicLicense" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
     <add key="ispsession_io:DataSource" xdt:Transform="Remove" xdt:Locator="Match(key)"/>
   </appSettings>
   <system.webServer>
     <modules>
       <remove name="Session" xdt:Transform="Remove" xdt:Locator="Match(name)" />
-      <add name="ISPSession" xdt:Transform="Remove" xdt:Locator="Match(name)" />
+      <add name="ISPApplication" xdt:Transform="Remove" xdt:Locator="Match(name)"/>
+      <add name="ISPSession" xdt:Transform="Remove" xdt:Locator="Match(name)" />      
     </modules>
   </system.webServer>
 </configuration>

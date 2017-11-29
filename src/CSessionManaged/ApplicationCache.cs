@@ -206,6 +206,7 @@ namespace ispsession.io
             var element = _dictionary[key];
             util.WriteString(key);
             var vT = StreamManager.ConvertTypeToVtEnum(element.Value);
+            util.WriteInt16((short)vT);
             util.WriteValue(element.Value, vT);
             return util.GetBytes();
         }

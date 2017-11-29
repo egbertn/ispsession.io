@@ -121,7 +121,7 @@ namespace ispsession.io
                 if (_dbNo == null)
                 {
                     var dbstr = GetDBFromConnString(DatabaseConnection, "database");
-                    var dbNo = int.Parse(dbstr ?? "1");
+                    var dbNo = int.Parse(dbstr ?? "0");
                     //because of a bug in stackexchange that does not recognize the password
                     if (!string.IsNullOrEmpty(dbstr))
                     {

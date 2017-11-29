@@ -12,15 +12,15 @@ namespace ispsession.io
     /// <summary>
     /// required to replace the compatible session cookie for ISP Session both managed and unmanaged
     /// </summary>
-    public sealed class ISPSessionIDManager: ISessionIDManager 
+    public sealed class ISPSessionIDManager : ISessionIDManager
     {
         private readonly SessionAppSettings _settings;
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         public ISPSessionIDManager(SessionAppSettings settings)
         {
             _settings = settings;
-        }      
-       
+        }
+
         public string GetSessionID(HttpContext context)
         {
             string cookieText = null;
@@ -58,7 +58,7 @@ namespace ispsession.io
                     StreamManager.TraceInformation("GetSessionID found cookie guid {0}", cookieValue);
                 }
             }
-            
+
             var db = CSessionDL.SafeConn.GetDatabase(_settings.DataBase);
             bool foundSession = false;
             if (foundGuidinURL)
@@ -73,7 +73,7 @@ namespace ispsession.io
                 {
                     StreamManager.TraceInformation("GetSessionID revived session url guid {0}", cookieText);
                     return cookieText;
-                }             
+                }
                 return null;
             }
             if (cookieValue == null)
@@ -110,8 +110,7 @@ namespace ispsession.io
             }
             return sb.ToString();
         }
-
-        public bool Validate(string id)
+        internal static bool Validate2(string id)
         {
             int l;
             if (string.IsNullOrEmpty(id) || (l = id.Length) != 32)
@@ -127,6 +126,10 @@ namespace ispsession.io
                 }
             }
             return true;
+        }
+        public bool Validate(string id)
+        {
+            return Validate2(id);
         }
 
         internal HttpCookie CreateSessionCookie(string id, bool isHttps)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Web;
 using System.Web.Configuration;
 
@@ -45,10 +46,14 @@ namespace ispsession.io
             if (!context.Items.Contains(ItemContextKey))
             {
                 EnsureAppSettings();
+                if (!ISPSessionIDManager.Validate2(_appSettings.AppKey))
+                {
+                    throw new ConfigurationErrorsException($"invalid key {SessionAppSettings.ispsession_io_pref}:APP_KEY {_appSettings.AppKey}");
+                }
                 var appInstance = new ApplicationCache();
                 _startTime = DateTimeOffset.UtcNow;
                 var db = CSessionDL.SafeConn.GetDatabase(_appSettings.DataBase);
-                CSessionDL.ApplicationGet(db, Guid.Parse(_appSettings.AppKey), appInstance);
+                CSessionDL.ApplicationGet(db, _appSettings.AppKey, appInstance);
 
                 context.Items[ItemContextKey] = appInstance;
 
@@ -59,7 +64,7 @@ namespace ispsession.io
             var context = ((HttpApplication)source).Context;
             var appInstance = (ApplicationCache)context.Items[ItemContextKey];
             var db = CSessionDL.SafeConn.GetDatabase(_appSettings.DataBase);
-            CSessionDL.ApplicationSave(db, Guid.Parse(_appSettings.AppKey), appInstance, DateTimeOffset.UtcNow - _startTime);
+            CSessionDL.ApplicationSave(db, _appSettings.AppKey, appInstance, DateTimeOffset.UtcNow - _startTime);
         }
     }
 }

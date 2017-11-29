@@ -17,15 +17,15 @@ namespace ispsession.io
     /// </summary>
     internal static class CSessionDL
     {
-        internal static void ApplicationGet(IDatabase database, Guid appKey, IKeyManager pDictionary)
+        internal static void ApplicationGet(IDatabase database, string appKey, IKeyManager pDictionary)
         {
-            var appkey = ISPSessionIDManager.GuidToHex(appKey.ToByteArray());
-            var applicationPrefix = appkey + ':';
+            var appkey = appKey.ToUpperInvariant() ;
             var keymembers = database.SetMembers(appkey);
-            if (keymembers.Length > 0)
+            var keyCount = keymembers.Length;
+            if (keyCount > 0)
             {
-                var values = database.StringGet(keymembers.Select(s => (RedisKey)(string)s).ToArray());
-                for (var x = 0; x < values.Length; x++)
+                var values = database.StringGet(keymembers.Select(s => (RedisKey)(string)s).ToArray());                
+                for (var x = 0; x < keyCount; x++)
                 {
                     if (!values[x].IsNullOrEmpty)
                     {
@@ -37,13 +37,12 @@ namespace ispsession.io
         }
 
         internal static void ApplicationSave(IDatabase database,
-                                                Guid appKey, IKeyManager pDictionary,                                        
+                                                string appKey, IKeyManager pDictionary,                                        
                                                 TimeSpan totalRequestTime)
         {
-            var appkey = ISPSessionIDManager.GuidToHex(appKey.ToByteArray());
+            var appkey = appKey.ToUpperInvariant();
             var appkeyPrefix = appkey + ":";
             var setKey = (RedisKey)appkey;
-            string k = appkeyPrefix;
 
             pDictionary.KeyStates(out var changedKeys, out var newKeys, out var otherKeys, out var expireKeys, out var removedKeys);
             if (newKeys.Count > 0 || changedKeys.Count > 0 || removedKeys.Count > 0 || expireKeys.Count > 0)
@@ -51,12 +50,12 @@ namespace ispsession.io
                 var transaction = database.CreateTransaction();
                 if (newKeys.Count > 0)
                 {
-                    database.SetAdd(setKey, newKeys.Select(s => (RedisValue)(appkeyPrefix + s)).ToArray(), CommandFlags.FireAndForget);
+                    database.SetAdd(setKey, newKeys.Select(s => (RedisValue)(appkeyPrefix + s.ToUpperInvariant())).ToArray(), CommandFlags.FireAndForget);
                 }
 
                 if (removedKeys.Count > 0)
                 {
-                    database.SetRemove(setKey, removedKeys.Select(s => (RedisValue)(appkeyPrefix + s)).ToArray(), CommandFlags.FireAndForget);
+                    database.SetRemove(setKey, removedKeys.Select(s => (RedisValue)(appkeyPrefix + s.ToUpperInvariant())).ToArray(), CommandFlags.FireAndForget);
                 }
                 //KVP is a struct, therefore, values are copied by value, not by reference 
                 //make sure to use the least amount of mem footprint
@@ -65,12 +64,12 @@ namespace ispsession.io
                 int ct = 0;
                 foreach (var key in newKeys.Concat(changedKeys))
                 {
-                    multipleSet[ct++] = new KeyValuePair<RedisKey, RedisValue>(appkeyPrefix + key, pDictionary.SerializeKey(key));
+                    multipleSet[ct++] = new KeyValuePair<RedisKey, RedisValue>(appkeyPrefix + key.ToUpperInvariant(), pDictionary.SerializeKey(key));
                 }
 
                 if (multipleSet.Length > 0)
                 {
-                    database.StringSet(multipleSet, When.Always, CommandFlags.FireAndForget);
+                    database.StringSet(multipleSet, When.Always, CommandFlags.None);
                 }
                 if (expireKeys.Count > 0)
                 {

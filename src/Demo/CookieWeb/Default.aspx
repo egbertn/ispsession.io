@@ -44,6 +44,7 @@ Dimensional Array (1,1) =	<%=b[1,1]%><br/>
     </div>
         <asp:Label runat="server" ID="test" />
         <asp:Button runat="server" Text="OK" />
-        <asp:Label runat="server" id="txtJagged" />
+        <asp:Label runat="server" id="txtJagged" /><br />
+        <asp:Label runat="server" ID="txtApplicationCache" />
     </form>
 </asp:Content>

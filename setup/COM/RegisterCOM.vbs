@@ -22,14 +22,15 @@ isW64 = (oEnv("PROCESSOR_ARCHITECTURE") = "AMD64")
 
 '=========== check bitness and download & run VC runtime setup silently
 If isW64 Then
-    version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "system32"), "msvcr120.dll"))
-    'vc 12.0.40660
-    If version(2) < 40660  Then  
+    version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "system32"), "msvcp140.dll"))
+    'vc 14.0.24210.0
+    
+    If version(2) < 24210  Then  
         DownloadToTempAndRun 64
     End If
 
-    version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "SysWOW64"), "msvcr120.dll"))    
-    If version(2) < 40660  Then  
+    version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "SysWOW64"), "msvcp140.dll"))    
+    If version(2) < 24210  Then  
         DownloadToTempAndRun 32
     End If
     'register COM components
@@ -49,8 +50,8 @@ If isW64 Then
     End If
     oWs.Run regsvr32 + " /s " + fileTemp
 Else 'just in case
-    version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "system32"), "msvcr120.dll")) 'vcruntime140
-    If version(2) < 40660  Then  
+    version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "system32"), "msvcp140.dll")) 'vcruntime140
+    If version(2) < 24210  Then  
         DownloadToTempAndRun 32
     End If
     regsvr32 = oFs.BuildPath( oFs.BuildPath( windir, "system32"), "regsvr32.exe")
@@ -62,6 +63,7 @@ Else 'just in case
     oWs.Run regsvr32 + " /s " + fileTemp
 End If
 
+WScript.Echo "ISP Session 64 bit and 32 bit should be OK now!"
 '===============
 
 
@@ -72,8 +74,9 @@ Sub DownloadToTempAndRun(bits)
     stream.Type = 1 'binary
     'as of 2016, november these files exist
     ' english runtime
-    vArray = Array("http://download.microsoft.com/download/0/5/6/056DCDA9-D667-4E27-8001-8A0C6971D6B1/vcredist_x64.exe", _
-        "http://download.microsoft.com/download/0/5/6/056DCDA9-D667-4E27-8001-8A0C6971D6B1/vcredist_x86.exe")
+
+    vArray = Array("https://download.visualstudio.microsoft.com/download/pr/11100230/15ccb3f02745c7b206ad10373cbca89b/VC_redist.x64.exe", _
+        "https://download.visualstudio.microsoft.com/download/pr/11100229/78c1e864d806e36f6035d80a0e80399e/VC_redist.x86.exe")
     
     If Bits = 32 Then
         pos = 1       
@@ -97,7 +100,8 @@ Sub DownloadToTempAndRun(bits)
 End Sub
 Function GetVCRVersion(path)
     If Not oFs.FileExists(path) Then
-        Return Array(0,0,0,0)
+        GetVCRVersion = Array(0,0,0,0)
+	Exit Function
     End If
     Dim vArray , v
     v=oFs.GetFileVersion(path)    

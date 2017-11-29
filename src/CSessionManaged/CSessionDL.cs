@@ -69,7 +69,7 @@ namespace ispsession.io
 
                 if (multipleSet.Length > 0)
                 {
-                    database.StringSet(multipleSet, When.Always, CommandFlags.None);
+                    database.StringSet(multipleSet, When.Always, CommandFlags.FireAndForget);
                 }
                 if (expireKeys.Count > 0)
                 {

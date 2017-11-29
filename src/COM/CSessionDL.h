@@ -133,9 +133,8 @@ public:
 		)
 	{
 		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));
+		auto appkeyLen = appkey.size() + 1;
 		auto appkeyPrefix = appkey + ":";
-		string k(appkeyPrefix);
-
 		
 		//write binary safe string
 		HRESULT hr = S_OK;
@@ -177,9 +176,9 @@ public:
 				redisSAdd << appkey; //SADD appkey KEY, [KEY...]				
 				for (auto saddKey = 0; saddKey < newKeys.size(); ++saddKey)
 				{
-					k.resize(appkeyPrefix.length());
-					k.append(str_toupper(newKeys[saddKey]));
-					redisSAdd << k;
+					appkeyPrefix.resize(appkeyLen);
+					appkeyPrefix.append(str_toupper(newKeys[saddKey]));
+					redisSAdd << appkeyPrefix;
 				}
 				reply = conn->run(redisSAdd);
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
@@ -196,10 +195,10 @@ public:
 				
 				for (auto sremoveKey = removedKeys.begin(); sremoveKey != removedKeys.end(); ++sremoveKey)
 				{		
-					k.resize(appkeyPrefix.length());;
-					k.append(str_toupper(*sremoveKey));
-					srem << k;
-					del << k;
+					appkeyPrefix.resize(appkeyLen);
+					appkeyPrefix.append(str_toupper(*sremoveKey));
+					srem << appkeyPrefix;
+					del << appkeyPrefix;
 				}
 				reply = conn->run(del);
 				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
@@ -240,9 +239,9 @@ public:
 				for (auto expireKey = 0; expireKey < expireKeys.size(); ++expireKey)
 				{
 					//ms instead of EXPIRE seconds
-					k.resize(appkeyPrefix.length());
-					k.append(str_toupper( expireKeys[expireKey].first));
-					reply = conn->run(command("PEXPIRE")(k)(expireKeys[expireKey].second));
+					appkeyPrefix.resize(appkeyLen);
+					appkeyPrefix.append(str_toupper( expireKeys[expireKey].first));
+					reply = conn->run(command("PEXPIRE")(appkeyPrefix)(expireKeys[expireKey].second));
 					if (FAILED(hr))
 					{
 						logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));

@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using ispsession.io.Interfaces;
+using System;
 using System.Threading;
-using System.Web;
 using System.Web.UI;
-using System.Web.UI.WebControls;
 [Serializable]
 public class SomeData
 {
@@ -18,7 +15,11 @@ public partial class _Default : Page
 {
     protected override void OnLoad(EventArgs e)
     {
-        
+        //not yet 
+        var application = (IApplicationCache)this.Context.Items["_ISPApplicationCache"];
+         var count = (int)(application["count"] ?? 0); 
+        application["count"] = ++count;
+        txtApplicationCache.Text = count.ToString();
         var countRefresh = Convert.ToInt32(Session["CountRefresh"] ?? 0); 
         countRefresh++;
         Session["CountRefresh"] = countRefresh;

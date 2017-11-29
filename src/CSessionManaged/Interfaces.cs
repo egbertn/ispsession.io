@@ -22,11 +22,15 @@ namespace ispsession.io.Interfaces
         /// </summary>
         void RemoveAll();
         /// <summary>
-        /// locks a single key
+        /// locks a single key so it is protected
         /// </summary>
         /// <param name="Key"></param>
         /// <returns></returns>
         bool LockKey(string Key);
+        /// <summary>
+        /// unlocks a single key
+        /// </summary>
+        /// <param name="Key"></param>
         void UnlockKey(string Key);
 
         void ExpireKeyAt(string vKey, int at);

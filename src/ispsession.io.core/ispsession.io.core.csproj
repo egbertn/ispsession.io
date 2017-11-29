@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Session State broker for AspNetCore, compatible with classic ASP and classic ASP.NET (when combined with respective session.io products)</Description>
+    <Copyright>(c) 2001-2017, ADC Cure, Amsterdam</Copyright>
+    <AssemblyTitle>ispsession.io Session State Broker</AssemblyTitle>
+    <VersionPrefix>1.0.16</VersionPrefix>
+    <TargetFrameworks>net462;netstandard1.5;netcoreapp1.0</TargetFrameworks>
+    <AssemblyName>ispsession.io.core</AssemblyName>
+    <PackageId>ispsession.io.core</PackageId>
+    <PackageTags>Session;SessionState</PackageTags>
+    <PackageReleaseNotes>1.0.15 adds target to netcoreapp (netstandard1x is obsolete). Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The purchased assembly, contains extra optimizations, however, the demo performs very well too.</PackageReleaseNotes>
+    <PackageIconUrl>https://ispsession.io/images/Platipus3_Transparant_small.png</PackageIconUrl>
+    <PackageLicenseUrl>https://ispsession.io/license</PackageLicenseUrl>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'net462' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.5' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp1.0' ">$(PackageTargetFallback);dnxcore50</PackageTargetFallback>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Update="HowToConfigure_ISP_Session.txt">
+      <Pack>true</Pack>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="1.0.2" />
+    <PackageReference Include="StackExchange.Redis.StrongName.Core" Version="1.1.605" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>$(DefineConstants);Demo</DefineConstants>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <AssemblyName>ispsession.io</AssemblyName>
+    <AssemblyOriginatorKeyFile>..\adccure.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Production' ">
+    <DefineConstants>$(DefineConstants);OPT</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Release|net462|AnyCPU'">
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|net462|AnyCPU'">
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <Target Name="PostcompileScript" AfterTargets="Build" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
+    <Exec Command="dotnet pack --no-build --configuration $(Configuration)" />
+  </Target>
+
+</Project>

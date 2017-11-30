@@ -93,7 +93,7 @@ STDMETHODIMP CApplication::PersistApplication() throw()
 	if (blnIsDirty == TRUE)
 	{	
 		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
-		CComPtr<IDatabase> database = this;
+		CComPtr<IKeySerializer> database = this;
 		hr = CApplicationDL::ApplicationSave(pool, m_AppKey, database, lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);		
 
 		logModule.Write(L"CApplicationDL::ApplicationSave  size(%d) time(%d), hr(%x)", lSize, totalRequestTimeMS, hr);
@@ -568,7 +568,7 @@ STDMETHODIMP CApplication::InitializeDataSource() throw()
 	}
 	else
 	{
-		CComPtr<IDatabase> database = this;
+		CComPtr<IKeySerializer> database = this;
 		CApplicationDL applicationDl;
 		hr = applicationDl.ApplicationGet(pool, m_AppKey, database);
 	}
@@ -1298,11 +1298,7 @@ STDMETHODIMP CApplication::get_Contents(IVariantDictionary2 **ppVal) throw()
 	return E_NOTIMPL;
 }
 /* IDatabase implementation*/
-STDMETHODIMP CApplication::get_KeyCount(PINT pVal)  throw()
-{
-	*pVal = (INT)_dictionary.size();
-	return S_OK;
-}
+
 STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
 {
 	HRESULT hr = S_OK;
@@ -1378,41 +1374,49 @@ STDMETHODIMP CApplication::get_KeyStates(
 	std::vector<string> &dirty_keys,
 	std::vector<string> &new_keys,
 	std::vector<string> &other_keys,
-	std::vector<std::pair<char*, INT>> &expire_keys,
+	std::vector<std::pair<string, INT>> &expire_keys,
 	std::vector<string> &removed_keys) throw()
 {
 	//USES_CONVERSION;
 	HRESULT hr = S_OK;
+	dirty_keys.clear();
+	new_keys.clear();
+	other_keys.clear();
+	expire_keys.clear();
+	removed_keys.clear();
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
 		CComBSTR ansi;
 		ansi.Attach(((CComBSTR2)(*k).first).ToByteString());
+		string key((PSTR)ansi.m_str, ansi.ByteLength());
+		ansi.Empty();
+
 		if (ansi.IsEmpty())
 		{
 			logModule.Write(L"Severe error, empty key found");
 		}
 		if (k->second.IsNew == TRUE)
 		{
-			new_keys.push_back((PSTR)ansi.m_str);
+			new_keys.push_back(key);
 		}
 		else if (k->second.IsDirty == TRUE)
 		{
-			dirty_keys.push_back((PSTR)ansi.m_str);
+			dirty_keys.push_back(key);
 
 		}
 		else
 		{
-			other_keys.push_back((PSTR)ansi.m_str);
+			other_keys.push_back(key);
 		}
 		if (k->second.ExpireAt > 0)
 		{
-			expire_keys.push_back(std::pair<char*, INT>((PSTR)ansi.m_str, k->second.ExpireAt));
+			expire_keys.push_back(std::pair<string, INT>(key, k->second.ExpireAt));
 		}
 	}
 	auto sz = _removed.size();
-	for (auto k = 0; k < sz; ++k)
+	for (auto x = 0; x < sz; ++x)
 	{
-		removed_keys.push_back((PCHAR)_removed[k].c_str());
+		removed_keys.push_back(_removed[x].c_str());
 	}
 	return hr;
 }

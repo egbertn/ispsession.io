@@ -125,7 +125,7 @@ class CApplicationDL:
 public:
 	static HRESULT __stdcall ApplicationSave(const simple_pool::ptr_t &pool,
 		GUID& appKey,
-		IDatabase*  pDictionary,
+		IKeySerializer*  pDictionary,
 		LONG Expires,
 		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
 		//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
@@ -139,9 +139,6 @@ public:
 		//write binary safe string
 		HRESULT hr = S_OK;
 		
-		int keyCount;
-		pDictionary->get_KeyCount(&keyCount);//1 based
-		
 		command transactionCommit("EXEC");
 		command multipleSet("MSET");
 		command redisSAdd("SADD");
@@ -149,7 +146,7 @@ public:
 		std::vector<string> changedKeys;
 		std::vector<string> newKeys;
 		std::vector<string> otherKeys;
-		std::vector<pair<char*, INT>> expireKeys;
+		std::vector<pair<string, INT>> expireKeys;
 		std::vector<string> removedKeys;
 		pDictionary->get_KeyStates(changedKeys, newKeys, otherKeys, expireKeys, removedKeys);
 		
@@ -258,7 +255,7 @@ public:
 		return hr;
 	}
 
-	HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const GUID& appKey, IDatabase*  pDictionary)
+	HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const GUID& appKey, IKeySerializer*  pDictionary)
 	{
 		HRESULT hr = S_OK;
 		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));

@@ -43,13 +43,16 @@ std::string& __stdcall trim(std::string &s)
 
 std::string str_toupper(std::string s) 
 {
+
 	std::transform(s.begin(), s.end(), s.begin(),
 		// [](char c){ return std::toupper(c); }          // wrong
-		[](unsigned char c){ return std::toupper(c); } // correct
+		[](unsigned char c){ return (unsigned char)std::toupper(c); } // correct
 	);
 	return s;
+
 }
-//void split(const std::string &s, char delim, std::vector<std::string> &elems, int maxCount = 0)
+
+//void split(const std::string &s, char delim, std::vector<std::string> &elems, int maxCount s= 0)
 //{
 // std::stringstream ss;
 // ss.str(s);
@@ -580,7 +583,7 @@ void __stdcall FreeString(BSTR * theString) throw()
 }
 
 
-STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IDatabase* pDictionary, command& cmd, const string& appkeyPrefix) throw()
+STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix) throw()
 {
 
 	string k(appkeyPrefix);
@@ -689,7 +692,7 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 		cwName = pdomInfo->DomainName;
 		::NetApiBufferFree(pdomInfo);
 	}
-	logModule.Write(L"Names %s, %s", NT4NETBIOSNAME, cwName);
+	logModule.Write(L"Names %s, %s", NT4NETBIOSNAME.m_str, cwName);
 
 	CComBSTR buf(strLicensedFor);
 
@@ -726,7 +729,7 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 	}
 	if (foundLicensedItem == false && licenseType != 4)
 	{
-		logModule.Write(L"Could not find licensedItem %s in allowed licensee %s", cwName, buf);
+		logModule.Write(L"Could not find licensedItem %s in allowed licensee %s", cwName.m_str, buf);
 		return false;
 	}
 	CComBSTR space(L" "); // reuse variable

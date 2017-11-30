@@ -501,7 +501,7 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="CRedLock.h" />
-    <ClInclude Include="IDatabase.h" />
+    <ClInclude Include="IKeySerializer.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ADCLogModule.h" />
     <ClInclude Include="CComBSTR2.h" />

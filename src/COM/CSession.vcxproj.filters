@@ -188,7 +188,7 @@
     <ClInclude Include="ConfigurationManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IDatabase.h">
+    <ClInclude Include="IKeySerializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

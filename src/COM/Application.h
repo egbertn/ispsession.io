@@ -4,7 +4,7 @@
 #include "message.h"
 #include <chrono>
 
-#include "IDatabase.h"
+#include "IKeySerializer.h"
 #include "tools.h"
 #include "CRedLock.h"
 
@@ -59,7 +59,7 @@ class ATL_NO_VTABLE CApplication :
 	public CComCoClass<CApplication, &CLSID_NWCApplication>,
 	public IDispatchImpl<IApplicationCache, &IID_IApplicationCache, &LIBID_ISPCSession>,
 	public ISupportErrorInfoImpl<&IID_IApplicationCache>,
-	public IDatabase
+	public IKeySerializer
 {
 public:
 	DECLARE_OBJECT_DESCRIPTION("Classic ASP Application replacement by ADC Cure")
@@ -70,7 +70,7 @@ public:
 		COM_INTERFACE_ENTRY(IDispatch)
 		COM_INTERFACE_ENTRY(ISupportErrorInfo)	
 		COM_INTERFACE_ENTRY(IApplicationCache)
-		COM_INTERFACE_ENTRY(IDatabase)
+		COM_INTERFACE_ENTRY(IKeySerializer)
 		
 	END_COM_MAP()
 
@@ -134,12 +134,11 @@ public:
 
 	// public but not exposed to IDL
 	////IDatabase
-	STDMETHOD( get_KeyCount)(PINT pval);
 	STDMETHOD (get_KeyStates)(
 		std::vector<string> &dirty_keys,
 		std::vector<string> &new_keys,
 		std::vector<string> &other_keys,
-		std::vector<std::pair<char*, INT>> & expireKeys,
+		std::vector<std::pair<string, INT>> & expireKeys,
 		std::vector<string> &removed_keys);
 	STDMETHOD(SerializeKey)(BSTR key, IStream* binaryString);
 	//unpacks key & value from the blob       

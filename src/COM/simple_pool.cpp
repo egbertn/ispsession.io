@@ -4,6 +4,7 @@
 #include "include/redis3m/simple_pool.h"
 #include "include/redis3m/command.h"
 #include <thread>
+#include "tools.h"
 using namespace redis3m;
 #define _SECOND 10000000
 #define KEEPCONNECTION_IN_POOL_SEC 20
@@ -111,7 +112,7 @@ connection::ptr_t simple_pool::get()
 				logModule.Write(L"SELECT database %s", response.str());
 			}
 		}
-		logModule.Write(L"Add Redis Conn to pool %d, %s, %d", _database, string(_host.begin(), _host.end()), _port);
+		logModule.Write(L"Add Redis Conn to pool %d, %s, %d", _database, s2ws(_host), _port);
 	}
 	ret->_startSessionRequest = std::chrono::system_clock::now();
 

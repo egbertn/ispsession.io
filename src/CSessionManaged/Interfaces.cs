@@ -38,10 +38,8 @@ namespace ispsession.io.Interfaces
         Type KeyType(string Key);
 
     };
-    internal interface IKeyManager
+    internal interface IKeySerializer
     {
-
-        int KeyCount { get; }
 
         void KeyStates(
             out IList<string> changedKeys,

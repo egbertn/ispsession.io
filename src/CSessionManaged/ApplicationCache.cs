@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace ispsession.io
 {
-    public class ApplicationCache : IApplicationCache, IKeyManager
+    public class ApplicationCache : IApplicationCache, IKeySerializer
     {
         private readonly IDictionary<string, ElementModel> _dictionary;
         private readonly HashSet<string> _removed;
@@ -56,7 +56,6 @@ namespace ispsession.io
         /// </summary>
         public int Count => _dictionary.Count;
 
-        int IKeyManager.KeyCount => _dictionary.Count;
 
         /// <summary>
         /// Sets an existing key to expire given in milliseconds
@@ -163,7 +162,7 @@ namespace ispsession.io
             return _dictionary.Keys.GetEnumerator();
         }
 
-        void IKeyManager.KeyStates(
+        void IKeySerializer.KeyStates(
             out IList<string> changedKeys, 
             out IList<string> newKeys, 
             out IList<string> otherKeys, 
@@ -200,7 +199,7 @@ namespace ispsession.io
 
         }
 
-        byte[] IKeyManager.SerializeKey(string key)
+        byte[] IKeySerializer.SerializeKey(string key)
         {          
             var util = new PersistUtil();
             var element = _dictionary[key];
@@ -211,7 +210,7 @@ namespace ispsession.io
             return util.GetBytes();
         }
 
-        void IKeyManager.DeserializeKey(byte[] binaryString)
+        void IKeySerializer.DeserializeKey(byte[] binaryString)
         {
             var util = new PersistUtil(new MemoryStream(binaryString));
             var key = util.ReadString();

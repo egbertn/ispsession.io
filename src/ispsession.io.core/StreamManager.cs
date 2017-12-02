@@ -1334,8 +1334,7 @@ namespace ispsession.io
         {
             if (pStm == null || iidInterface == null) throw new ArgumentNullException("pStm");
 
-            Guid clsd;
-            NativeMethods.ReadClassStm(pStm, out clsd);
+            NativeMethods.ReadClassStm(pStm, out Guid clsd);
             var typ = Marshal.GetTypeFromCLSID(clsd);
             var obj = Activator.CreateInstance(typ);
             var pPersist = obj as IPersistStreamInit;

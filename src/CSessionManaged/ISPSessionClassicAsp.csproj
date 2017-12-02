@@ -72,9 +72,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApplicationCache.cs" />
+    <Compile Include="AppPersistUtil.cs" />
     <Compile Include="ConfigHelper.cs" />
     <Compile Include="CSessionDL.cs" />
     <Compile Include="ISPApplicationModule.cs" />
+    <Compile Include="Lock.cs" />
+    <Compile Include="Redlock.cs" />
     <Compile Include="SessionAppSettings.cs" />
     <Compile Include="StreamManager.cs" />
     <Compile Include="Interfaces.cs" />

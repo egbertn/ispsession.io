@@ -93,12 +93,15 @@ namespace ispsession.io
             }
             return null;
         }
-
-        public string CreateSessionID(HttpContext context)
+        public static string UniqueId()
         {
             var bt = new byte[16];
             CryptoRandom.GetBytes(bt);
             return GuidToHex(bt);
+        }
+        public string CreateSessionID(HttpContext context)
+        {
+            return UniqueId();
         }
 
         internal static string GuidToHex(byte[] bytes)

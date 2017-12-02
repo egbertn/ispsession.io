@@ -103,6 +103,7 @@ namespace ispsession.io
             st.wDay = (short)value.Day;
             st.wHour = (short)value.Hour;
             st.wMinute = (short)value.Minute;
+            st.wSecond = (short)value.Second;
             st.wMilliseconds = (short)value.Millisecond;
 
             double d;
@@ -113,7 +114,7 @@ namespace ispsession.io
         {
             _SYSTEMTIME st;
             NativeMethods.VariantTimeToSystemTime(d, &st);
-            return new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
+            return new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
         }
         const int ErrorSuccess = 0;
         public sealed class JoinInformation

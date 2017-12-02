@@ -767,6 +767,14 @@ namespace ispsession.io
                     case VarEnum.VT_ERROR:
                     case VarEnum.VT_VARIANT: //object .NET class
                     case VarEnum.VT_UNKNOWN:
+                        //TODO: if VT_UNKNOWN || DISPATCH etc but is is still a byte array, just serialize that!
+                        if (data is byte[] bts)
+                        {
+                            WriteInt32(bts.Length);//first the length of the blob
+                            Str.Write(bts, 0, bts.Length);//second the blob itself
+                            TraceInformation("COM object written bytesize={0} already serialized", bts.Length);
+                            break;
+                        }
                         bool isComObject = Marshal.IsComObject(data) && vT != VarEnum.VT_ERROR;
                         if (isComObject)
                         {
@@ -1173,49 +1181,54 @@ namespace ispsession.io
                         EnsureMemory(bytesInStream);
                         //var bytes = new byte[BytesInStream];
                         Str.Read(_memoryBuff, 0, bytesInStream);
-                        if (!isNetObject)
+                        if (!LateObjectActivation)
                         {
-                            TraceInformation("Deser Com Object");
-                            var hglob = Marshal.AllocHGlobal(bytesInStream);
-                            Marshal.Copy(_memoryBuff, 0, hglob, bytesInStream);
-                            var hr = GetHr(hglob, out IStream pstr);
-                            if (hr != 0) Marshal.ThrowExceptionForHR(hr);
-                            var uknown = new Guid("00000000-0000-0000-C000-000000000046");
+                            if (!isNetObject)
+                            {
+                                TraceInformation("Deser Com Object");
+                                var hglob = Marshal.AllocHGlobal(bytesInStream);
+                                Marshal.Copy(_memoryBuff, 0, hglob, bytesInStream);
+                                var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
+                                if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+                                var uknown = new Guid("00000000-0000-0000-C000-000000000046");
 
-                            hr = NativeMethods.OleLoadFromStream(pstr, ref uknown, out data);
-                            if (hr != 0) Marshal.ThrowExceptionForHR(hr);
-                            if (data == null)
-                            {
-                                pstr.Seek(0, 0, IntPtr.Zero);//Position = 0
-                                TraceInformation("IPersistStream failed, trying IPersistStreamInit");
-                                data = OleLoadFromStream2(pstr, uknown);
+                                hr = NativeMethods.OleLoadFromStream(pstr, ref uknown, out data);
+                                if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+                                if (data == null)
+                                {
+                                    pstr.Seek(0, 0, IntPtr.Zero);//Position = 0
+                                    TraceInformation("IPersistStream failed, trying IPersistStreamInit");
+                                    data = OleLoadFromStream2(pstr, uknown);
+                                }
                             }
+                            else // it is a .NET serializable object
+                            {
+                                TraceInformation("deser .NET");
+                                var bFormatter = new BinaryFormatter
+                                {
+                                    AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
+                                    TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded
+                                };
+                                using (var mem = new MemoryStream(_memoryBuff, 0, bytesInStream))
+                                {
+                                    data = bFormatter.Deserialize(mem);
+                                }
+                                TraceInformation("DeSerializing {0}", TraceInfo.TraceInfo ? data.GetType().Name : null);
+                            }
+                            return data;
                         }
-                        else // it is a .NET serializable object
+                        else
                         {
-                            TraceInformation("deser .NET");
-                            var bFormatter = new BinaryFormatter
-                            {
-                                AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
-                                TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded
-                            };
-                            using (var mem = new MemoryStream(_memoryBuff, 0, bytesInStream))
-                            {
-                                data = bFormatter.Deserialize(mem);
-                            }                            
-                            TraceInformation("DeSerializing {0}", TraceInfo.TraceInfo ? data.GetType().Name : null);
+                            var byteBuff = new byte[bytesInStream];
+                            Array.Copy(_memoryBuff, byteBuff, bytesInStream);
+                            return byteBuff;
                         }
-                        return data;
                 }
             }
             throw new NotImplementedException(string.Format("this type VarEum = {0} cannot (yet?) be deserialized by CSessionManaged", vT));
         }
 
-        private static int GetHr(IntPtr hglob, out IStream pstr)
-        {
-            return NativeMethods.CreateStreamOnHGlobal(hglob, true, out pstr);
-        }
-
+       
         //TODO: support jagged arrays.
         internal static VarEnum ConvertTypeToVtEnum(object typObj)
         {
@@ -1400,34 +1413,32 @@ namespace ispsession.io
 
             return outp;
         }
-        private static readonly object l = new object();
-        private static Dictionary<string, string> _cache;
+        internal bool LateObjectActivation { get; set; }
+       // private static readonly object l = new object();
+        private static readonly Lazy<Dictionary<string, string>> Cache =
+            new Lazy<Dictionary<string, string>>(() => new Dictionary<string, string>(4));
         //works only for .NET 45
         public static string GetMetaData(string key)
         {
-            if (_cache == null || !_cache.ContainsKey(key))
+            if (!Cache.Value.ContainsKey(key))
             {
-                lock (l)
+               
+              
+                foreach (var meta in typeof(NativeMethods).GetTypeInfo().Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
                 {
-                    if (_cache == null)
+                    if (meta.Key == key)
                     {
-                        _cache = new Dictionary<string, string>(4);
+                        Cache.Value[key] = meta.Value;
+                        break;
                     }
-                    foreach (var meta in typeof(NativeMethods).GetTypeInfo().Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
-                    {
-                        if (meta.Key == key)
-                        {
-                            _cache[key] = meta.Value;
-                            break;
-                        }
-                    }
-                    if (!_cache.ContainsKey(key))
-                    {
-                        throw new Exception(string.Format("meta key {0} not found", key));
-                    }
-                }                
+                }
+                if (!Cache.Value.ContainsKey(key))
+                {
+                    throw new Exception(string.Format("meta key {0} not found", key));
+                }
+                             
             }
-            return _cache[key];
+            return Cache.Value[key];
         }
 #if !Demo
 

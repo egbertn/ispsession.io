@@ -595,12 +595,15 @@ STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IKeySerializer* 
 	stream = cseqs;
 	HRESULT hr = S_OK;
 	CComBSTR bstrKey;
+	LARGE_INTEGER set = { 0 };
+	ULARGE_INTEGER newpos = { 0 };
 	for (auto saddKey = 0; saddKey < keys.size(); ++saddKey)
 	{
 		ULARGE_INTEGER sze;
 		sze.QuadPart = 128;
 		stream->SetSize(sze);
 
+		stream->Seek(set, STREAM_SEEK_SET, nullptr);
 
 		//only set redis keys to upper, not the serialized one
 		k.resize(appkeyPrefix.size());
@@ -608,15 +611,13 @@ STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IKeySerializer* 
 
 		bstrKey = keys[saddKey].c_str();
 		hr = pDictionary->SerializeKey(bstrKey, stream);
-
-		LARGE_INTEGER set = { 0 };
-		ULARGE_INTEGER newpos = { 0 };
+		stream->Commit(STATFLAG_DEFAULT);//must be IStream thus 
 		hr = stream->Seek(set, STREAM_SEEK_CUR, &newpos);
 		auto cBytes = newpos.LowPart;
 		logModule.Write(L"Serialize key %s %x len %d", bstrKey, hr, cBytes);
 		BYTE buf[512] = { 0 };
 		stream->SetSize(newpos);
-		stream->Seek(set, STREAM_SEEK_SET, nullptr);
+		stream->Seek(set, STREAM_SEEK_SET, nullptr); //cut off to correct length
 		ULONG read = 0;
 		while (hr == S_OK)
 		{

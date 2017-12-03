@@ -22,7 +22,7 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 		return hr;
 	}
 	if (FAILED(m_pScriptContext->get_Server(&m_piServer))) return E_FAIL;
-	hr = ReadConfigFromWebConfig();
+	
 	if (FAILED(hr))
 	{
 		return hr;
@@ -194,7 +194,6 @@ STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal) throw()
 STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 {
 	HRESULT hr = S_OK;
-	VARIANT* valueArray = nullptr;
 	logModule.Write(L"putref_Item %s", key);
 	VARTYPE origType = newVal.vt;
 
@@ -216,17 +215,15 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 		{
 			logModule.Write(L"add key %s", key);
 			ElementModel v;
-			v.val = vDeref;
-			v.IsNew = TRUE;
 			_dictionary.insert(pair<CComBSTR, ElementModel>(key, v));
+
 			pos = _dictionary.find(key);
+			pos->second.IsNew = TRUE;
 		}
 		else
 		{
 			pos->second.IsDirty = TRUE;//going to change
 		}
-		valueArray = &pos->second.val;
-
 		
 		CComQIPtr<IPersistStream> l_ptestForCapability(vDeref.pdispVal);
 		CComQIPtr<IPersistStreamInit> l_ptestForCapability2(vDeref.pdispVal);
@@ -236,7 +233,8 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 		}
 		else
 		{
-			pos->second.val = vDeref;
+			pos->second.val = vDeref;		
+		
 		}
 
 		if (FAILED(hr))
@@ -404,73 +402,7 @@ STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
 	return S_OK;
 }
 
-STDMETHODIMP CApplication::ReadConfigFromWebConfig() throw()
-{
-	HRESULT hr = S_OK;
-	CComBSTR retVal, configFile(L"/web.Config");
-	///traverse back to root if necessary, note, UNC paths are not advisable
-	CComBSTR root;
-	bool exists = false;
-	hr = m_piServer->MapPath(configFile, &root);
-	configFile.Insert(0, L".");
-	//IIS Setting 'enable parent paths' must be enabled
-	for (;;)
-	{
-		retVal.Empty();
-		hr = m_piServer->MapPath(configFile, &retVal);
-		if (FAILED(hr))
-		{
-			break;
-		}
-		if ((exists = FileExists(retVal)) == true)
-		{
-			break;
-		}
-	
-		logModule.Write(L"logic %s, phys %s", configFile.m_str, retVal);
-		//avoid going beyond the root of this IIS website
-		if (CComBSTR::Compare(retVal, root, true, false, false) == 0)
-		{
-			break;
-		}
-		if (configFile.StartsWith(L"./"))
-		{
-			configFile.Remove(0, 2);
-		}
-		configFile.Insert(0, L"../");
-	}
-	if (exists == FALSE)
-	{
-		exists = FileExists(root);
-		if (exists == TRUE)
-		{//last resort
-			retVal.Attach(root.Detach());
-			hr = S_OK;
-		}
-	}
-	if (exists == FALSE || FAILED(hr))
-	{
-		logModule.Write(L"Application: searched web.Config up to: (%s) none found %x", retVal.m_str, hr);
-		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
-	}
-	ConfigurationManager config(retVal);
-	const PWSTR prefix = L"ispsession_io:";
 
-	CComBSTR bstrProp = L"APP_KEY";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	
-	logModule.Write(L"AppKey: (%s)", bstrProp.m_str);
-	
-
-	if (setstring(reinterpret_cast<PUCHAR>(&m_AppKey), bstrProp) == FALSE)
-	{
-		hr = E_INVALIDARG;
-		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);
-	}
-
-	return hr;
-}
 
 
 // Opens a DB Connection and initialises the Dictionary with the binary contents
@@ -557,6 +489,20 @@ STDMETHODIMP CApplication::InitializeDataSource() throw()
 			hr = E_FAIL;
 		}
 	}
+
+    bstrProp = L"APP_KEY";
+	bstrProp.Insert(0, prefix);
+	bstrProp.Attach(config.AppSettings(bstrProp));
+
+	logModule.Write(L"AppKey: (%s)", bstrProp.m_str);
+
+
+	if (setstring(reinterpret_cast<PUCHAR>(&m_AppKey), bstrProp) == FALSE)
+	{
+		hr = E_INVALIDARG;
+		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);
+	}
+
 	if (FAILED(hr))
 	{
 		ReportComError2(hr, location);
@@ -968,7 +914,7 @@ STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var) throw()
 }
 STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var) throw()
 {
-	if ((var.vt != VT_UNKNOWN || var.vt != VT_DISPATCH)|| var.punkVal == nullptr)
+	if ((var.vt != VT_UNKNOWN && var.vt != VT_DISPATCH)|| var.punkVal == nullptr)
 	{
 		return E_INVALIDARG;
 	}
@@ -998,6 +944,7 @@ STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var) throw()
 		{
 			var.punkVal->Release();//release object instance
 			pStream.QueryInterface(&var.punkVal);
+			var.vt = VT_UNKNOWN;
 		}
 	}
 	return hr;
@@ -1353,7 +1300,12 @@ STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString) throw
 		_dictionary.insert(std::pair<CComBSTR, ElementModel>(key, m));
 		auto pos = _dictionary.find(key);
 		//pos->second.val = val;
+		if (val.vt == VT_UNKNOWN || val.vt == VT_DISPATCH)
+		{
+			pos->second.IsSerialized = TRUE;
+		}
 		val.Detach(&pos->second.val);		 
+
 	}
 	else
 	{

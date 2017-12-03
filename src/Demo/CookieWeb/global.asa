@@ -1,0 +1,35 @@
+﻿<script language="vbscript" runat="server">
+
+Sub Application_OnStart
+    
+    Dim Cache, Rs,testPersist
+    'This object MUST be created use Server.CreateObject
+    ' do not set it as a static object in application scope
+    Set Cache = Server.CreateObject("NWCTools.CApplication")
+    Set Rs = CreateObject("ADODB.Recordset")
+    
+	' Session.CreateInstance also cares for calling the InitNew method!	
+	' you must register CPPPersist.DLL (on 32 bit systems) before you run this!
+	' on 64 bit systems, it is CPPPersist64.dll to register.
+    Set testPersist =  CreateObject("Msxml2.FreeThreadedDOMDocument.6.0")
+    testPersist.loadxml "<blah>Contents</blah>"
+	Dim sXMLData
+	sXMLData=Server.MapPath(".") + "\thestuff.xml"	
+	Cache("washere") = True
+	Rs.CursorLocation = 3
+
+	'to get the recordset persisted.
+	' it is possible that this provider was not installed on Windows 2008 and higher
+	Rs.Open sXMLData, "Provider=MSPersist"
+
+	'Disconnect now	but keep the recordset still open
+	Set Rs.ActiveConnection = Nothing
+	Rs.MoveFirst
+	Set Cache("CachedRs") = Rs
+	Set Cache("TestPersist") = testPersist
+	
+
+End Sub
+
+
+</script>

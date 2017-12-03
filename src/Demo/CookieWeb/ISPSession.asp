@@ -6,6 +6,7 @@ On Error Resume Next
 ' Note, we require Server.CreateObject.
 Set Session = Server.CreateObject("NWCTools.CSession")
 Set Cache = Server.CreateObject("NWCTools.CApplication")
+    
 Cache("count") = CLng(Cache("count") + 1)
 'Cache.RemoveKey "count" 'bu
 if Err.Number = &H80020009 Then

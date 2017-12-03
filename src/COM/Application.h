@@ -126,7 +126,6 @@ public:
 	
 	STDMETHOD(get_KeyExists)(BSTR Key, VARIANT_BOOL *pVal);
 	STDMETHOD(get_KeyType)(BSTR Key, SHORT* pVal);
-	STDMETHOD(get_Contents)(IVariantDictionary2 ** ppVal);
 
 	// public but not exposed to IDL
 	////IDatabase
@@ -150,7 +149,7 @@ private:
 	///<summary> 
 	/// finds element by specified key if result is S_FALSE it is not found
 	///</summary>
-	STDMETHODIMP LocalFind(BSTR Key, ElementModel* found);
+
 	STDMETHODIMP IsDirty(BOOL* pRet);
 	//std:vector<byte> probably semantically is better, instead of std::string
 	STDMETHODIMP ReadString(std::istream& stream, BSTR* outputString);
@@ -164,7 +163,6 @@ private:
 	STDMETHODIMP ConvertVStreamToObject(ElementModel& val);
 
 	
-	STDMETHODIMP ReadConfigFromWebConfig();
 	STDMETHODIMP InitializeDataSource();
 	STDMETHODIMP PersistApplication();
 	STDMETHODIMP EnsureBuffer(INT newBuffer);

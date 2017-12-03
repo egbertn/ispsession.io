@@ -58,6 +58,7 @@
     <Content Include="Default.aspx" />
     <Content Include="Default_Content.asp" />
     <Content Include="empty.asp" />
+    <Content Include="global.asa" />
     <Content Include="Global.asax" />
     <Content Include="ISPSession.asp" />
     <Content Include="js\site.js" />

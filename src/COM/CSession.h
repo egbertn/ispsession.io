@@ -7,7 +7,7 @@
 /* at Tue Jan 19 04:14:07 2038
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0622 
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -101,7 +101,7 @@ typedef struct NWCSession NWCSession;
 #define __NWCApplication_FWD_DEFINED__
 
 #ifdef __cplusplus
-typedef class CApplication NWCApplication;
+typedef class NWCApplication NWCApplication;
 #else
 typedef struct NWCApplication NWCApplication;
 #endif /* __cplusplus */
@@ -614,9 +614,6 @@ EXTERN_C const IID IID_IApplicationCache;
             /* [in] */ BSTR Key,
             /* [retval][out] */ SHORT *pVal) = 0;
         
-        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Contents( 
-            /* [retval][out] */ IVariantDictionary2 **ppProperties) = 0;
-        
         virtual /* [hidden] */ HRESULT STDMETHODCALLTYPE OnStartPage( 
             /* [in] */ IUnknown *p) = 0;
         
@@ -738,10 +735,6 @@ EXTERN_C const IID IID_IApplicationCache;
             /* [in] */ BSTR Key,
             /* [retval][out] */ SHORT *pVal);
         
-        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Contents )( 
-            IApplicationCache * This,
-            /* [retval][out] */ IVariantDictionary2 **ppProperties);
-        
         /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
             IApplicationCache * This,
             /* [in] */ IUnknown *p);
@@ -823,9 +816,6 @@ EXTERN_C const IID IID_IApplicationCache;
 
 #define IApplicationCache_get_KeyType(This,Key,pVal)	\
     ( (This)->lpVtbl -> get_KeyType(This,Key,pVal) ) 
-
-#define IApplicationCache_get_Contents(This,ppProperties)	\
-    ( (This)->lpVtbl -> get_Contents(This,ppProperties) ) 
 
 #define IApplicationCache_OnStartPage(This,p)	\
     ( (This)->lpVtbl -> OnStartPage(This,p) ) 
@@ -1293,7 +1283,7 @@ EXTERN_C const CLSID CLSID_NWCApplication;
 #ifdef __cplusplus
 
 class DECLSPEC_UUID("D64ABC73-3B0E-4E85-92CD-215B03CAC998")
-CApplication;
+NWCApplication;
 #endif
 #endif /* __ISPCSession_LIBRARY_DEFINED__ */
 

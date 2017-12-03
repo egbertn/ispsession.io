@@ -21,8 +21,6 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 		this->Error(L"Could not get ASP Scripting context", this->GetObjectCLSID(), hr);
 		return hr;
 	}
-	//if (FAILED(m_pScriptContext->get_Request(&m_piRequest))) return E_FAIL;
-	if (FAILED(m_pScriptContext->get_Response(&m_piResponse))) return E_FAIL;
 	if (FAILED(m_pScriptContext->get_Server(&m_piServer))) return E_FAIL;
 	hr = ReadConfigFromWebConfig();
 	if (FAILED(hr))
@@ -37,7 +35,6 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 	{
 		hr = E_FAIL;
 		Error(L"Application: Redis Server is not running.", this->GetObjectCLSID(), hr);
-		m_piResponse->Write(CComVariant(L"Application: Redis Server is not running."));
 	}
 //#ifndef Demo
 //	if (licenseOK == false)
@@ -480,7 +477,6 @@ STDMETHODIMP CApplication::ReadConfigFromWebConfig() throw()
 STDMETHODIMP CApplication::InitializeDataSource() throw()
 {
 	PCWSTR location = L"InitializeDataSource";
-	int port = 5578;
 	HRESULT hr = S_OK;
 
 	CComBSTR retVal, configFile(L"/web.Config");
@@ -580,7 +576,6 @@ STDMETHODIMP CApplication::ReadString(std::istream& pStream, BSTR *retval) throw
 {
 	HRESULT hr = S_OK;
 	UINT lTempSize = 0;
-	auto pRet = new std::string();
 	
 	// size excludes the terminating zero!
 	pStream.read((char*)&lTempSize, sizeof(UINT));
@@ -929,9 +924,9 @@ STDMETHODIMP CApplication::WriteString(BSTR TheVal, IStream* pStream) throw()
 		else
 		{
 			
-			auto result = EnsureBuffer(byteswritten);
+			hr = EnsureBuffer(byteswritten);
 			
-			UINT test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti.m_pData, byteswritten, nullptr, nullptr);
+		    test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti.m_pData, byteswritten, nullptr, nullptr);
 			if (test > 0)
 			{
 				test--; //exclude terminating zero				
@@ -1293,10 +1288,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 
 	return hr;
 }
-STDMETHODIMP CApplication::get_Contents(IVariantDictionary2 **ppVal) throw()
-{
-	return E_NOTIMPL;
-}
+
 /* IDatabase implementation*/
 
 STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
@@ -1308,7 +1300,7 @@ STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
 	{
 		std::string retVal;
 		// write the complete string including the leading 4 bytes
-		HRESULT hr = WriteString(Key, binaryString);
+	    hr = WriteString(Key, binaryString);
 		//write variant type
 		VARTYPE vtype = pos->second.val.vt;
 		if (SUCCEEDED(hr))

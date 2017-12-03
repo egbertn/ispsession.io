@@ -55,7 +55,7 @@ public:
 };
 
 class ATL_NO_VTABLE CApplication :
-	public CComObjectRootEx<CComMultiThreadModel>,
+	public CComObjectRoot,
 	public CComCoClass<CApplication, &CLSID_NWCApplication>,
 	public IDispatchImpl<IApplicationCache, &IID_IApplicationCache, &LIBID_ISPCSession>,
 	public ISupportErrorInfoImpl<&IID_IApplicationCache>,
@@ -86,17 +86,13 @@ public:
 	}
 	void FinalRelease() throw()
 	{
-		m_piResponse.Release();
 		m_piServer.Release();
-		m_piRequest.Release();
 		m_pScriptContext.Release();
 		delete dlm;
 
 	}
 private:
 	CComPtr<IScriptingContext> m_pScriptContext;
-	CComPtr<IRequest> m_piRequest;
-	CComPtr<IResponse> m_piResponse;
 	CComPtr<IServer> m_piServer;
 	CRedLock  * dlm;
 	CLock my_lock;

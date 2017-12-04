@@ -779,7 +779,7 @@ namespace ispsession.io
                         if (isComObject)
                         {
                             TraceInformation("Ser Com Object type {0}", TraceInfo.TraceInfo ? data.GetType().FullName : null);
-                            int hr = NativeMethods.CreateStreamOnHGlobal(IntPtr.Zero, true, out IStream pstr);
+                            int hr = NativeMethods.CreateStreamOnHGlobal(null, true, out IStream pstr);
                             if (hr != 0)
                             {
                                 Marshal.ThrowExceptionForHR(hr);
@@ -1172,10 +1172,11 @@ namespace ispsession.io
                         {
                             return null;
                         }
+                        var posBackup = Str.Position;
                         bool isNetObject = Str.ReadByte() == 99 && Str.ReadByte() == 55;
                         if (!isNetObject)
                         {
-                            Str.Position -= 2; //back                             
+                            Str.Position = posBackup; //back                             
                         }
                         object data;
                         EnsureMemory(bytesInStream);
@@ -1186,8 +1187,9 @@ namespace ispsession.io
                             if (!isNetObject)
                             {
                                 TraceInformation("Deser Com Object");
-                                var hglob = Marshal.AllocHGlobal(bytesInStream);
-                                Marshal.Copy(_memoryBuff, 0, hglob, bytesInStream);
+                                var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE, new IntPtr( bytesInStream));
+                                Marshal.Copy(_memoryBuff, 0, NativeMethods.GlobalLock( hglob), bytesInStream);
+                                var result =NativeMethods.GlobalUnlock(hglob);
                                 var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
                                 if (hr != 0) Marshal.ThrowExceptionForHR(hr);
                                 var uknown = new Guid("00000000-0000-0000-C000-000000000046");
@@ -1365,7 +1367,11 @@ namespace ispsession.io
             if (pStm == null || iidInterface == null) throw new ArgumentNullException("pStm");
 
             NativeMethods.ReadClassStm(pStm, out Guid clsd);
-            var typ = Marshal.GetTypeFromCLSID(clsd);
+            //var byteGuid = new byte[16];
+            //pStm.Read(byteGuid, 16, IntPtr.Zero);
+            //var clsd = new Guid(byteGuid);
+            var typ = Type.GetTypeFromCLSID(clsd);
+           // var typ = Marshal.GetTypeFromCLSID(clsd);
             var obj = Activator.CreateInstance(typ);
             var pPersist = obj as IPersistStreamInit;
             if (pPersist == null)

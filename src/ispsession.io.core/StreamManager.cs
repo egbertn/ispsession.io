@@ -1142,10 +1142,11 @@ namespace ispsession.io
                         {
                             return null;
                         }
+                        var posBackup = Str.Position;
                         bool isNetObject = Str.ReadByte() == 99 && Str.ReadByte() == 55;
                         if (!isNetObject)
                         {
-                            Str.Position -= 2; //back                             
+                            Str.Position = posBackup; //back                             
                         }
                         object data;
                         EnsureMemory(bytesInStream);

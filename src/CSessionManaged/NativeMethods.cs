@@ -5,7 +5,29 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace ispsession.io
 {
-  
+
+    internal sealed class MemHandle : SafeHandle
+    {
+        private const int GMEM_INVALID_HANDLE = 0x8000;
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        private static extern void GlobalFree(SafeHandle handle);
+        public MemHandle() : base(new IntPtr(GMEM_INVALID_HANDLE), true)
+        {
+
+        }
+        public override bool IsInvalid => base.handle == new IntPtr(GMEM_INVALID_HANDLE);
+
+        protected override bool ReleaseHandle()
+        {
+            if (!IsInvalid && !IsClosed)
+            {
+                GlobalFree(this);              
+                this.SetHandleAsInvalid();
+                return true;
+            }
+            return false;
+        }
+    }
     internal static class NativeMethods
     {
         [Flags]
@@ -47,7 +69,29 @@ namespace ispsession.io
             ComputerNamePhysicalDnsDomain,
             ComputerNamePhysicalDnsFullyQualified
         }
-         
+        internal enum AllocFlags
+        { GHND = GMEM_MOVABLE | GMEM_ZEROINIT,
+            GMEM_FIXED = 0x0,
+            GMEM_MOVABLE = 0x0002,
+            GMEM_ZEROINIT = 0x0040,
+            GPTR = GMEM_FIXED | GMEM_ZEROINIT
+        }
+
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        internal static extern  MemHandle GlobalAlloc(AllocFlags flags, [MarshalAs(UnmanagedType.SysInt)] IntPtr size);
+
+        [DllImport("Kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.SysInt)]
+        internal static extern UIntPtr GlobalSize(MemHandle handle);
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        internal static extern IntPtr GlobalLock(MemHandle handle);
+
+        [DllImport("Kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GlobalUnlock(MemHandle handle);
+
+    
+
         [DllImport("Netapi32.dll")]
         internal unsafe static extern int NetApiBufferFree(void* Buffer);
 
@@ -91,7 +135,7 @@ namespace ispsession.io
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int OleSaveToStream(IPersistStream pPersistStream, IStream pStream);
         [DllImport("ole32.dll", ExactSpelling = true)]
-        internal static extern int CreateStreamOnHGlobal(IntPtr hGlobal, bool fDeleteOnRelease,
+        internal static extern int CreateStreamOnHGlobal(SafeHandle hGlobal, bool fDeleteOnRelease,
            out IStream ppstm);
 
         internal unsafe static double ToOaDate(DateTime value)

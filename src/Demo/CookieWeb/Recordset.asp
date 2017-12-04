@@ -44,16 +44,9 @@ End If
 <div class="well">
 <p>
 Click on a column item to sort on it. It will switch between ascending/descending sort<br/>
-To get the source code just download the demo.</p><p>
-<%
-
-If blnNew = False Then
-	Response.Write "We fetched data from Session<br/>"
-Else
-	Response.Write "We fetched data from a dbms<br/>"
-End If
-
-%>
+To get the source code just download the demo.</p>
+    <p>
+        Note: The data is cached in the Application cache and initialized in global.asa (Application_OnStart)
 </p>
 <table border="1" >
     <caption><%=Session.SessionID %></caption>

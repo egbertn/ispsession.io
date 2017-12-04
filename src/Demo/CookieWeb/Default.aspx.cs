@@ -70,6 +70,11 @@ public partial class _Default : Page
             realbig.Text = ((decimal[])Session["realbig"])[1999].ToString();
         }
         Thread.Sleep(new Random().Next(50, 500));
+        /// just a COM interop test, because we can :)
+        if (application.KeyExists("TestPersist"))
+        {
+            txtApplicationCache.Text = ((dynamic)application["TestPersist"]).SelectSingleNode("blah").text;
+        }
         //var obj = new object[100, 100];
         //for (int y = 0; y < 100; y++)
         //{
@@ -93,6 +98,6 @@ public partial class _Default : Page
         //jagged[1][1]=123;
         //Session["jagged"] = jagged;
         //Session["arraywithLBound"] = arr;
-       // Session["m"] = ' ';
+        // Session["m"] = ' ';
     }
 }

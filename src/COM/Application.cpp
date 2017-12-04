@@ -102,6 +102,11 @@ STDMETHODIMP CApplication::PersistApplication() throw()
 STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 {
 	HRESULT hr = S_OK;
+	if (Key == nullptr || ::SysStringLen(Key) == 0)
+	{
+		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
+		return E_INVALIDARG;
+	}
 	auto pos = _dictionary.find(Key);
 	if (pos == _dictionary.end())
 	{
@@ -139,6 +144,11 @@ STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal) throw()
 {
 	HRESULT hr = S_OK;
+	if (key == nullptr || ::SysStringLen(key) == 0)
+	{
+		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
+		return E_INVALIDARG;
+	}
 	auto pos = _dictionary.find(key);
 	VARIANT vDeref;
 	//VariantCopyInd smokes on this, cannot handle it.
@@ -194,6 +204,11 @@ STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal) throw()
 STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 {
 	HRESULT hr = S_OK;
+	if (key == nullptr || ::SysStringLen(key) == 0)
+	{
+		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
+		return E_INVALIDARG;
+	}
 	logModule.Write(L"putref_Item %s", key);
 	VARTYPE origType = newVal.vt;
 
@@ -258,7 +273,11 @@ STDMETHODIMP CApplication::get_Key(INT Index, BSTR* pVal) throw()
 	if (SUCCEEDED(hr))
 	{
 		if ((Index < 1) || (Index > _dictionary.size() + 1))
+		{
 			hr = E_INVALIDARG;
+			Error(L"Key Index out of range, must be within 1 and .Count() value", this->GetObjectCLSID(), hr);
+			return hr;
+		}
 		INT ct = 0; //terrible loop map has no index, so find it
 		for (auto idx = _dictionary.begin(); idx != _dictionary.end(); ++idx)
 		{
@@ -280,6 +299,11 @@ STDMETHODIMP CApplication::get_Count(PINT pVal) throw()
 
 STDMETHODIMP CApplication::get_KeyExists(BSTR Key, VARIANT_BOOL* pVal) throw()
 {
+	if (Key == nullptr || ::SysStringLen(Key) == 0)
+	{
+		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
+		return E_INVALIDARG;
+	}
 	auto pos = _dictionary.find(Key);
 	*pVal = pos == _dictionary.end() ? VARIANT_FALSE : VARIANT_TRUE;
 	return S_OK;
@@ -287,6 +311,11 @@ STDMETHODIMP CApplication::get_KeyExists(BSTR Key, VARIANT_BOOL* pVal) throw()
 
 STDMETHODIMP CApplication::get_KeyType(BSTR Key, SHORT* pVal) throw()
 {
+	if (Key == nullptr || ::SysStringLen(Key) == 0)
+	{
+		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
+		return E_INVALIDARG;
+	}
 	auto pos = _dictionary.find(Key);
 	*pVal = pos->second.val.vt;
 	return S_OK;
@@ -320,6 +349,12 @@ STDMETHODIMP CApplication::_NewEnum(IUnknown **ppRet) throw()
 STDMETHODIMP CApplication::RemoveKey(BSTR Key) throw()
 {
 	HRESULT hr = S_OK;
+	if (Key == nullptr || ::SysStringLen(Key) == 0)
+	{
+		hr = E_INVALIDARG;
+		Error(L"Key may not be empty or null", this->GetObjectCLSID(), hr);
+		return hr;
+	}
 	auto pos = _dictionary.find(Key);
 	if (pos != _dictionary.end())
 	{
@@ -898,6 +933,7 @@ STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var) throw()
 	var.val.punkVal->Release();//remove the IStream, it is not the object itself
 	hr = OleLoadFromStream(l_pIStr, IID_IUnknown, (void**)&var.val.punkVal);
 	bool doPersist2 = false;
+	
 	if (hr == E_NOINTERFACE) //IPersistStream not found!
 	{
 		doPersist2 = true;
@@ -1341,13 +1377,15 @@ STDMETHODIMP CApplication::get_KeyStates(
 	{
 		CComBSTR ansi;
 		ansi.Attach(((CComBSTR2)(*k).first).ToByteString());
-		string key((PSTR)ansi.m_str, ansi.ByteLength());
-		ansi.Empty();
-
 		if (ansi.IsEmpty())
 		{
 			logModule.Write(L"Severe error, empty key found");
-		}
+			continue;
+		}		
+		string key((PSTR)ansi.m_str, ansi.ByteLength());
+		ansi.Empty();
+
+		
 		if (k->second.IsNew == TRUE)
 		{
 			new_keys.push_back(key);

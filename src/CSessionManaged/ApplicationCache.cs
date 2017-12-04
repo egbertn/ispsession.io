@@ -114,8 +114,10 @@ namespace ispsession.io
             {
 
                 //   TraceInformation("Deser Com Object");
-                var hglob = Marshal.AllocHGlobal(bytesInStream);
-                Marshal.Copy(memoryBuff, 0, hglob, bytesInStream);
+                var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE,new IntPtr( bytesInStream));
+                Marshal.Copy(memoryBuff, 0, NativeMethods.GlobalLock( hglob), bytesInStream);
+                var size = NativeMethods.GlobalSize(hglob);
+                NativeMethods.GlobalUnlock(hglob);
                 var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
                 if (hr != 0) Marshal.ThrowExceptionForHR(hr);
 
@@ -145,7 +147,7 @@ namespace ispsession.io
                 }
                 //  TraceInformation("DeSerializing {0}", TraceInfo.TraceInfo ? data.GetType().Name : null);
             }
-            return null;
+            return data;
         }
         /// <summary>
         /// 

@@ -37,9 +37,8 @@ STDMETHODIMP CStream::Read(void* pv, ULONG cb, ULONG *pcbRead) throw()
 	{
 		return S_OK;
 	}
-
 	// Calculate bytes left and bytes to read.
-	ULONG cBytesLeft = m_ulSize.LowPart - m_iWritePos.LowPart;
+	auto cBytesLeft = m_ulSize.LowPart - m_iWritePos.LowPart;
 	ULONG cBytesRead = cb > cBytesLeft ? cBytesLeft : cb;
 	PBYTE m_pBuffer = m_alloc.m_pData;
 	// If no more bytes to retrieve return S_FALSE.
@@ -178,9 +177,61 @@ STDMETHODIMP CStream::SetSize(ULARGE_INTEGER libNewSize)  throw()
 
 	return S_OK;
 }
-STDMETHODIMP CStream::CopyTo(IStream *, ULARGE_INTEGER, ULARGE_INTEGER *, ULARGE_INTEGER *) throw()
+STDMETHODIMP CStream::CopyTo(
+	IStream*      pstm,         
+	ULARGE_INTEGER  cb,           
+	ULARGE_INTEGER* pcbRead,      
+	ULARGE_INTEGER* pcbWritten)  throw()
 {
-	return E_NOTIMPL;
+	HRESULT        hr = S_OK;
+	BYTE           tmpBuffer[512];
+	ULONG          bytesRead, bytesWritten, copySize;
+	ULARGE_INTEGER totalBytesRead;
+	ULARGE_INTEGER totalBytesWritten;
+
+
+	AtlTrace(L"(%p, %p, %d, %p, %p)\n", this, pstm,
+		cb.u.LowPart, pcbRead, pcbWritten);
+
+	if (pstm == 0)
+		return STG_E_INVALIDPOINTER;
+
+	totalBytesRead.QuadPart = 0;
+	totalBytesWritten.QuadPart = 0;
+	ULARGE_INTEGER backupWRitePos = m_iWritePos;
+	m_iWritePos.QuadPart = 0;
+
+	while (cb.QuadPart > 0 && hr == S_OK)
+	{
+		
+		copySize = min(cb.u.LowPart, sizeof(tmpBuffer));
+		hr = Read(tmpBuffer, copySize, &bytesRead);
+		if (FAILED(hr))
+			break;
+
+		totalBytesRead.QuadPart += bytesRead;
+
+		if (bytesRead)
+		{
+			hr = pstm->Write(tmpBuffer, bytesRead, &bytesWritten);
+			if (FAILED(hr))
+				break;
+
+			totalBytesWritten.QuadPart += bytesWritten;
+		}
+
+		if (bytesRead != copySize)
+			cb.QuadPart = 0;
+		else
+			cb.QuadPart -= bytesRead;
+	}
+	m_iWritePos = backupWRitePos;
+
+	if (pcbRead) pcbRead->QuadPart = totalBytesRead.QuadPart;
+	if (pcbWritten) pcbWritten->QuadPart = totalBytesWritten.QuadPart;
+
+	return hr;
+
 }
 STDMETHODIMP CStream::Commit(DWORD)  throw()
 {

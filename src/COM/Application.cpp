@@ -117,12 +117,12 @@ STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 		if (pos->second.IsSerialized == TRUE)
 		{		
 			hr = ConvertVStreamToObject(pos->second);
-			logModule.Write(L"Derializing key %s %x", Key, hr);
 		}		
-		
-		pos->second.val.punkVal->QueryInterface(&pVal->punkVal);
-		pVal->vt = origType;			
-		
+		if (hr == S_OK)
+		{
+			pos->second.val.punkVal->QueryInterface(&pVal->punkVal);
+			pVal->vt = origType;
+		}
 	}	
 	else
 	{
@@ -223,6 +223,7 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 		else
 		{
 			pos->second.IsDirty = TRUE;//going to change
+			pos->second.IsSerialized = FALSE; // do not to forget to undo, otherwise it stays 'serialized'
 		}
 		
 		CComQIPtr<IPersistStream> l_ptestForCapability(vDeref.pdispVal);
@@ -906,7 +907,7 @@ STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var) throw()
 		hr = l_pIStr->Seek(dbMove, STREAM_SEEK_CUR, nullptr);
 		hr = OleLoadFromStream2(l_pIStr, IID_IUnknown, (void**)&var.val.punkVal);
 	}
-	logModule.Write(L"OleLoadFromStream%s %x", doPersist2 ? L"2" : L"", hr);
+	logModule.Write(L"ConvertVStreamToObject%s %x", doPersist2 ? L"2" : L"", hr);
 	var.IsSerialized= FALSE; //don't deserialize next time
 	
 	
@@ -951,7 +952,7 @@ STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var) throw()
 }
 
 
-STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* binaryString) throw()
+STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* pStream) throw()
 {
 
 	LONG cBytes = 0,
@@ -988,18 +989,18 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 		descriptor.type = vtype;
 		descriptor.ElemSize = ElSize;
 		descriptor.Dims = cDims;
-		binaryString->Write((char*)&descriptor, sizeof(ARRAY_DESCRIPTOR), nullptr);
+		pStream->Write((char*)&descriptor, sizeof(ARRAY_DESCRIPTOR), nullptr);
 
 		VARTYPE vcopy = vtype & ~VT_ARRAY;
 		if (vcopy == VARENUM::VT_UNKNOWN || vcopy == VARENUM::VT_ERROR || vcopy == VARENUM::VT_VARIANT)
 		{
 			//because e.g. Redim v(1,1) TypeName(v) == "Variant()"
 			CComBSTR bogusAssemblyTypeForDotNet(L"System.Object"); //
-			WriteString(bogusAssemblyTypeForDotNet, binaryString);
+			WriteString(bogusAssemblyTypeForDotNet, pStream);
 		}
 		else //todo jagged array??
 		{
-			WriteString(nullptr, binaryString);
+			WriteString(nullptr, pStream);
 		}
 		if (psa == nullptr)//even if it is a null array, we need to write System.Object
 		{
@@ -1017,7 +1018,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 			hr = ::SafeArrayGetLBound(psa, cx, &bounds[1]);
 			hr = ::SafeArrayGetUBound(psa, cx, &bounds[0]);
 			bounds[0] = bounds[0] - bounds[1] + 1;
-			binaryString->Write(bounds, sizeof(SAFEARRAYBOUND), nullptr);
+			pStream->Write(bounds, sizeof(SAFEARRAYBOUND), nullptr);
 			psaBound[cx - 1].lLbound = bounds[1];
 			psaBound[cx - 1].cElements = bounds[0];
 			lMemSize *= bounds[0];
@@ -1039,7 +1040,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 				hr = ::SafeArrayAccessData(psa, &psadata);
 				if (hr == S_OK)
 				{
-					binaryString->Write((char*)psadata, lMemSize, nullptr);
+					pStream->Write((char*)psadata, lMemSize, nullptr);
 					::SafeArrayUnaccessData(psa);
 				}
 			}
@@ -1060,13 +1061,13 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 					{
 						auto myarray = static_cast<BSTR*>(psadata);
 						for (; els < lElements && hr == S_OK; els++)
-							hr = WriteString(myarray[els], binaryString);
+							hr = WriteString(myarray[els], pStream);
 					}
 					else if (vcopy == VT_DECIMAL)
 					{
 						auto myarray = static_cast<VARIANT*>(psadata); // ugly, but true
 						for (; els < lElements && hr == S_OK; els++)
-							hr = WriteValue(VT_DECIMAL, myarray[els], binaryString);
+							hr = WriteValue(VT_DECIMAL, myarray[els], pStream);
 					}
 					logModule.set_Logging(backup);
 					logModule.Write(L"written VT_BSTR array length=%d %x", els, hr);
@@ -1110,9 +1111,9 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 							return hr;
 						}
 						vtype = pVar->vt;
-						binaryString->Write((char*)&vtype, sizeof(VARTYPE), nullptr);
+						pStream->Write((char*)&vtype, sizeof(VARTYPE), nullptr);
 						//----- recursive call ----- keep an eye on this
-						hr = WriteValue(vtype, *pVar, binaryString);
+						hr = WriteValue(vtype, *pVar, pStream);
 
 						rgIndices[dimPointer]++;
 						//end of loop
@@ -1150,7 +1151,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 		{
 			if (psa == nullptr)
 				//handle nullptr pointer array
-				binaryString->Write(0, sizeof(int), nullptr);
+				pStream->Write(0, sizeof(int), nullptr);
 			else
 				hr = E_INVALIDARG;
 		}
@@ -1182,11 +1183,11 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 		case VT_DECIMAL:
 			//correct because decimal eats the whole variant !
 			cBytes = sizeof(DECIMAL);
-			binaryString->Write((char*)&TheVal, cBytes, nullptr);
+			pStream->Write((char*)&TheVal, cBytes, nullptr);
 			break;
 		case VT_BSTR:
 
-			hr = WriteString(TheVal.bstrVal, binaryString);
+			hr = WriteString(TheVal.bstrVal, pStream);
 			cBytes = SysStringByteLen(TheVal.bstrVal);
 			break;
 		case VT_DISPATCH: //fall through VT_UNKNOWN
@@ -1206,20 +1207,28 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 				hr = l_pIStr->Stat(&pstatstg, STATFLAG_NONAME);
 				cBytes = pstatstg.cbSize.LowPart;
 				logModule.Write(L"Streamsize %d", cBytes);
-				hr = binaryString->Write(&cBytes, sizeof(pstatstg.cbSize.LowPart), nullptr);
+				hr = pStream->Write(&cBytes, sizeof(pstatstg.cbSize.LowPart), nullptr);
 				// copy the persisted object as bytestream to the main stream		
 				l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
-				hr = l_pIStr->CopyTo(binaryString, pstatstg.cbSize, nullptr, nullptr);
-				if (FAILED(hr))
+				hr = l_pIStr->CopyTo(pStream, pstatstg.cbSize, nullptr, nullptr);
+				if (hr == E_NOTIMPL) //ISequentialStream does not support it, or just not impl.
+				{
+					ULARGE_INTEGER cb;
+					cb.QuadPart = cBytes;
+					hr = ISequentialStream_Copy(l_pIStr, pStream, cb, nullptr, nullptr);
+				}
+			    if (FAILED(hr))
 				{
 					logModule.Write(L"FATAL: cannot copy stream %x", hr);
+				
+					Error(L"While trying to serialize this object an error ocurred", this->GetObjectCLSID(), hr);
 				}
 			}
 			else
 			{
 				// indicate zero bytes
 				cBytes = 0;
-				binaryString->Write((char*)&cBytes, sizeof(DWORD), nullptr);
+				pStream->Write((char*)&cBytes, sizeof(DWORD), nullptr);
 			}
 
 			break;
@@ -1229,7 +1238,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* b
 		}
 	exit: // sorry
 		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL)
-			binaryString->Write((char*)&TheVal.bVal, cBytes, nullptr);
+			pStream->Write((char*)&TheVal.bVal, cBytes, nullptr);
 		logModule.Write(L"Simple variant size=%d", cBytes);
 	}
 

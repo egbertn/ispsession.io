@@ -216,12 +216,12 @@ public:
 			if (newKeys.size() > 0)
 			{
 				appkeyPrefix.resize(appkeyLen);
-				SerializeKey(newKeys, pDictionary, multipleSet, appkeyPrefix);
+				SerializeKeys(newKeys, pDictionary, multipleSet, appkeyPrefix);
 			}
 			if (changedKeys.size() > 0)
 			{
 				appkeyPrefix.resize(appkeyLen);
-				SerializeKey(changedKeys, pDictionary, multipleSet, appkeyPrefix);			
+				SerializeKeys(changedKeys, pDictionary, multipleSet, appkeyPrefix);			
 			}
 			if (changedKeys.size() > 0 || newKeys.size() > 0)
 			{

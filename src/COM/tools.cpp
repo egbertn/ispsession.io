@@ -573,7 +573,7 @@ BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) throw()
 	return  retval;
 	
 }
-void __stdcall FreeString(BSTR * theString) throw()
+void __stdcall FreeString(__out BSTR * theString) throw()
 {
 	if (theString != NULL && *theString != NULL)
 	{
@@ -582,11 +582,62 @@ void __stdcall FreeString(BSTR * theString) throw()
 	}
 }
 
+STDMETHODIMP ISequentialStream_Copy(_In_ ISequentialStream* iface, _In_ ISequentialStream* pstm, _In_ ULARGE_INTEGER cb, _Inout_opt_ ULARGE_INTEGER* pcbRead, _Inout_opt_ ULARGE_INTEGER* pcbWritten) throw()
+{
+	HRESULT        hr = S_OK;
+	BYTE           tmpBuffer[128];
+	ULONG          bytesRead, bytesWritten, copySize;
+	ULARGE_INTEGER totalBytesRead;
+	ULARGE_INTEGER totalBytesWritten;
 
-STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix) throw()
+	AtlTrace(L"(%p, %p, %d, %p, %p)\n", iface, pstm,
+		cb.u.LowPart, pcbRead, pcbWritten);
+
+	if (iface == nullptr || pstm == nullptr)
+		return STG_E_INVALIDPOINTER;
+
+	totalBytesRead.QuadPart = 0;
+	totalBytesWritten.QuadPart = 0;
+
+	while (cb.QuadPart > 0 && hr == S_OK)
+	{
+		if (cb.QuadPart >= sizeof(tmpBuffer))
+			copySize = sizeof(tmpBuffer);
+		else
+			copySize = cb.u.LowPart;
+
+		hr = iface->Read( tmpBuffer, copySize, &bytesRead);
+		if (FAILED(hr))
+			break;
+
+		totalBytesRead.QuadPart += bytesRead;
+
+		if (bytesRead)
+		{
+			hr = pstm->Write( tmpBuffer, bytesRead, &bytesWritten);
+			if (FAILED(hr))
+				break;
+
+			totalBytesWritten.QuadPart += bytesWritten;
+		}
+
+		if (bytesRead != copySize)
+			cb.QuadPart = 0;
+		else
+			cb.QuadPart -= bytesRead;
+	}
+
+	if (pcbRead) pcbRead->QuadPart = totalBytesRead.QuadPart;
+	if (pcbWritten) pcbWritten->QuadPart = totalBytesWritten.QuadPart;
+
+	return hr;
+
+}
+STDMETHODIMP SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix) throw()
 {
 
 	string k(appkeyPrefix);
+	auto prefixSize = appkeyPrefix.size();
 	string baseString;
 	CComObject<CStream>* cseqs;
 	CComObject<CStream>::CreateInstance(&cseqs);
@@ -605,9 +656,6 @@ STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IKeySerializer* 
 
 		stream->Seek(set, STREAM_SEEK_SET, nullptr);
 
-		//only set redis keys to upper, not the serialized one
-		k.resize(appkeyPrefix.size());
-		k.append( str_toupper(keys[saddKey]));
 
 		bstrKey = keys[saddKey].c_str();
 		hr = pDictionary->SerializeKey(bstrKey, stream);
@@ -619,6 +667,7 @@ STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IKeySerializer* 
 		stream->SetSize(newpos);
 		stream->Seek(set, STREAM_SEEK_SET, nullptr); //cut off to correct length
 		ULONG read = 0;
+		baseString.resize(0);
 		while (hr == S_OK)
 		{
 			hr = stream->Read(buf, sizeof(buf), &read);
@@ -629,6 +678,9 @@ STDMETHODIMP SerializeKey(const std::vector<string> &keys, __in IKeySerializer* 
 		}
 		if (SUCCEEDED(hr))
 		{
+			//only set redis keys to upper, not the serialized one
+			k.resize(prefixSize);
+			k.append( str_toupper(keys[saddKey]));
 			cmd << k << baseString;
 			hr = S_OK;
 		}

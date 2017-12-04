@@ -1,12 +1,12 @@
 ISP Session Setup notes.
 
-Date: 02-01-2017
-Stable build: 8.0.0.143
+Date: 04-12-2017
+Stable build: 8.2.0.156
 Author: Egbert Nierop
 Contact: egbertDOTnieropATadccureDOTnl (replace DOT and AT to get correct email address)
 ============
 SETUP
-ISP Session 8.0 will not have an MSI setup .
+ISP Session 8.x will not have an MSI setup .
 To get ISP Session running do the following:
 
 1. 	Download the DEMO application http://ispsession.io/downloads/5
@@ -15,7 +15,7 @@ To get ISP Session running do the following:
 2. 	Create a folder, e.g. c:\IISTools\
 	Copy the files from ISPSessionCOM.zip into it.
 3.	Run RegisterCOM.vbs from a command prompt.
-	It will register the Dll's and eventually dowload and install the VC 12 runtime.
+	It will register the Dll's and eventually dowload and install the VC 14 runtime. This has been done to limit the DLL size.
 	Note: CSession.DLL and CSession64.dll must allow the IIS Application pool to have read/execute access.
 	In case this is not set, 'Server.CreateObject' will fail with an activation exception.
 	So, make sure that IIS AppPool\[your appPoolname] e.g. IIS AppPool\DefaultAppPool is added to the ACL of both DLL's and the config files.
@@ -24,11 +24,9 @@ To get ISP Session running do the following:
 
 
 ====== Configuration Note ======
-ISP Session for classic ASP has at least two .config files.
-	1. c:\IISTools\CSession.dll.Config
-		this file contains registration information, and global settings
-	2. \pathtoyouriisfolder\web.Config
-	web.Config/configuration/appSettings is shared with ASP.NET for settings they have in common	
+ISP Session for classic ASP shares the same appSettings section as ASP.NET.
+It reads the required values for setup.
+Note: When deployed on Azure, Classic ASP will not automatically read Azure-Dashboard-Appsettings.	
 ================================
 
 
@@ -36,6 +34,10 @@ ISP Session for classic ASP has at least two .config files.
     	that ISP Session COM (classic asp) will read.
 4. 	Modify your website in order it includes or has 
    	Server.CreateObject("NWCTools.CSession"). The demo has a simple sample.
+	For the Application cache you need this:
+        Server.CreateObject("NWCTools.CApplication")
+        WARNINGS: 1) Do register these objects using COM+
+		2) Do not leave out Server.CreateObject. CreateObject alone, will not work.
 5.	Disable the integrated IIS 6+ session state. This can be done on the inetmgr.exe, configuring the website that you want to test.
 	Or else, use the page level meta <%@enablesessionstate=false %>	
 6. 	Install Redis if you have no Redis server instance. 

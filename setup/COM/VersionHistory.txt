@@ -1,0 +1,32 @@
+
+8.0.0.x anything before 8.0 was SQL based and therefore not relevant. ISP Session has a history back to 2001.
+	8.0.0.x uses now a Redis server to store session state. It is compatible with a .NET Session combined with ISP Session .NET
+8.0.0.144
+Now, ISP Session will check an environment variable for the REDIS connection string.
+e.g. if you have a redis connection string, defined as environment variable (system or user) named REDIS_SERVER
+it will be retrieved. Anything else which is not environment variable, must be a valid connection string.
+<add key="ispsession_io:DataSource" value="REDIS_SERVER" />    
+
+8.0.0.149 password and database now correctly parsed from connection string.
+8.2.0.151. New class CApplication, which functions as a global cache.
+Set Cache = Server.CreateObject("NWCTools.CApplication")
+
+The following methods are supported
+Cache("key") = variant
+Set Cache("key") = ObjectInstance 
+
+MyKey = Cache.Key(1) 'returns e.g. "counter"
+For Each k in Cache
+    Response.Write Cache(k)
+Next
+Cache.RemoveKey "counter"
+Cache.RemoveAll ' removes all keys
+Cache.LockKey "counter" ' not yet implemented
+Cache.UnlockKey "counter" 'not yet implemented
+Cache.ExpireKeyAt "counter", 1000 ' 1000 ms=1 second
+If Cache.KeyExists("counter") THen ...
+VarKeyType = Cache.KeyType("counter") 'e.g. vbLong = 3
+
+8.2.0.156
+Initializing cache settings, using Application_Start within global.asa
+now is (a)tested.

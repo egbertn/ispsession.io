@@ -138,28 +138,29 @@ namespace ispsession.io
         internal static extern int CreateStreamOnHGlobal(SafeHandle hGlobal, bool fDeleteOnRelease,
            out IStream ppstm);
 
-        internal unsafe static double ToOaDate(DateTime value)
-        {
-            _SYSTEMTIME st;
+        //internal unsafe static double ToOaDate(DateTime value)
+        //{
+        //    _SYSTEMTIME st;
 
-            st.wYear = (short)value.Year;
-            st.wMonth = (short)value.Month;
-            st.wDay = (short)value.Day;
-            st.wHour = (short)value.Hour;
-            st.wMinute = (short)value.Minute;
-            st.wSecond = (short)value.Second;
-            st.wMilliseconds = (short)value.Millisecond;
+        //    st.wYear = (short)value.Year;
+        //    st.wMonth = (short)value.Month;
+        //    st.wDay = (short)value.Day;
+        //    st.wHour = (short)value.Hour;
+        //    st.wMinute = (short)value.Minute;
+        //    st.wSecond = (short)value.Second;
+        //    st.wMilliseconds = (short)value.Millisecond;
 
-            double d;
-            NativeMethods.SystemTimeToVariantTime(&st, &d);
-            return d;
-        }
-        internal unsafe static DateTime FromOADate(double d)
-        {
-            _SYSTEMTIME st;
-            NativeMethods.VariantTimeToSystemTime(d, &st);
-            return new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-        }
+        //    double d;
+        //    NativeMethods.SystemTimeToVariantTime(&st, &d);
+        //    return d;
+        //}
+        //internal unsafe static DateTime FromOADate(double d)
+        //{
+            
+        //    _SYSTEMTIME st;
+        //    NativeMethods.VariantTimeToSystemTime(d, &st);
+        //    return new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+        //}
         const int ErrorSuccess = 0;
         public sealed class JoinInformation
         {

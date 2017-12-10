@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ispsession.io
@@ -10,7 +11,7 @@ namespace ispsession.io
         private readonly SessionAppSettings _settings;
         private const string CannotInitiateSession = "Cannot Initiate Session now";
         private ISPSessionStateItemCollection2 _sessionItems;
-        private readonly Func<ISPSession, bool> _tryEstablish;        
+        private readonly Func<ISPSession, bool> _tryEstablish;
         //TODO: parse this flag
         private readonly bool _isReadonly;
         private readonly object locker = new object();
@@ -24,31 +25,28 @@ namespace ispsession.io
         private int _timeOut;
         internal ISPSession(string sessionKey, Func<ISPSession, bool> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
         {
-            if(settings == null)
+            if (settings == null)
             {
-                throw new ArgumentNullException(nameof(settings),"SessionAppSettings must be provided");
+                throw new ArgumentNullException(nameof(settings), "SessionAppSettings must be provided");
             }
             if (string.IsNullOrEmpty(settings.DatabaseConnection))
             {
                 throw new InvalidOperationException("SessionAppSettings.DataBaseConnection not given");
 
             }
-            if ((settings.EnableLogging & 3)== 3)
+            if ((settings.EnableLogging & 3) == 3)
             {
                 StreamManager.TraceInfo.TraceInfo = true;
                 StreamManager.TraceInfo.TraceError = true;
             }
-            if (tryEstablish == null)
-            {
-                throw new ArgumentNullException(nameof(tryEstablish));
-            }
-            _tryEstablish = tryEstablish;
-            _settings = settings;           
+
+            _tryEstablish = tryEstablish ?? throw new ArgumentNullException(nameof(tryEstablish));
+            _settings = settings;
             _isNew = isNewSessionKey;
             _timeOut = _settings.SessionTimeout;
             _liquid = _settings.Liquid;
             _reEntrance = _settings.ReEntrance;
-            _sessionItems =  new ISPSessionStateItemCollection2() { SessionID = sessionKey };            
+            _sessionItems = new ISPSessionStateItemCollection2() { SessionID = sessionKey };
         }
 
         private void InitItems(ISPSessionStateItemCollection items)
@@ -57,7 +55,7 @@ namespace ispsession.io
             {
                 //we must avoid a second initialisation, which occurs outside our MVC View (e.g.) or API controlller
                 // when e.g. a javascript is loaded. ASP.NET core runs all middleware thus, the session as well
-                
+
                 // when the session is abandoned, we must deal with it as if new
                 if (items == null)
                 {
@@ -67,10 +65,10 @@ namespace ispsession.io
                 }
                 _wasLoaded = true;
                 this._sessionItems = items.Items;
-                this._sessionItems.IsNew = _isNew;                
+                this._sessionItems.IsNew = _isNew;
                 this._sessionItems.Timeout = _timeOut;
                 this._sessionItems.IsReadOnly = _isReadonly;
-                
+
             }
         }
         private void CheckLoad()
@@ -86,7 +84,7 @@ namespace ispsession.io
                     lock (locker)
                     {
                         _wasLoaded = true;
-                        LoadAsync().Wait();
+                        LoadAsync().GetAwaiter().GetResult();
                     }
                 }
             }
@@ -100,7 +98,7 @@ namespace ispsession.io
             }
 
             set
-            {              
+            {
                 CheckLoad();
                 _sessionItems[name] = value;
             }
@@ -109,7 +107,7 @@ namespace ispsession.io
         public object this[int index]
         {
             get
-            {               
+            {
                 CheckLoad();
                 return _sessionItems[index];
             }
@@ -167,7 +165,7 @@ namespace ispsession.io
             get
             {
                 CheckLoad();
-                return _sessionItems.Keys;                
+                return _sessionItems.Keys;
             }
         }
 
@@ -211,8 +209,8 @@ namespace ispsession.io
             _isAbandoned = true;
             _isAbandoned = false;
             _sessionItems.Clear();
-            
-            CSessionDL.SessionRemove(_settings, SessionID);            
+
+            CSessionDL.SessionRemove(_settings, SessionID);
         }
 
         public void Add(string name, object value)
@@ -262,14 +260,14 @@ namespace ispsession.io
             return _sessionItems.GetEnumerator();
         }
 
-        public Task LoadAsync()
+        public async Task LoadAsync()
         {
             if (_wasLoaded == false)
             {
-                this.InitItems(CSessionDL.SessionGet(_settings, this.SessionID));                
-                
+                this.InitItems(await CSessionDL.SessionGetAsync(_settings, this.SessionID));
+
             }
-            return Task.FromResult(0);
+           
         }
 
         public void Remove(string key)
@@ -300,8 +298,8 @@ namespace ispsession.io
         {
             CheckLoad();
 
-            value = null;            
-            if (_sessionItems[key]!= null && _sessionItems[key].GetType() == typeof(byte[]))
+            value = null;
+            if (_sessionItems[key] != null && _sessionItems[key].GetType() == typeof(byte[]))
             {
                 value = (byte[])_sessionItems[key];
                 return true;
@@ -328,6 +326,19 @@ namespace ispsession.io
             get { return _liquid; }
             set { _liquid = value; }
         }
-
+        //
+        // Summary:
+        //     Store the session in the data store. This may throw if the data store is unavailable.
+        public  Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return CommitAsync();
+        }
+        //
+        // Summary:
+        //     Load the session from the data store. This may throw if the data store is unavailable.
+        public  Task LoadAsync(CancellationToken cancellationToken = default(CancellationToken))
+        {
+            return LoadAsync();
+        }
     }
 }

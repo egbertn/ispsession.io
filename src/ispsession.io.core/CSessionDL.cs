@@ -4,6 +4,11 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.IO.Compression;
+using ispsession.io.core.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
 namespace ispsession.io
 {
     /// <summary>
@@ -22,7 +27,7 @@ namespace ispsession.io
         }
         private static readonly Lazy<ConfigurationOptions> configOptions = new Lazy<ConfigurationOptions>(() =>
         {
-            var appSettings = EndPoint == null ? new[] { "localhost:6379" } : EndPoint;//TODO
+            var appSettings = EndPoint ?? (new[] { "localhost:6379" });//TODO
 
             var configOptions = new ConfigurationOptions()
             {
@@ -40,13 +45,78 @@ namespace ispsession.io
         private static readonly Lazy<ConnectionMultiplexer> conn = new Lazy<ConnectionMultiplexer>(
             () => ConnectionMultiplexer.Connect(configOptions.Value));
 
-        private static ConnectionMultiplexer SafeConn
+        internal static ConnectionMultiplexer SafeConn
         {
             get
             {
                 return conn.Value;
             }
         }
+        internal static async Task ApplicationGet(IDatabase database, string appKey, IKeySerializer pDictionary)
+        {
+            var appkey = appKey.ToUpperInvariant();
+            var keymembers = await database.SetMembersAsync(appkey);
+            var keyCount = keymembers.Length;
+            if (keyCount > 0)
+            {
+                var values = await database.StringGetAsync(keymembers.Select(s => (RedisKey)(string)s).ToArray());
+                for (var x = 0; x < keyCount; x++)
+                {
+                    if (!values[x].IsNullOrEmpty)
+                    {
+                        pDictionary.DeserializeKey(values[x]);
+                    }
+                }
+            }
+
+        }
+
+        internal static async Task ApplicationSave(IDatabase database,
+                                                string appKey, IKeySerializer pDictionary,
+                                                TimeSpan totalRequestTime)
+        {
+            var appkey = appKey.ToUpperInvariant();
+            var appkeyPrefix = appkey + ":";
+            var setKey = (RedisKey)appkey;
+
+            pDictionary.KeyStates(out var changedKeys, out var newKeys, out var otherKeys, out var expireKeys, out var removedKeys);
+            if (newKeys.Count > 0 || changedKeys.Count > 0 || removedKeys.Count > 0 || expireKeys.Count > 0)
+            {
+                var transaction = database.CreateTransaction();
+                if (newKeys.Count > 0)
+                {
+                    await database.SetAddAsync(setKey, newKeys.Select(s => (RedisValue)(appkeyPrefix + s.ToUpperInvariant())).ToArray(), CommandFlags.FireAndForget);
+                }
+
+                if (removedKeys.Count > 0)
+                {
+                   await database.SetRemoveAsync(setKey, removedKeys.Select(s => (RedisValue)(appkeyPrefix + s.ToUpperInvariant())).ToArray(), CommandFlags.FireAndForget);
+                }
+                //KVP is a struct, therefore, values are copied by value, not by reference 
+                //make sure to use the least amount of mem footprint
+                var multipleSet = new KeyValuePair<RedisKey, RedisValue>[newKeys.Count + changedKeys.Count];
+
+                int ct = 0;
+                foreach (var key in newKeys.Concat(changedKeys))
+                {
+                    multipleSet[ct++] = new KeyValuePair<RedisKey, RedisValue>(appkeyPrefix + key.ToUpperInvariant(), pDictionary.SerializeKey(key));
+                }
+
+                if (multipleSet.Length > 0)
+                {
+                    await database.StringSetAsync(multipleSet, When.Always, CommandFlags.FireAndForget);
+                }
+                if (expireKeys.Count > 0)
+                {
+                    foreach (var key in expireKeys)
+                    {
+                        database.KeyExpire(key.Item1, TimeSpan.FromMilliseconds(key.Item2), CommandFlags.FireAndForget);
+                    }
+                }
+               await transaction.ExecuteAsync(CommandFlags.FireAndForget);
+            }
+        }
+
         internal static IDatabase GetDatabase(SessionAppSettings settings)
         {
             setEndPoint(settings.DatabaseConnection);
@@ -78,14 +148,14 @@ namespace ispsession.io
         /// </summary>
         /// <param name="id"></param>
         /// <param name="SessionId">assumption SessionId is valid</param>
-        internal static ISPSessionStateItemCollection SessionGet(SessionAppSettings settings, string SessionId)
+        internal static async Task< ISPSessionStateItemCollection> SessionGetAsync(SessionAppSettings settings, string SessionId)
         {
             var db = CSessionDL.GetDatabase(settings);
             var key = settings.GetKey(SessionId);
             var ms = default(Stream);
             try
             {
-                var data = db.StringGet(key); ;
+                var data = await db.StringGetAsync(key); ;
                 if (data.IsNull)
                 {
                     return null;// session not found
@@ -123,7 +193,7 @@ namespace ispsession.io
                 //try again, but now without unzipping
                 var cloned = settings.Clone();
                 cloned.Compress = false;
-                var retVal = SessionGet(cloned, SessionId);
+                var retVal = await SessionGetAsync(cloned, SessionId);
                 return retVal;
             }
             catch (Exception ex)
@@ -142,11 +212,10 @@ namespace ispsession.io
         /// <summary>
         /// saves session and settings. If readonly, will only set expiration
         /// </summary>        
-        internal static void SessionSave(SessionAppSettings settings, ISPSessionStateItemCollection2 state, PersistMetaData meta) //, 
+        internal static async Task SessionSave(SessionAppSettings settings, ISPSessionStateItemCollection2 state, PersistMetaData meta) //, 
         {
-            int zLen = 0;
 
-            var contents = PersistUtil.LocalContents(state, out zLen, settings.Compress);
+            var contents = PersistUtil.LocalContents(state, out int zLen, settings.Compress);
             var contLen = contents.Length;
             meta.ZLen = zLen;
             Array.Resize(ref contents, contLen + meta.SizeofMeta);
@@ -165,12 +234,12 @@ namespace ispsession.io
                 {
                     if (!state.IsNew)
                     {
-                        db.KeyExpire(key, ts, CommandFlags.FireAndForget);
+                       await db.KeyExpireAsync(key, ts, CommandFlags.FireAndForget);
                     }
                 }
                 else
                 {
-                    db.StringSet(key, contents, ts, When.Always, CommandFlags.FireAndForget);
+                    await db.StringSetAsync(key, contents, ts, When.Always, CommandFlags.FireAndForget);
                 }
             }
             catch (Exception ex)

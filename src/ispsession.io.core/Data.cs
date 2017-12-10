@@ -3,6 +3,14 @@ using System.Runtime.InteropServices;
 
 namespace ispsession.io
 {
+    internal class ElementModel
+    {
+        internal bool IsNew { get; set; }
+        internal bool IsDirty { get; set; }
+        internal bool IsSerialized { get; set; }
+        internal int ExpireAt { get; set; }
+        internal object Value { get; set; }
+    }
     public struct DBTIMESTAMP
     {
         public DBTIMESTAMP(bool bogus = false)
@@ -175,17 +183,17 @@ namespace ispsession.io
         //[FieldOffset(8)]
         //internal tagDECIMAL decVal;
     }
-  //  [StructLayout(LayoutKind.Sequential, Size =16)]
-    internal struct tagDECIMAL
-    {
-        public ushort wReserved;
-        /// Specifies the number of digits to the right of the decimal point and ranges from 0 to 28.
-        public byte scale;
-        public byte sign; //0x80=negative
-        public int Hi32;
-        public int Lo32;
-        public int Mid32;
-    }
+  ////  [StructLayout(LayoutKind.Sequential, Size =16)]
+  //  internal struct tagDECIMAL
+  //  {
+  //      public ushort wReserved;
+  //      /// Specifies the number of digits to the right of the decimal point and ranges from 0 to 28.
+  //      public byte scale;
+  //      public byte sign; //0x80=negative
+  //      public int Hi32;
+  //      public int Lo32;
+  //      public int Mid32;
+  //  }
     internal struct _SYSTEMTIME
     {
         internal short wYear;

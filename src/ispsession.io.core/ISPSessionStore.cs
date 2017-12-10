@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using ispsession.io.core.Interfaces;
 
 namespace ispsession.io.Store
 {
@@ -33,6 +34,13 @@ namespace ispsession.io.Store
                 throw new ArgumentOutOfRangeException(nameof(settings.SessionTimeout), "SessionTimeout is zero or negative, which is not supported");
             }
             return new ISPSession(sessionKey, tryEstablish,  isNewSessionKey, settings);
+        }
+
+        public IApplicationCache Create(SessionAppSettings settings)
+        {
+            var appCache = new ApplicationCache(settings);
+           
+            return appCache;
         }
     }
 }

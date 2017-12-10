@@ -202,10 +202,6 @@ namespace ispsession.io
             return true;
         }       
 
-        public void RemoveSessionID(HttpContext context)
-        {
-            context.Response.Cookies.Delete(_settings.CookieName);
-        }
-
+        
     }
 }

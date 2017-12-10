@@ -6,9 +6,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Globalization;
 using System.Runtime.InteropServices.ComTypes;
-#if NET462 || NET463
 using System.Runtime.Serialization.Formatters.Binary;
-#endif
+
 using System.Reflection;
 
 namespace ispsession.io
@@ -431,11 +430,13 @@ namespace ispsession.io
 #endif
         internal decimal ReadCurrency()
         {
-            return NativeMethods.FromOACurrency(ReadInt64());
+            return Decimal.FromOACurrency(ReadInt64());
+          //  return NativeMethods.FromOACurrency(ReadInt64());
         }
         internal void WriteCurrency(decimal value)
-        {          
-            WriteInt64(value.ToOACurrency());
+        {
+          //  Decimal.ToOACurrency(value);
+            WriteInt64(Decimal.ToOACurrency(value));
         }
         internal bool ReadBoolean()
         {
@@ -500,11 +501,13 @@ namespace ispsession.io
     
         internal DateTime ReadDateTime()
         {
-            return NativeMethods.FromOADate(ReadDouble());
+            return DateTime.FromOADate(ReadDouble());
+           // return NativeMethods.FromOADate(ReadDouble());
         }
         internal void WriteDateTime(DateTime value)
         {
-            WriteDouble(NativeMethods.ToOaDate(value));
+            // WriteDouble(NativeMethods.ToOaDate(value));
+            WriteDouble(value.ToOADate());
         }
         /// <summary>
         /// 
@@ -783,18 +786,23 @@ namespace ispsession.io
                     case VarEnum.VT_ERROR:
                     case VarEnum.VT_VARIANT: //object .NET class
                     case VarEnum.VT_UNKNOWN:
+                        if (data is byte[] bts)
+                        {
+                            WriteInt32(bts.Length);//first the length of the blob
+                            Str.Write(bts, 0, bts.Length);//second the blob itself
+                            TraceInformation("COM object written bytesize={0} already serialized", bts.Length);
+                            break;
+                        }
                         bool isComObject = isComObject = Marshal.IsComObject(data) && vT != VarEnum.VT_ERROR;
                         if (isComObject)
                         {
                             TraceInformation("Ser Com Object type {0}", TraceInfo.TraceInfo ? data.GetType().FullName : null);
-                            IStream pstr;
-                            int hr = NativeMethods.CreateStreamOnHGlobal(IntPtr.Zero, true, out pstr);
+                            int hr = NativeMethods.CreateStreamOnHGlobal(null, true, out IStream pstr);
                             if (hr != 0)
                             {
                                 Marshal.ThrowExceptionForHR(hr);
                             }
-                            var persist = data as IPersistStream;
-                            if (persist != null)
+                            if (data is IPersistStream persist)
                             {
                                 hr = NativeMethods.OleSaveToStream(persist, pstr);
                                 Marshal.ReleaseComObject(persist);
@@ -807,8 +815,7 @@ namespace ispsession.io
                             //Try IPersistStreamInit
                             else
                             {
-                                var persistInit = data as IPersistStreamInit;
-                                if (persistInit != null)
+                                if (data is IPersistStreamInit persistInit)
                                 {
                                     OleSaveToStream2(persistInit, pstr);
                                     Marshal.ReleaseComObject(persistInit);
@@ -822,8 +829,7 @@ namespace ispsession.io
                                 }
                             }
                             pstr.Commit(0);//STGC_DEFAULT
-                            System.Runtime.InteropServices.ComTypes.STATSTG stats;
-                            pstr.Stat(out stats, 1);//STATFLAG_NONAME
+                            pstr.Stat(out System.Runtime.InteropServices.ComTypes.STATSTG stats, 1);//STATFLAG_NONAME
                             var streamLen = (int)stats.cbSize;
                             EnsureMemory(streamLen);
                             pstr.Seek(0, 0, IntPtr.Zero);//Position = 0
@@ -835,13 +841,15 @@ namespace ispsession.io
                             Str.Write(_memoryBuff, 0, streamLen);//second the blob itself
                             TraceInformation("COM object written bytesize={0}", streamLen);
                         }
-#if NET462 || NET463
+
                         else if (data.GetType().IsSerializable)
                         {
-                            
-                            var bFormatter = new BinaryFormatter();
-                            bFormatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
-                            bFormatter.TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded;
+
+                            var bFormatter = new BinaryFormatter
+                            {
+                                AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple,
+                                TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded
+                            };
                             using (var serializedObject = new MemoryStream())
                             {
                                 bFormatter.Serialize(serializedObject, data);
@@ -854,12 +862,13 @@ namespace ispsession.io
                                 serializedObject.WriteTo(Str);
                                 TraceInformation(".NET object written bytesize={0}, name={1}", streamLen, TraceInfo.TraceInfo ? data.GetType().Name : null);
                             }
-#else
-                        else
-                        {
-                            throw new NotSupportedException("Binary Serialisation (e.g. BinaryFormatter) is only supported when targeting NET461-NET463. Try alternate serialisation, e.g. as JSON string");
-#endif
                         }
+
+                        //else
+                        //{
+                        //    throw new NotSupportedException("Binary Serialisation (e.g. BinaryFormatter) is only supported when targeting NET461-NET463. Try alternate serialisation, e.g. as JSON string");
+
+                        //}
                         break;
                     default:
                         throw new NotSupportedException(string.Format("this type VarEnum = {0} is not (yet?) supported", vT));
@@ -1104,11 +1113,9 @@ namespace ispsession.io
                     case VarEnum.VT_UI2:
                         return ReadChar();
                     case VarEnum.VT_NULL:
-#if NET462 || NET463
+
                         return System.DBNull.Value;
-#else
-                        return DBNull.Value;
-#endif
+
                     case VarEnum.VT_EMPTY:
                         return null;
                     case VarEnum.VT_BOOL:
@@ -1155,10 +1162,10 @@ namespace ispsession.io
                         if (!isNetObject)
                         {
                             TraceInformation("Deser Com Object");
-                            var hglob = Marshal.AllocHGlobal(bytesInStream);
-                            Marshal.Copy(_memoryBuff, 0, hglob, bytesInStream);
-                            IStream pstr;
-                            var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out pstr);
+                            var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE, new IntPtr(bytesInStream));                           
+                            Marshal.Copy(_memoryBuff, 0, NativeMethods.GlobalLock(hglob), bytesInStream);
+                            var result = NativeMethods.GlobalUnlock(hglob);
+                            var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
                             if (hr != 0) Marshal.ThrowExceptionForHR(hr);
                             var uknown = new Guid("00000000-0000-0000-C000-000000000046");
 
@@ -1173,19 +1180,19 @@ namespace ispsession.io
                         }
                         else // it is a .NET serializable object
                         {
-#if NET462 || NET463
+
                             TraceInformation("deser .NET");
-                            var bFormatter = new BinaryFormatter();
-                            bFormatter.TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded;
-                            bFormatter.AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple;
+                            var bFormatter = new BinaryFormatter
+                            {
+                                TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded,
+                                AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple
+                            };
                             using (var mem = new MemoryStream(_memoryBuff, 0, bytesInStream))
                             {
                                 data = bFormatter.Deserialize(mem);
                             }
                             TraceInformation("DeSerializing {0}", TraceInfo.TraceInfo ? data.GetType().Name : null);
-#else
-                            data = null;
-#endif
+
                         }
                         return data;
                 }
@@ -1249,10 +1256,10 @@ namespace ispsession.io
                 return VarEnum.VT_ERROR;
             //            if (typ.IsValueType)
             //              return VarEnum.VT_RECORD; // TimeSpan and such
-#if NET462 || NET463
+
             if (typ.IsImport || typ.IsSerializable) //
                 return VarEnum.VT_UNKNOWN;
-#endif
+
             //not supported VT_ERROR, Missing etc.
             throw new NotSupportedException(string.Format("this type {0} cannot be serialized. Make sure it is COM serializable or that it is decorated with SerializableAttribute", typ.FullName));
         }
@@ -1273,11 +1280,9 @@ namespace ispsession.io
                 case VarEnum.VT_BOOL:
                     return typeof(bool);
                 case VarEnum.VT_NULL:
-#if NET462 || NET463
+
                     return typeof(System.DBNull);
-#else
-                        return typeof(DBNull);
-#endif
+
                 case VarEnum.VT_I2:
                     return typeof(short);
                 case VarEnum.VT_UI2:
@@ -1321,9 +1326,8 @@ namespace ispsession.io
             if (pPersistStmInit == null || pStm == null)
                 throw new ArgumentNullException();
 
-            Guid clsd;
             var persist = (IPersist)pPersistStmInit;
-            persist.GetClassID(out clsd);
+            persist.GetClassID(out Guid clsd);
             NativeMethods.WriteClassStm(pStm, ref clsd);
             pPersistStmInit.Save(pStm, true);
 
@@ -1338,13 +1342,11 @@ namespace ispsession.io
             NativeMethods.ReadClassStm(pStm, out Guid clsd);
             var typ = Marshal.GetTypeFromCLSID(clsd);
             var obj = Activator.CreateInstance(typ);
-            var pPersist = obj as IPersistStreamInit;
-            if (pPersist == null)
+            if (obj as IPersistStreamInit == null)
             {
                 pStm.Seek(0, 0, IntPtr.Zero); //STREAM_SEEK_CUR
                 return null;
-            }
-            pPersist.Load(pStm);
+            } (obj as IPersistStreamInit).Load(pStm);
             var face = IntPtr.Zero;
             var unk = IntPtr.Zero;
             try
@@ -1365,35 +1367,30 @@ namespace ispsession.io
                 }
             }
         }
-      
-        private static readonly object l = new object();
-        private static Dictionary<string, string> _cache;
+
+        internal bool LateObjectActivation { get; set; }
+        // private static readonly object l = new object();
+        private static readonly Lazy<Dictionary<string, string>> Cache =
+            new Lazy<Dictionary<string, string>>(() => new Dictionary<string, string>(4));
         //works only for .NET 45
         public static string GetMetaData(string key)
         {
-            if (_cache == null || !_cache.ContainsKey(key))
+            if (!Cache.Value.ContainsKey(key))
             {
-                lock (l)
+                foreach (var meta in typeof(NativeMethods).GetTypeInfo().Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
                 {
-                    if (_cache == null)
+                    if (meta.Key == key)
                     {
-                        _cache = new Dictionary<string, string>(4);
-                    }
-                    foreach (var meta in typeof(NativeMethods).GetTypeInfo().Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
-                    {
-                        if (meta.Key == key)
-                        {
-                            _cache[key] = meta.Value;
-                            break;
-                        }
-                    }
-                    if (!_cache.ContainsKey(key))
-                    {
-                        throw new Exception(string.Format("meta key {0} not found", key));
+                        Cache.Value[key] = meta.Value;
+                        break;
                     }
                 }
+                if (!Cache.Value.ContainsKey(key))
+                {
+                    throw new Exception(string.Format("meta key {0} not found", key));
+                }
             }
-            return _cache[key];
+            return Cache.Value[key];      
         }
         [DebuggerStepThrough]
         internal static byte[] HexToBytes(string h)
@@ -1553,15 +1550,15 @@ namespace ispsession.io
         public bool TraceError { get; set; }
         
     }
-    public sealed class DBNull
-    {
-        public static DBNull Value
-        {
-            get
-            {
-                return new DBNull();
+    //public sealed class DBNull
+    //{
+    //    public static DBNull Value
+    //    {
+    //        get
+    //        {
+    //            return new DBNull();
 
-            }
-        }
-    }
+    //        }
+    //    }
+    //}
 }

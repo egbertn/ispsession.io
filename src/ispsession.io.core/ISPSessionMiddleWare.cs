@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using ispsession.io.core.Interfaces;
+using Microsoft.AspNetCore.Builder;
 //using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -150,21 +151,28 @@ namespace ispsession.io
             }
 
 #endif
-            var sessionFeature = new ISPSessionFeature();
             
-            sessionFeature.Session = this._sessionStore.Create(text2, tryEstablishSession, isNewSessionKey, _options);
+            var sessionFeature = new ISPSessionFeature
+            {
+                Session = this._sessionStore.Create(text2, tryEstablishSession, isNewSessionKey, _options),
+                Application = this._sessionStore.Create(_options)
+            };
+            var database = CSessionDL.GetDatabase(_options);
             context.Features.Set<IISPSEssionFeature>(sessionFeature);
             context.Features.Set<Microsoft.AspNetCore.Http.Features.ISessionFeature>(sessionFeature);//make HttpContext.Session happy
             await _next(context);
             //remove feature again
             context.Features.Set<IISPSEssionFeature>(null);
             context.Features.Set<Microsoft.AspNetCore.Http.Features.ISessionFeature>(null);
-  
+
             if (sessionFeature.Session != null)
             {
                 try
                 {
-                   await sessionFeature.Session.CommitAsync();
+                    await sessionFeature.Session.CommitAsync();
+                    var keyMan = (IKeySerializer)sessionFeature.Application;
+                    CSessionDL.ApplicationSave(database, _options.AppKey, keyMan, TimeSpan.FromMilliseconds(0));
+
                 }
                 catch (Exception ex)
                 {

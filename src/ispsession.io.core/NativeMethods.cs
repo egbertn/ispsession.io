@@ -4,6 +4,28 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace ispsession.io
 {
+    internal sealed class MemHandle : SafeHandle
+    {
+        private const int GMEM_INVALID_HANDLE = 0x8000;
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        private static extern void GlobalFree(SafeHandle handle);
+        public MemHandle() : base(new IntPtr(GMEM_INVALID_HANDLE), true)
+        {
+
+        }
+        public override bool IsInvalid => base.handle == new IntPtr(GMEM_INVALID_HANDLE);
+
+        protected override bool ReleaseHandle()
+        {
+            if (!IsInvalid && !IsClosed)
+            {
+                GlobalFree(this);
+                this.SetHandleAsInvalid();
+                return true;
+            }
+            return false;
+        }
+    }
 
     internal static class NativeMethods
     {
@@ -46,6 +68,26 @@ namespace ispsession.io
             ComputerNamePhysicalDnsDomain,
             ComputerNamePhysicalDnsFullyQualified
         }
+        internal enum AllocFlags
+        {
+            GHND = GMEM_MOVABLE | GMEM_ZEROINIT,
+            GMEM_FIXED = 0x0,
+            GMEM_MOVABLE = 0x0002,
+            GMEM_ZEROINIT = 0x0040,
+            GPTR = GMEM_FIXED | GMEM_ZEROINIT
+        }
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        internal static extern MemHandle GlobalAlloc(AllocFlags flags, [MarshalAs(UnmanagedType.SysInt)] IntPtr size);
+
+        [DllImport("Kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.SysInt)]
+        internal static extern UIntPtr GlobalSize(MemHandle handle);
+        [DllImport("Kernel32.dll", SetLastError = true)]
+        internal static extern IntPtr GlobalLock(MemHandle handle);
+
+        [DllImport("Kernel32.dll")]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static extern bool GlobalUnlock(MemHandle handle);
 
         [DllImport("Netapi32.dll")]
         internal unsafe static extern int NetApiBufferFree(void* Buffer);
@@ -95,52 +137,52 @@ namespace ispsession.io
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int OleSaveToStream(IPersistStream pPersistStream, IStream pStream);
         [DllImport("ole32.dll", ExactSpelling = true)]
-        internal static extern int CreateStreamOnHGlobal(IntPtr hGlobal, bool fDeleteOnRelease,
+        internal static extern int CreateStreamOnHGlobal(SafeHandle hGlobal, bool fDeleteOnRelease,
            out IStream ppstm);
-        internal unsafe static double ToOaDate(DateTime value)
-        {
-            _SYSTEMTIME st;
+        //internal unsafe static double ToOaDate(DateTime value)
+        //{
+        //    _SYSTEMTIME st;
 
-            st.wYear = (short)value.Year;
-            st.wMonth = (short)value.Month;
-            st.wDay = (short)value.Day;
-            st.wHour = (short)value.Hour;
-            st.wMinute = (short)value.Minute;
-            st.wMilliseconds = (short)value.Millisecond;
+        //    st.wYear = (short)value.Year;
+        //    st.wMonth = (short)value.Month;
+        //    st.wDay = (short)value.Day;
+        //    st.wHour = (short)value.Hour;
+        //    st.wMinute = (short)value.Minute;
+        //    st.wMilliseconds = (short)value.Millisecond;
             
-            double d;
-            SystemTimeToVariantTime(&st, &d);
-            return d;
-        }
-        internal unsafe static DateTime FromOADate(double d)
-        {
-            _SYSTEMTIME st ;
-            VariantTimeToSystemTime(d, &st);
-            return  new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
-        }
-        internal unsafe static long ToOACurrency(this decimal value)
-        {
-            tagDECIMAL ll;
-            tagVARIANT theDec;
-            Buffer.MemoryCopy(&value, &ll, sizeof(decimal), sizeof(decimal));
-            ll.wReserved = (ushort)VarEnum.VT_DECIMAL;
-            VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short)VarEnum.VT_CY);
-            return theDec.llVal;
-        }
-        internal unsafe static decimal FromOACurrency(long i64)
-        {
-            tagDECIMAL theDec;
-            //fake it to be a CUR
-            tagVARIANT ll;
-            ll.vt = VarEnum.VT_CY;
-            ll.llVal = i64;
-            VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short) VarEnum.VT_DECIMAL);
-            //decimal retVal;
-            //theDec.wReserved = 0;
-           // Buffer.MemoryCopy(&theDec, &retVal, sizeof(decimal), sizeof(decimal));            
-            return new decimal(theDec.Lo32, theDec.Mid32, theDec.Hi32, theDec.sign == 0x80, theDec.scale);
+        //    double d;
+        //    SystemTimeToVariantTime(&st, &d);
+        //    return d;
+        //}
+        //internal unsafe static DateTime FromOADate(double d)
+        //{
+        //    _SYSTEMTIME st ;
+        //    VariantTimeToSystemTime(d, &st);
+        //    return  new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
+        ////}
+        //internal unsafe static long ToOACurrency(this decimal value)
+        //{
+        //    tagDECIMAL ll;
+        //    tagVARIANT theDec;
+        //    Buffer.MemoryCopy(&value, &ll, sizeof(decimal), sizeof(decimal));
+        //    ll.wReserved = (ushort)VarEnum.VT_DECIMAL;
+        //    VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short)VarEnum.VT_CY);
+        //    return theDec.llVal;
+        //}
+        //internal unsafe static decimal FromOACurrency(long i64)
+        //{
+        //    tagDECIMAL theDec;
+        //    //fake it to be a CUR
+        //    tagVARIANT ll;
+        //    ll.vt = VarEnum.VT_CY;
+        //    ll.llVal = i64;
+        //    VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short) VarEnum.VT_DECIMAL);
+        //    //decimal retVal;
+        //    //theDec.wReserved = 0;
+        //   // Buffer.MemoryCopy(&theDec, &retVal, sizeof(decimal), sizeof(decimal));            
+        //    return new decimal(theDec.Lo32, theDec.Mid32, theDec.Hi32, theDec.sign == 0x80, theDec.scale);
 
-        }
+        //}
         const int ErrorSuccess = 0;
         internal sealed class JoinInformation
         {

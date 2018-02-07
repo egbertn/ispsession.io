@@ -8,7 +8,7 @@
  */
 /* Compiler settings for CSession.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
-    protocol : dce , ms_ext, c_ext, robust
+    protocol : dce , ms_ext, app_config, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -16,12 +16,11 @@
 */
 /* @@MIDL_FILE_HEADING(  ) */
 
-#pragma warning( disable: 4049 )  /* more than 64k source lines */
 
 
 /* verify that the <rpcndr.h> version is high enough to compile this file*/
 #ifndef __REQUIRED_RPCNDR_H_VERSION__
-#define __REQUIRED_RPCNDR_H_VERSION__ 475
+#define __REQUIRED_RPCNDR_H_VERSION__ 500
 #endif
 
 #include "rpc.h"
@@ -591,7 +590,7 @@ EXTERN_C const IID IID_IApplicationCache;
         virtual /* [restricted][id] */ HRESULT STDMETHODCALLTYPE _NewEnum( 
             /* [retval][out] */ IUnknown **pVal) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE RemoveKey( 
+        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Remove( 
             /* [in] */ BSTR Key) = 0;
         
         virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE RemoveAll( void) = 0;
@@ -606,7 +605,7 @@ EXTERN_C const IID IID_IApplicationCache;
             /* [in] */ BSTR vKey,
             /* [in] */ INT at) = 0;
         
-        virtual /* [propget][id] */ HRESULT STDMETHODCALLTYPE get_KeyExists( 
+        virtual /* [propget][id] */ HRESULT STDMETHODCALLTYPE get_Exists( 
             /* [in] */ BSTR Key,
             /* [retval][out] */ VARIANT_BOOL *pVal) = 0;
         
@@ -705,7 +704,7 @@ EXTERN_C const IID IID_IApplicationCache;
             IApplicationCache * This,
             /* [retval][out] */ IUnknown **pVal);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *RemoveKey )( 
+        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Remove )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key);
         
@@ -725,7 +724,7 @@ EXTERN_C const IID IID_IApplicationCache;
             /* [in] */ BSTR vKey,
             /* [in] */ INT at);
         
-        /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_KeyExists )( 
+        /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_Exists )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key,
             /* [retval][out] */ VARIANT_BOOL *pVal);
@@ -796,8 +795,8 @@ EXTERN_C const IID IID_IApplicationCache;
 #define IApplicationCache__NewEnum(This,pVal)	\
     ( (This)->lpVtbl -> _NewEnum(This,pVal) ) 
 
-#define IApplicationCache_RemoveKey(This,Key)	\
-    ( (This)->lpVtbl -> RemoveKey(This,Key) ) 
+#define IApplicationCache_Remove(This,Key)	\
+    ( (This)->lpVtbl -> Remove(This,Key) ) 
 
 #define IApplicationCache_RemoveAll(This)	\
     ( (This)->lpVtbl -> RemoveAll(This) ) 
@@ -811,8 +810,8 @@ EXTERN_C const IID IID_IApplicationCache;
 #define IApplicationCache_ExpireKeyAt(This,vKey,at)	\
     ( (This)->lpVtbl -> ExpireKeyAt(This,vKey,at) ) 
 
-#define IApplicationCache_get_KeyExists(This,Key,pVal)	\
-    ( (This)->lpVtbl -> get_KeyExists(This,Key,pVal) ) 
+#define IApplicationCache_get_Exists(This,Key,pVal)	\
+    ( (This)->lpVtbl -> get_Exists(This,Key,pVal) ) 
 
 #define IApplicationCache_get_KeyType(This,Key,pVal)	\
     ( (This)->lpVtbl -> get_KeyType(This,Key,pVal) ) 
@@ -1298,6 +1297,16 @@ unsigned long             __RPC_USER  VARIANT_UserSize(     unsigned long *, uns
 unsigned char * __RPC_USER  VARIANT_UserMarshal(  unsigned long *, unsigned char *, VARIANT * ); 
 unsigned char * __RPC_USER  VARIANT_UserUnmarshal(unsigned long *, unsigned char *, VARIANT * ); 
 void                      __RPC_USER  VARIANT_UserFree(     unsigned long *, VARIANT * ); 
+
+unsigned long             __RPC_USER  BSTR_UserSize64(     unsigned long *, unsigned long            , BSTR * ); 
+unsigned char * __RPC_USER  BSTR_UserMarshal64(  unsigned long *, unsigned char *, BSTR * ); 
+unsigned char * __RPC_USER  BSTR_UserUnmarshal64(unsigned long *, unsigned char *, BSTR * ); 
+void                      __RPC_USER  BSTR_UserFree64(     unsigned long *, BSTR * ); 
+
+unsigned long             __RPC_USER  VARIANT_UserSize64(     unsigned long *, unsigned long            , VARIANT * ); 
+unsigned char * __RPC_USER  VARIANT_UserMarshal64(  unsigned long *, unsigned char *, VARIANT * ); 
+unsigned char * __RPC_USER  VARIANT_UserUnmarshal64(unsigned long *, unsigned char *, VARIANT * ); 
+void                      __RPC_USER  VARIANT_UserFree64(     unsigned long *, VARIANT * ); 
 
 /* end of Additional Prototypes */
 

@@ -297,7 +297,7 @@ STDMETHODIMP CApplication::get_Count(PINT pVal) throw()
 }
 
 
-STDMETHODIMP CApplication::get_KeyExists(BSTR Key, VARIANT_BOOL* pVal) throw()
+STDMETHODIMP CApplication::get_Exists(BSTR Key, VARIANT_BOOL* pVal) throw()
 {
 	if (Key == nullptr || ::SysStringLen(Key) == 0)
 	{
@@ -346,7 +346,7 @@ STDMETHODIMP CApplication::_NewEnum(IUnknown **ppRet) throw()
 	hr = m_enum->QueryInterface(IID_IUnknown, (void**)ppRet);
 	return hr;
 }
-STDMETHODIMP CApplication::RemoveKey(BSTR Key) throw()
+STDMETHODIMP CApplication::Remove(BSTR Key) throw()
 {
 	HRESULT hr = S_OK;
 	if (Key == nullptr || ::SysStringLen(Key) == 0)

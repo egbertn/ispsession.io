@@ -118,13 +118,13 @@ public:
 	STDMETHOD(get_Key)(INT Index, BSTR* pval);
 	STDMETHOD(get_Count)(PINT pval);
 	STDMETHOD(_NewEnum)(IUnknown** ppval);
-	STDMETHOD(RemoveKey)(BSTR Key);
+	STDMETHOD(Remove)(BSTR Key);
 	STDMETHOD(RemoveAll)();
 	STDMETHOD(LockKey)(BSTR Key);
 	STDMETHOD(UnlockKey)(BSTR Key);
 	STDMETHOD(ExpireKeyAt)(BSTR Key, INT at);
 	
-	STDMETHOD(get_KeyExists)(BSTR Key, VARIANT_BOOL *pVal);
+	STDMETHOD(get_Exists)(BSTR Key, VARIANT_BOOL *pVal);
 	STDMETHOD(get_KeyType)(BSTR Key, SHORT* pVal);
 
 	// public but not exposed to IDL

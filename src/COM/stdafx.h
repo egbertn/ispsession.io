@@ -7,7 +7,7 @@
 #define Demo
 // defines for ISP Session tiny edition
 
-#define EXPIREAT (43100) // ie: 30/oct/2017
+#define EXPIREAT (43159) // ie: 28/2/2018
 #define MAXINSTANCES 1000
 #define STRICT
 #define UNICODE
@@ -16,7 +16,7 @@
 //support Windows Server 2003 with SP1,
 #define WINVER _WIN32_WINNT_WIN8	
 #define _WIN32_WINNT _WIN32_WINNT_WIN8
- #define INCL_WINSOCK_API_TYPEDEFS
+ #define INCL_WINSOCK_API_TYPEDEFS 0
 #define WIN32_MEAN_AND_LEAN
 #define VC_EXTRALEAN 
 #define _ATL_FREE_THREADED

@@ -142,6 +142,7 @@ public:
 
 
 private:
+	STDMETHODIMP HasOnStartPageBeenCalled();
 	//IIS specific 
 	STDMETHODIMP OnStartPage(IUnknown* pctx);
 	STDMETHODIMP OnEndPage();

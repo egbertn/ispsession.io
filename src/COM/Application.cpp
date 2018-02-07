@@ -7,6 +7,17 @@
 #include "tools.h"
 #include "CEnum.h"
 
+STDMETHODIMP CApplication::HasOnStartPageBeenCalled() throw()
+{
+
+	if (m_OnStartPageCalled == FALSE)
+	{
+		auto hr =  E_FAIL;
+		Error(L"Cannot be configured as a singleton (application cache) or just with CreateObject. Server.CreateObject must be used", GetObjectCLSID(), hr);
+		return hr;
+	}
+	return S_OK;
+}
 //IIS stuff
 STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 {
@@ -34,7 +45,7 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 	if (FAILED(hr))
 	{
 		hr = E_FAIL;
-		Error(L"Application: Redis Server is not running.", this->GetObjectCLSID(), hr);
+		Error(L"Application: Redis Server is not running or invalid connection string in web.Config.", this->GetObjectCLSID(), hr);
 	}
 //#ifndef Demo
 //	if (licenseOK == false)
@@ -57,6 +68,11 @@ STDMETHODIMP CApplication::OnEndPage() throw()
 
 STDMETHODIMP CApplication::IsDirty(BOOL* pRet) throw()
 {
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	*pRet = FALSE;
 	if (_removed.size() > 0)
 	{
@@ -71,7 +87,7 @@ STDMETHODIMP CApplication::IsDirty(BOOL* pRet) throw()
 			break;
 		}
 	}
-	return S_OK;
+	return hr;
 }
 STDMETHODIMP CApplication::PersistApplication() throw()
 {
@@ -101,7 +117,11 @@ STDMETHODIMP CApplication::PersistApplication() throw()
 }
 STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 {
-	HRESULT hr = S_OK;
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	if (Key == nullptr || ::SysStringLen(Key) == 0)
 	{
 		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
@@ -143,7 +163,11 @@ STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 
 STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal) throw()
 {
-	HRESULT hr = S_OK;
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	if (key == nullptr || ::SysStringLen(key) == 0)
 	{
 		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
@@ -203,7 +227,11 @@ STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal) throw()
 
 STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 {
-	HRESULT hr = S_OK;
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	if (key == nullptr || ::SysStringLen(key) == 0)
 	{
 		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
@@ -269,7 +297,11 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 }
 STDMETHODIMP CApplication::get_Key(INT Index, BSTR* pVal) throw()
 {
-	HRESULT hr = S_OK;
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	if (SUCCEEDED(hr))
 	{
 		if ((Index < 1) || (Index > _dictionary.size() + 1))
@@ -292,8 +324,13 @@ STDMETHODIMP CApplication::get_Key(INT Index, BSTR* pVal) throw()
 
 STDMETHODIMP CApplication::get_Count(PINT pVal) throw()
 {
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	*pVal = (int)_dictionary.size();
-	return S_OK;
+	return hr;
 }
 
 
@@ -311,6 +348,11 @@ STDMETHODIMP CApplication::get_Exists(BSTR Key, VARIANT_BOOL* pVal) throw()
 
 STDMETHODIMP CApplication::get_KeyType(BSTR Key, SHORT* pVal) throw()
 {
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	if (Key == nullptr || ::SysStringLen(Key) == 0)
 	{
 		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
@@ -318,11 +360,15 @@ STDMETHODIMP CApplication::get_KeyType(BSTR Key, SHORT* pVal) throw()
 	}
 	auto pos = _dictionary.find(Key);
 	*pVal = pos->second.val.vt;
-	return S_OK;
+	return hr;
 }
 STDMETHODIMP CApplication::_NewEnum(IUnknown **ppRet) throw()
 {
-	HRESULT hr = S_OK;
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	ULONG size = (ULONG)_dictionary.size();
 	SAFEARRAY * psaKeyEnum = ::SafeArrayCreateVector(VT_BSTR, 0, size);
 	if (psaKeyEnum == nullptr)
@@ -348,7 +394,11 @@ STDMETHODIMP CApplication::_NewEnum(IUnknown **ppRet) throw()
 }
 STDMETHODIMP CApplication::Remove(BSTR Key) throw()
 {
-	HRESULT hr = S_OK;
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	if (Key == nullptr || ::SysStringLen(Key) == 0)
 	{
 		hr = E_INVALIDARG;
@@ -385,6 +435,11 @@ STDMETHODIMP CApplication::Remove(BSTR Key) throw()
 }
 STDMETHODIMP CApplication::RemoveAll() throw()
 {
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
 		auto found = std::find_if(_removed.begin(), _removed.end(),
@@ -402,13 +457,17 @@ STDMETHODIMP CApplication::RemoveAll() throw()
 		}
 		_dictionary.erase(k);
 	}
-	return S_OK;
+	return hr;
 }
 
 STDMETHODIMP  CApplication::LockKey(BSTR Key) throw()
 {//will perform a PUT [Guid]:lock 1 command to redis 2.2+
 	
-	
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	CComBSTR appkey(m_AppKey);
 	CComBSTR bytesAppKey;
 	bytesAppKey.Attach(appkey.ToByteString());
@@ -416,17 +475,21 @@ STDMETHODIMP  CApplication::LockKey(BSTR Key) throw()
 	//dlm->Lock((PSTR)bytesAppKey, 100000, myLock);
 	CComBSTR appKey(m_AppKey);
 
-	return S_OK;	
+	return hr;	
 }
 
 STDMETHODIMP CApplication::UnlockKey(BSTR key) throw()
 {
-	
-	return S_OK;
+	return E_NOTIMPL;
 }
 
 STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
 {
+	auto hr = HasOnStartPageBeenCalled();
+	if (FAILED(hr))
+	{
+		return hr;
+	}
 	auto pos = _dictionary.find(Key);
 	if (pos != _dictionary.end())
 	{
@@ -435,7 +498,7 @@ STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
 		
 		logModule.Write(L"remove key %s", Key);
 	}
-	return S_OK;
+	return hr;
 }
 
 

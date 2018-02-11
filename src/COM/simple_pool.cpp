@@ -92,30 +92,38 @@ connection::ptr_t simple_pool::get()
 		  }
 		  else
 		  {*/
-		ret = connection::create(_host, _port);
+		ret = redis3m::connection::ptr_t();
 		//}
 		// Setup connections selecting db
-		if (!_password.empty())
+		try
 		{
-			auto response = ret->run(command("AUTH") (_password));
-			if (response.type() == reply::type_t::_ERROR)
+			ret = connection::create(_host, _port);
+			if (!_password.empty())
 			{
-				logModule.Write(L"AUTH failed");
-				ret.reset();
+				auto response = ret->run(command("AUTH") (_password));
+				if (response.type() == reply::type_t::_ERROR)
+				{
+					logModule.Write(L"AUTH failed");
+					ret.reset();
+				}
 			}
+			if (_database != 0 && ret != connection::ptr_t())
+			{
+				auto response = ret->run(command("SELECT")(_database));
+				if (response.type() == reply::type_t::_ERROR)
+				{
+					logModule.Write(L"SELECT database %s", response.str());
+				}
+			}
+			logModule.Write(L"Add Redis Conn to pool %d, %s, %d", _database, s2ws(_host), _port);
+			ret->_startSessionRequest = std::chrono::system_clock::now();
 		}
-		if (_database != 0 && ret != connection::ptr_t())
+		catch (connection_error ex)
 		{
-			auto response = ret->run(command("SELECT")(_database));
-			if (response.type() == reply::type_t::_ERROR)
-			{
-				logModule.Write(L"SELECT database %s", response.str());
-			}
+			logModule.Write(L"An exception occurred %x", s2ws(ex.what()));
 		}
-		logModule.Write(L"Add Redis Conn to pool %d, %s, %d", _database, s2ws(_host), _port);
 	}
-	ret->_startSessionRequest = std::chrono::system_clock::now();
-
+	
 	return ret;
 }
 

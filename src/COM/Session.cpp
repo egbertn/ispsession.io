@@ -873,6 +873,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 			logModule.Write(L"db: pgetSession.OpenRowset(g_dc) %x", hr);
 			this->bErrState = TRUE;
 			ReportComError2(hr, location);
+			this->Error(L"Cannot open or initiate a connection to Redis %x", this->GetObjectCLSID(), hr);
 			goto error;
 		}		
 		logModule.Write(L"db: found existing session %s", hr == S_FALSE ? L"false": L"true");

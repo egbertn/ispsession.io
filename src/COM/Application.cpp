@@ -40,12 +40,17 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 	}
 	
 	hr = InitializeDataSource();
-	m_OnStartPageCalled = TRUE;
+
 
 	if (FAILED(hr))
 	{
 		hr = E_FAIL;
 		Error(L"Application: Redis Server is not running or invalid connection string in web.Config.", this->GetObjectCLSID(), hr);
+	}	
+	
+	else
+	{
+		m_OnStartPageCalled = TRUE;
 	}
 //#ifndef Demo
 //	if (licenseOK == false)

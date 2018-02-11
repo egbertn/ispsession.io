@@ -8,7 +8,8 @@ using namespace redis3m;
 
 connection::connection(const std::string& host, const unsigned port/*, const std::string& password*/)
 {
-    c = redisConnect(host.c_str(), port);
+	timeval tv = { 5,0 };
+    c = redisConnectWithTimeout(host.c_str(), port, tv);
     if (c->err != REDIS_OK)
     {
         redisFree(c);

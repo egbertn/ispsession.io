@@ -66,7 +66,7 @@ using namespace redis3m;
 #include <Dsgetdc.h>
 #define ONEMINUTE  0.00069444444444444F
 
-#define CHECKHR2 if (FAILED(hr)) { ReportComError2(hr, location); goto error; }
+#define CHECKHR2 if (FAILED(hr)) {/* ReportComError2(hr, location);*/ goto error; }
 #define CHECKHR if (FAILED(hr)) goto error;
 
 #define RELEASE(lpUnk)  if (lpUnk != NULL) { lpUnk->Release(); lpUnk = NULL; } 

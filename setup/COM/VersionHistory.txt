@@ -1,4 +1,31 @@
-
+8.2
+	Interface
+	=========
+	ISP Session now supports a global application cache. This works like the native Application object.
+	The following interface is supported.
+	Set Cache = Server.CreateObject("NWCTools.CApplication")
+	Dim val, keyIndex, key
+        val = Cache("mykey")
+        Cache("mykey") = "Testing"
+	Or 
+	Set Cache("myRs") = MyRs (e.g. ADO or other persistable stuff go here)
+	key = Cache.KeyIndex(1) 'result mykey
+	For Each v in Cache
+	     key = v
+        Next
+	Cache.Remove "key"
+        Cache.RemoveALl
+	Cache.Lock "key" and Cache.Unlock "key" are future feature
+	Cache.ExpireKeyAt "key", 0 'in 0 ms expire it
+	Dim exists, keyType
+	exists = Cache.Exists("key")
+	keyType = Cache.KeyType("mykey") ' retuns 8 which equals the constant VbString
+	Facts
+	=========
+	8.2 now completely depends on Web.Config. There is no CSession.Dll.config (which includes the license) 
+		anymore, in order to be consistent with ISP Session for .NET
+	
+	
 8.0.0.x anything before 8.0 was SQL based and therefore not relevant. ISP Session has a history back to 2001.
 	8.0.0.x uses now a Redis server to store session state. It is compatible with a .NET Session combined with ISP Session .NET
 8.0.0.144

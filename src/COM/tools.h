@@ -27,8 +27,8 @@ std::string str_toupper(std::string s);
 
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName);
 void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[], int els);
-void __stdcall ReportComError(const DWORD win32err, PCWSTR msg=NULL);
-void __stdcall ReportComError2(const HRESULT hr, PCWSTR msg = NULL);
+//void __stdcall ReportComError(const DWORD win32err, PCWSTR msg=NULL);
+//void __stdcall ReportComError2(const HRESULT hr, PCWSTR msg = NULL);
 BSTR __stdcall GetModulePath();
 BSTR __stdcall FileStripFile(const wchar_t* pathname);
 BSTR __stdcall FileStripPath(const wchar_t* pathname);

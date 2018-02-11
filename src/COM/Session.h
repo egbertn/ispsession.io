@@ -16,7 +16,6 @@ class ATL_NO_VTABLE NWCSession :
 	
 {
 public:
-	DECLARE_OBJECT_DESCRIPTION("Session object replacement over Redis, for classic ASP ADC Cure")
 	DECLARE_REGISTRY_RESOURCEID(IDR_SESSION)
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 	
@@ -160,55 +159,53 @@ private:
 #endif
 
 public:
-	STDMETHODIMP get_SessionID(BSTR* pbstrRet);
-	STDMETHODIMP get_Value(BSTR vkey, VARIANT* pVal);
-	STDMETHODIMP put_Value(BSTR vkey, VARIANT newVal);
-	STDMETHODIMP putref_Value(BSTR vkey, VARIANT newVal);
-	STDMETHODIMP get_TimeOut(LONG* pVal);
-	STDMETHODIMP put_TimeOut(LONG pVal);
-	STDMETHODIMP Abandon(void);
-	STDMETHODIMP get_CodePage(LONG* pVal);
-	STDMETHODIMP put_CodePage(LONG newVal);
-	STDMETHODIMP get_LCID(LONG* pVal);
-	STDMETHODIMP put_LCID(LONG newVal);
-	STDMETHODIMP get_StaticObjects(INWCVariantDictionary** pVal);
-	STDMETHODIMP get_Contents(INWCVariantDictionary** pVal);	
-	STDMETHODIMP get_IsExpired(VARIANT_BOOL* pVal);
-	STDMETHODIMP get_IsNew(VARIANT_BOOL* pVal);
-	STDMETHODIMP get_LiquidCookie(VARIANT_BOOL* pVal);
-	STDMETHODIMP put_LiquidCookie(VARIANT_BOOL newVal);
-	STDMETHODIMP get_ReEntrance(VARIANT_BOOL* pVal);
-	STDMETHODIMP put_ReEntrance(VARIANT_BOOL newVal);
-	STDMETHODIMP get_URL(VARIANT strCheckA, VARIANT* pVal);
-	STDMETHODIMP Execute(BSTR ToPage);
-	STDMETHODIMP Transfer(BSTR ToPage);
-	STDMETHODIMP get_CreateInstance(BSTR progid, IDispatch** pVal);		
-	
-	STDMETHODIMP put_Readonly(VARIANT_BOOL newVal);	
-	
-	STDMETHODIMP Statistics (VARIANT App_Key, VARIANT sessionID, INWCVariantDictionary** retval);
-	STDMETHODIMP EnsureURLCookie ();
-	STDMETHODIMP get_OldSessionID(BSTR *pVal);
+	STDMETHOD( get_SessionID)(BSTR* pbstrRet);
+	STDMETHOD( get_Value)(BSTR vkey, VARIANT* pVal);
+	STDMETHOD( put_Value)(BSTR vkey, VARIANT newVal);
+	STDMETHOD( putref_Value)(BSTR vkey, VARIANT newVal);
+	STDMETHOD( get_TimeOut)(LONG* pVal);
+	STDMETHOD( put_TimeOut)(LONG pVal);
+	STDMETHOD( Abandon)(void);
+	STDMETHOD( get_CodePage)(LONG* pVal);
+	STDMETHOD( put_CodePage)(LONG newVal);
+	STDMETHOD( get_LCID)(LONG* pVal);
+	STDMETHOD( put_LCID)(LONG newVal);
+	STDMETHOD( get_StaticObjects)(INWCVariantDictionary** pVal);
+	STDMETHOD( get_Contents)(INWCVariantDictionary** pVal);
+	STDMETHOD( get_IsExpired)(VARIANT_BOOL* pVal);
+	STDMETHOD( get_IsNew)(VARIANT_BOOL* pVal);
+	STDMETHOD( get_LiquidCookie)(VARIANT_BOOL* pVal);
+	STDMETHOD( put_LiquidCookie)(VARIANT_BOOL newVal);
+	STDMETHOD( get_ReEntrance)(VARIANT_BOOL* pVal);
+	STDMETHOD( put_ReEntrance)(VARIANT_BOOL newVal);
+	STDMETHOD( get_URL)(VARIANT strCheckA, VARIANT* pVal);
+	STDMETHOD( Execute)(BSTR ToPage);
+	STDMETHOD( Transfer)(BSTR ToPage);
+	STDMETHOD( get_CreateInstance)(BSTR progid, IDispatch** pVal);
+	STDMETHOD( put_Readonly)(VARIANT_BOOL newVal);
+	STDMETHOD( Statistics)(VARIANT App_Key, VARIANT sessionID, INWCVariantDictionary** retval);
+	STDMETHOD( EnsureURLCookie) ();
+	STDMETHOD( get_OldSessionID)(BSTR *pVal);
 
 private:	
 	// non TLB exposed methods
 	// Inits database
-	STDMETHODIMP localInit();
+	STDMETHOD(localInit)();
 	
-	STDMETHODIMP PersistSession();
+	STDMETHOD(PersistSession)();
 	// creates a new GUID and writes cookie, if possible
-	STDMETHODIMP NewID();
+	STDMETHOD( NewID)();
 	
-	STDMETHODIMP WriteCookie(BSTR cookie);
-	STDMETHODIMP NewGuid(GUID * guid);
+	STDMETHOD( WriteCookie)(BSTR cookie);
+	STDMETHOD( NewGuid)(GUID * guid);
 	
-	STDMETHODIMP OnStartPage(IUnknown* pctx);
-	STDMETHODIMP OnEndPage();
+	STDMETHOD( OnStartPage)(IUnknown* pctx);
+	STDMETHOD( OnEndPage)();
 
 
-	void __stdcall InvokeOnStartPage();
-	STDMETHODIMP Initialize();
-	STDMETHODIMP ReadConfigFromWebConfig();
+	STDMETHOD_(void,InvokeOnStartPage)(void);
+	STDMETHOD( Initialize)();
+	STDMETHOD( ReadConfigFromWebConfig)();
 	
 	STDMETHOD_(void,ReadCookieFromQueryString());
 };

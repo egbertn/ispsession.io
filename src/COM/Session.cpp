@@ -49,7 +49,7 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) throw()
 	return hr;
 }
 //for each object type, we need to see if there is an OnStartPage event
-void __stdcall NWCSession::InvokeOnStartPage() throw()
+STDMETHODIMP_( void) NWCSession::InvokeOnStartPage() throw()
 {
 	HRESULT hr = S_OK;	
 
@@ -429,7 +429,7 @@ STDMETHODIMP NWCSession::Initialize() throw()
 	error:
 	if (FAILED(hr))
 	{
-		ReportComError2(hr, L"Session Activate");
+		//ReportComError2(hr, L"Session Activate");
 		Error(L"Session Activate", this->GetObjectCLSID(), hr);
 		bErrState = TRUE;
 	}
@@ -503,7 +503,7 @@ STDMETHODIMP NWCSession::put_LCID(LONG newVal) throw()
 	if (this->bReadonly == TRUE)
 	{
 		hr = E_FAIL;
-		ReportComError2(hr, ERROR_READONLY);
+		//ReportComError2(hr, ERROR_READONLY);
 
 	}
 	else if (::IsValidLocale(newVal, LCID_SUPPORTED) == FALSE)
@@ -715,7 +715,7 @@ STDMETHODIMP NWCSession::put_TimeOut(LONG pVal) throw()
 	if (bReadonly == TRUE)
 	{
 		hr = E_FAIL;
-		ReportComError2(hr ,ERROR_READONLY);		
+		//ReportComError2(hr ,ERROR_READONLY);		
 		
 	}
 	else 
@@ -735,7 +735,7 @@ STDMETHODIMP NWCSession::put_LiquidCookie(VARIANT_BOOL newVal) throw()
 	if (bReadonly == TRUE)
 	{
 		hr = E_FAIL;
-		ReportComError2(hr ,ERROR_READONLY);	
+		//ReportComError2(hr ,ERROR_READONLY);	
 	}
 	else if (newVal == VARIANT_TRUE)
 	{
@@ -786,7 +786,7 @@ STDMETHODIMP NWCSession::put_Value(BSTR vkey, VARIANT newVal) throw()
 	if (bReadonly == TRUE)
 	{
 		hr = E_FAIL;
-		ReportComError2(hr ,ERROR_READONLY);
+		//ReportComError2(hr ,ERROR_READONLY);
 		Error(ERROR_READONLY);
 		
 	}
@@ -813,7 +813,7 @@ STDMETHODIMP NWCSession::putref_Value(BSTR vkey, VARIANT newVal) throw()
 	if (bReadonly == TRUE)
 	{
 		hr = E_FAIL;
-		ReportComError2(hr ,ERROR_READONLY);		
+		//ReportComError2(hr ,ERROR_READONLY);		
 		Error(ERROR_READONLY);
 	}
 	else if (m_piVarDict != nullptr)
@@ -872,7 +872,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 		{
 			logModule.Write(L"db: pgetSession.OpenRowset(g_dc) %x", hr);
 			this->bErrState = TRUE;
-			ReportComError2(hr, location);
+			//ReportComError2(hr, location);
 			this->Error(L"Cannot open or initiate a connection to Redis %x", this->GetObjectCLSID(), hr);
 			goto error;
 		}		
@@ -1168,10 +1168,10 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookie) throw()
 		}
 		
 	}
-	if (FAILED(hr))
+	/*if (FAILED(hr))
 	{
 		ReportComError2(hr, L"WriteCookie");
-	}
+	}*/
 	return hr;
 }
 /*/////

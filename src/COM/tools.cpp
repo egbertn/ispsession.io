@@ -203,39 +203,39 @@ void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = NULL, int els = 0
 
 	::DeregisterEventSource(report);		
 }
-void __stdcall ReportComError(const DWORD win32err, PCWSTR msg) throw()
-{	
-	PWSTR berr = NULL;
-	DWORD mlen = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, NULL, win32err,0, (LPWSTR)&berr, 0, NULL);
-	if (mlen ==0)
-	{
-		CComBSTR num; 
-		CComBSTR err(L"An unknown error occurred code: ");
-		num.AssignLongHex(win32err);
-		err.Append(num);		
-		PCWSTR amsg[] = {msg, err};
-		LogMessage(MSG_ERROR, amsg, 2);
-	}
-	else
-	{
-		PCWSTR amsg[] = {msg, berr};
-		CComBSTR temp(berr);		
-		temp.Append(':');
-		temp.Append(msg);
-		
-		LogMessage(MSG_ERROR, amsg); 
-		::GlobalFree(berr);
-	}
-	
-}
-
-void __stdcall ReportComError2(const HRESULT hr, PCWSTR msg) throw()
-{
-	
-	PCWSTR amsg[] = {msg};
-	int nr = 1;
-	LogMessage(MSG_ERROR, amsg, 1);
-}
+//void __stdcall ReportComError(const DWORD win32err, PCWSTR msg) throw()
+//{	
+//	PWSTR berr = NULL;
+//	DWORD mlen = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, NULL, win32err,0, (LPWSTR)&berr, 0, NULL);
+//	if (mlen ==0)
+//	{
+//		CComBSTR num; 
+//		CComBSTR err(L"An unknown error occurred code: ");
+//		num.AssignLongHex(win32err);
+//		err.Append(num);		
+//		PCWSTR amsg[] = {msg, err};
+//		LogMessage(MSG_ERROR, amsg, 2);
+//	}
+//	else
+//	{
+//		PCWSTR amsg[] = {msg, berr};
+//		CComBSTR temp(berr);		
+//		temp.Append(':');
+//		temp.Append(msg);
+//		
+//		LogMessage(MSG_ERROR, amsg); 
+//		::GlobalFree(berr);
+//	}
+//	
+//}
+//
+//void __stdcall ReportComError2(const HRESULT hr, PCWSTR msg) throw()
+//{
+//	
+//	PCWSTR amsg[] = {msg};
+//	int nr = 1;
+//	LogMessage(MSG_ERROR, amsg, 1);
+//}
 
 DATE __stdcall Now() throw()
 {

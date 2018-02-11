@@ -62,7 +62,6 @@ class ATL_NO_VTABLE CApplication :
 	public IKeySerializer
 {
 public:
-	DECLARE_OBJECT_DESCRIPTION("Classic ASP Application replacement by ADC Cure")
 	DECLARE_REGISTRY_RESOURCEID(IDR_APPLICATION)
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
@@ -112,7 +111,7 @@ private:
 
 public:
 	//IApplicationObject
-	STDMETHOD (get_Value)(BSTR Key, VARIANT* pvar);
+	STDMETHOD(get_Value)(BSTR Key, VARIANT* pvar);
 	STDMETHOD(put_Value)(BSTR Key, VARIANT var);
 	STDMETHOD(putref_Value)(BSTR Key, VARIANT var);
 	STDMETHOD(get_Key)(INT Index, BSTR* pval);
@@ -123,7 +122,6 @@ public:
 	STDMETHOD(LockKey)(BSTR Key);
 	STDMETHOD(UnlockKey)(BSTR Key);
 	STDMETHOD(ExpireKeyAt)(BSTR Key, INT at);
-	
 	STDMETHOD(get_Exists)(BSTR Key, VARIANT_BOOL *pVal);
 	STDMETHOD(get_KeyType)(BSTR Key, SHORT* pVal);
 
@@ -142,31 +140,31 @@ public:
 
 
 private:
-	STDMETHODIMP HasOnStartPageBeenCalled();
+	STDMETHOD( HasOnStartPageBeenCalled)();
 	//IIS specific 
-	STDMETHODIMP OnStartPage(IUnknown* pctx);
-	STDMETHODIMP OnEndPage();
+	STDMETHOD(OnStartPage)(IUnknown* pctx);
+	STDMETHOD(OnEndPage)();
 	//End IIS Specific
 	///<summary> 
 	/// finds element by specified key if result is S_FALSE it is not found
 	///</summary>
 
-	STDMETHODIMP IsDirty(BOOL* pRet);
+	STDMETHOD(IsDirty)(BOOL* pRet);
 	//std:vector<byte> probably semantically is better, instead of std::string
-	STDMETHODIMP ReadString(std::istream& stream, BSTR* outputString);
-	STDMETHODIMP ReadValue(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype);
+	STDMETHOD(ReadString)(std::istream& stream, BSTR* outputString);
+	STDMETHOD(ReadValue)(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype);
 	//allows recursion
-	STDMETHODIMP WriteString(BSTR Key, IStream* inoutputString);
-	STDMETHODIMP WriteValue(VARTYPE vt, VARIANT& val, IStream* binaryString);
+	STDMETHOD(WriteString)(BSTR Key, IStream* inoutputString);
+	STDMETHOD(WriteValue)(VARTYPE vt, VARIANT& val, IStream* binaryString);
 	// converts a e.g. recordset into a VT_IUNKNOWN of IStream
-	STDMETHODIMP ConvertObjectToStream(VARIANT& val);
+	STDMETHOD(ConvertObjectToStream)(VARIANT& val);
 	// converts an IStream to an instance of a COM class
-	STDMETHODIMP ConvertVStreamToObject(ElementModel& val);
+	STDMETHOD(ConvertVStreamToObject)(ElementModel& val);
 
 	
-	STDMETHODIMP InitializeDataSource();
-	STDMETHODIMP PersistApplication();
-	STDMETHODIMP EnsureBuffer(INT newBuffer);
+	STDMETHOD(InitializeDataSource)();
+	STDMETHOD(PersistApplication)();
+	STDMETHOD(EnsureBuffer)(INT newBuffer);
 	
 };
 

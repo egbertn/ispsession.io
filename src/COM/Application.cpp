@@ -609,7 +609,7 @@ STDMETHODIMP CApplication::InitializeDataSource() throw()
 
 	if (FAILED(hr))
 	{
-		ReportComError2(hr, location);
+		//ReportComError2(hr, location);
 		m_bErrState = TRUE;
 	}
 	else

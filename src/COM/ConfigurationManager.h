@@ -22,8 +22,8 @@ private:
 public:
 	ConfigurationManager();
 	ConfigurationManager(const BSTR configFile);
-	std::wstring& AppSettings(const std::wstring key, PCWSTR defaultValue = NULL);
-	BSTR AppSettings(const BSTR key, PCWSTR defaultValue = NULL);
+	std::wstring& AppSettings(const std::wstring key, PCWSTR defaultValue = nullptr);
+	BSTR AppSettings(const BSTR key, PCWSTR defaultValue = nullptr);
 	time_t GetFileTime();
 	~ConfigurationManager();
 };

@@ -483,11 +483,13 @@ namespace ispsession.io
 #endif
         internal DateTime ReadDateTime()
         {
-            return NativeMethods.FromOADate(ReadDouble());
+            return DateTime.FromOADate(ReadDouble());
+            //return NativeMethods.FromOADate(ReadDouble());
         }
         internal void WriteDateTime(DateTime value)
         {
-            WriteDouble(NativeMethods.ToOaDate(value));
+            //WriteDouble(NativeMethods.ToOaDate(value));
+            WriteDouble(value.ToOADate());
         }
         /// <summary>
         /// 

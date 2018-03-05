@@ -33,7 +33,7 @@ bool LoggingModule::HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask = (FILE_
 	resultSid = ::ConvertSidToStringSidW(buf, &stringSid);*/
 	
 	//::LocalFree(buf);		
-	TRUSTEEW trustee = { NULL, NO_MULTIPLE_TRUSTEE,
+	TRUSTEEW trustee = { nullptr, NO_MULTIPLE_TRUSTEE,
 		TRUSTEE_FORM::TRUSTEE_IS_NAME,
 		TRUSTEE_TYPE::TRUSTEE_IS_USER,  L"CURRENT_USER"}; //stringSid
 	
@@ -276,7 +276,7 @@ void LoggingModule::Write(PCWSTR pszFormat, ...) throw()
 	// opens file for append and prepends a BOM if needed
 	bool LoggingModule::OpenFile() throw()
 	{
-		if (m_file == NULL && !m_logFileName.IsEmpty())
+		if (m_file == nullptr && !m_logFileName.IsEmpty())
 		{
 			HRESULT hr = m_file.Create(m_logFileName,
 				FILE_APPEND_DATA | SYNCHRONIZE,

@@ -61,7 +61,7 @@ BSTR ConfigurationManager::AppSettings(const BSTR key, PCWSTR defaultValue) thro
 	if (FAILED(hr)) 
 	{
 		logModule.Write(L"Cannot parse config file because of (%x)", hr);
-		return NULL;
+		return nullptr;
 	}
 	CComBSTR find;
 	find.Attach(key);
@@ -74,11 +74,11 @@ BSTR ConfigurationManager::AppSettings(const BSTR key, PCWSTR defaultValue) thro
 	{
 		return found->second.Copy();
 	}
-	else if (defaultValue != NULL)
+	else if (defaultValue != nullptr)
 	{
 		return ::SysAllocString(defaultValue);
 	}
-	return NULL;
+	return nullptr;
 	
 }
 ConfigurationManager::~ConfigurationManager() throw()
@@ -106,11 +106,11 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 		CComPtr<IStream> pStream;
 		CComPtr<IXmlReaderInput> _readerInput;
 		
-		hr = ::SHCreateStreamOnFileEx(_szFilePath, STGM_READ | STGM_SHARE_DENY_NONE, FILE_ATTRIBUTE_NORMAL, FALSE,NULL, &pStream);
+		hr = ::SHCreateStreamOnFileEx(_szFilePath, STGM_READ | STGM_SHARE_DENY_NONE, FILE_ATTRIBUTE_NORMAL, FALSE, nullptr, &pStream);
 
 		if (SUCCEEDED(hr))
 		{
-			hr = ::CreateXmlReaderInputWithEncodingCodePage(pStream, _malloc, CP_UTF8, TRUE, NULL, &_readerInput);			
+			hr = ::CreateXmlReaderInputWithEncodingCodePage(pStream, _malloc, CP_UTF8, TRUE, nullptr, &_readerInput);
 			hr = _xmlReader->SetProperty(XmlReaderProperty_DtdProcessing, DtdProcessing_Prohibit);	
 			hr = _xmlReader->SetInput(_readerInput);
 		}	
@@ -129,7 +129,7 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 			case XmlNodeType::XmlNodeType_EndElement:
 				
 				//hr = pReader->GetDepth(&dept);
-				hr = _xmlReader->GetLocalName(&pwzValue, NULL);
+				hr = _xmlReader->GetLocalName(&pwzValue, nullptr);
 				if (startCollecting && _wcsicmp(pwzValue, L"appSettings") == 0)
 				{
 					//break loop
@@ -139,7 +139,7 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 			case XmlNodeType::XmlNodeType_Element:
 				{
 					// get element name such as option in <option value="11">
-					hr = _xmlReader->GetLocalName(&pwzValue, NULL);
+					hr = _xmlReader->GetLocalName(&pwzValue, nullptr);
 			
 					if (FAILED(hr)) break;
 					
@@ -148,10 +148,10 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 					{
 						startCollecting = true;
 
-						hr = _xmlReader->MoveToAttributeByName(L"configSource", NULL);
+						hr = _xmlReader->MoveToAttributeByName(L"configSource", nullptr);
 						if (hr == S_OK)
 						{
-							hr = _xmlReader->GetValue(&pwzValue, NULL);
+							hr = _xmlReader->GetValue(&pwzValue, nullptr);
 							
 							logModule.Write(L"found configSource %s", pwzValue);								
 							if (::PathIsRelativeW(pwzValue) == TRUE)
@@ -174,7 +174,7 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 					else if (startCollecting && _wcsicmp(pwzValue, L"add") == 0)
 					{
 						
-						hr = _xmlReader->MoveToAttributeByName(L"key", NULL);
+						hr = _xmlReader->MoveToAttributeByName(L"key", nullptr);
 						if (hr == S_OK)
 						{
 							hr = _xmlReader->GetValue(&pwzValue, &lenValue);
@@ -182,10 +182,10 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 							key = pwzValue;
 
 							//ATLTRACE(L"found key %s %d\r\n", pwzValue, lenValue);
-							hr = _xmlReader->MoveToAttributeByName(L"value", NULL);
+							hr = _xmlReader->MoveToAttributeByName(L"value", nullptr);
 							if (hr == S_OK)
 							{
-								_xmlReader->GetValue(&pwzValue, NULL);
+								_xmlReader->GetValue(&pwzValue, nullptr);
 								_map.insert(std::pair<CComBSTR, CComBSTR>(key, pwzValue));
 							}
 						}
@@ -195,9 +195,9 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 			}
 		}
 		if (SUCCEEDED(hr)) _ftLastCheck = curT;
-		if (_xmlReader != NULL)
+		if (_xmlReader != nullptr)
 		{
-			_xmlReader->SetInput(NULL);
+			_xmlReader->SetInput(nullptr);
 		}
 		logModule.Write(L"Parsing config... took %dms", std::chrono::duration_cast<std::chrono::milliseconds> ( std::chrono::system_clock::now() - start));
 		//fs->Release();

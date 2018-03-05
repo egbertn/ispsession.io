@@ -12,13 +12,13 @@ private:
 	
 public:
 
-	CCEnum() throw() : curel(0), vt(VT_EMPTY), maxel(0), psaCopy(NULL)
+	CCEnum() throw() : curel(0), vt(VT_EMPTY), maxel(0), psaCopy(nullptr)
 	  
 	{
 	}
 	void FinalRelease() throw()
 	{
-		if (psaCopy != NULL)
+		if (psaCopy != nullptr)
 		{
 			HRESULT hr = ::SafeArrayUnaccessData(psaCopy);
 			(hr);
@@ -35,11 +35,11 @@ public:
 	STDMETHODIMP Next(ULONG, VARIANT * rgvar, ULONG * pceltFetched) throw()
 	{
 		HRESULT hr = S_OK;
-		ATLASSERT(rgvar != NULL);
+		ATLASSERT(rgvar != nullptr);
 
 		if (curel < maxel)
 		{
-			if (pceltFetched != NULL) *pceltFetched = 1;
+			if (pceltFetched != nullptr) *pceltFetched = 1;
 			if (this->vt == VT_VARIANT)
 			{				
 				hr = ::VariantCopyInd(rgvar, &static_cast <VARIANT*>(this->psaCopy->pvData)[curel++]);
@@ -55,7 +55,7 @@ public:
 		}
 		else
 		{
-			if (pceltFetched  != NULL) *pceltFetched = 0;
+			if (pceltFetched  != nullptr) *pceltFetched = 0;
 			hr = S_FALSE;
 		}
 		return hr;
@@ -85,7 +85,7 @@ public:
 	HRESULT Init(SAFEARRAY *psaVariantArray) throw()
 	{
 		HRESULT hr = S_OK;
-		if (psaVariantArray == NULL) 
+		if (psaVariantArray == nullptr)
 			hr = E_INVALIDARG;
 		else
 		{

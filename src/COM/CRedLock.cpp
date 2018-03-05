@@ -48,8 +48,8 @@ static void usleep(__int64 usec)
 
 	ft.QuadPart = -(10 * usec); // Convert to 100 nanosecond interval, negative value indicates relative time
 
-	HANDLE timer = ::CreateWaitableTimer(NULL, TRUE, NULL);
-	::SetWaitableTimer(timer, &ft, 0, NULL, NULL, 0);
+	HANDLE timer = ::CreateWaitableTimer(nullptr, TRUE, nullptr);
+	::SetWaitableTimer(timer, &ft, 0, nullptr, nullptr, 0);
 	::WaitForSingleObject(timer, INFINITE);
 	::CloseHandle(timer);
 }
@@ -161,7 +161,7 @@ bool CRedLock::Lock(const char *resource, const int ttl, CLock &lock) {
 		//precision, which is 1 millisecond, plus 1 millisecond min drift
 		//for small TTLs.
 		int drift = ((float)ttl * m_clockDriftFactor) + 2;
-		int validityTime = ttl - ((int)time(NULL) * 1000 - startTime) - drift;
+		int validityTime = ttl - ((int)time(nullptr) * 1000 - startTime) - drift;
 		printf("The resource validty time is %d, n is %d, quo is %d\n",
 			validityTime, n, m_quoRum);
 		if (n >= m_quoRum && validityTime > 0) {

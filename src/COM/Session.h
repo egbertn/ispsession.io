@@ -33,7 +33,7 @@ public:
 		lngTimeout = 0;
 		m_bstrToken = L"GUID";
 		m_OnStartPageCalled = false;
-		m_piVarDict = NULL;
+		m_piVarDict = nullptr;
 		dtExpires = 0;
 		bHashsessionID =
 		bIsDBOpen = 

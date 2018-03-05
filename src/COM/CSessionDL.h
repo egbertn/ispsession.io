@@ -104,7 +104,7 @@ public:
 	_ApplicationAccessor() :
 		IsNULL(FALSE),
 		m_blobLength(0),		
-		m_pStream(NULL)
+		m_pStream(nullptr)
 	{
 		
 		memset(m_timest, 0, sizeof(DBTIMESTAMP));
@@ -568,7 +568,7 @@ public:
 		m_ReEntrance(VARIANT_FALSE),
 		m_Liquid(VARIANT_FALSE),
 		m_zLen(0),
-		m_pStream(NULL)
+		m_pStream(nullptr)
 	{
 		memset(m_GUID, 0, sizeof(GUID));
 		memset(m_timest, 0, sizeof(DBTIMESTAMP));

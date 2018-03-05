@@ -7,7 +7,7 @@
 #define Demo
 // defines for ISP Session tiny edition
 
-#define EXPIREAT (43159) // ie: 28/2/2018
+#define EXPIREAT ( 43189) // ie: 28/2/2018
 #define MAXINSTANCES 1000
 #define STRICT
 #define UNICODE
@@ -69,7 +69,7 @@ using namespace redis3m;
 #define CHECKHR2 if (FAILED(hr)) {/* ReportComError2(hr, location);*/ goto error; }
 #define CHECKHR if (FAILED(hr)) goto error;
 
-#define RELEASE(lpUnk)  if (lpUnk != NULL) { lpUnk->Release(); lpUnk = NULL; } 
+#define RELEASE(lpUnk)  if (lpUnk != nullptr) { lpUnk->Release(); lpUnk = nullptr; } 
 //#define ZERO(any) memset(&any, 0, sizeof(any));
 #define ERROR_READONLY  L"Session is set readonly"
 #define ERROR_INPUT  L"Expecting string input"

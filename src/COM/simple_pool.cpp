@@ -56,9 +56,10 @@ void __stdcall redis3m::TimerAPCProc() throw()
 	
 	if (connections.size() == 0)
 	{
-		::CancelWaitableTimer(_timer);
+		auto success = ::CancelWaitableTimer(_timer);
 		_timer.Close();
 		_threadHandle.Close();
+		logModule.Write(L"Canceling timer thread %d", success);
 	}
 	_access_mutex.Leave();
 };
@@ -77,10 +78,11 @@ connection::ptr_t simple_pool::get()
 		connections.erase(it);
 	}
 
-	if (_timer == NULL)
+	if (_timer == nullptr)
 	{
-
-		_threadHandle.Attach(::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL));
+		auto handle  = ::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL);
+		_threadHandle.Attach(handle);
+		logModule.Write(L"Created TimerThread %d", handle);
 		//std::thread trh(TimerThread);
 	}
 	_access_mutex.Leave();

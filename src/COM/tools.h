@@ -9,7 +9,7 @@
 #include <functional> 
 #include <cctype>
 #include <locale>
-#include "IKeySerializer.h"
+
 
 std::wstring& __stdcall ltrim(std::wstring &s);
 std::string& __stdcall ltrim(std::string &s);
@@ -42,7 +42,7 @@ BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr);
 BOOL __stdcall IsValidHex(const BSTR Cookie);
 BSTR __stdcall sHexFromBt(const PUCHAR btBytes, LONG cb = sizeof(GUID), bool prePend=true);
 // set byte length string to hex, note to set the correct length!
-void __stdcall sHexFromBt2(const PUCHAR btBytes, LONG cb, PBYTE memBuf) ;
+
 void __stdcall sHexFromBt(GUID* psa, BSTR *sRet);
 // creates a multibyte string from any point in memory
 // assumes you own the memory. If bytes == NULL returns zerood string
@@ -52,12 +52,11 @@ std::string __stdcall ws2s(const std::wstring& wstr);
 DATE __stdcall Now();
 BSTR __stdcall FormatDBTimeStamp(const DATE  ts);
 bool __stdcall FileExists(const wchar_t* file);
-BSTR __stdcall FileExtension(const wchar_t *file);
+
 
 STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm);
 STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj);
 
 void __stdcall FreeString(BSTR * theString);
-STDMETHODIMP SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix);
 bool __stdcall LicentieCheck(GUID *licence, BSTR licenseContents);
 STDMETHODIMP ISequentialStream_Copy( ISequentialStream* iface, ISequentialStream* pstm, ULARGE_INTEGER cb, ULARGE_INTEGER* pcbRead, ULARGE_INTEGER* pcbWritten);

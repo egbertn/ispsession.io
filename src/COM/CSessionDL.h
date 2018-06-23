@@ -8,6 +8,7 @@
 #include "CStream.h"
 #include "Application.h"
 #include <sstream>
+//STDMETHODIMP SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix);
 
 //initializes from SystemTime
 struct DBTIMESTAMP 
@@ -54,10 +55,6 @@ public:
 	LONG m_zLen; //32
 
 };
-// trim from start
-//todo: fire and forget? Nice improvement
-// binary data like this "$6\r\nfoobar\r\n" (without the quotes). The bytes need no encoding or escaping.
-// however, all strings are binary safe so escaping it as 'binary' is not necessary
 
 
 class _CpSessionStatsAccessor 
@@ -216,12 +213,13 @@ public:
 			if (newKeys.size() > 0)
 			{
 				appkeyPrefix.resize(appkeyLen);
-				SerializeKeys(newKeys, pDictionary, multipleSet, appkeyPrefix);
+
+				CApplication::SerializeKeys(newKeys, pDictionary, multipleSet, appkeyPrefix);
 			}
 			if (changedKeys.size() > 0)
 			{
 				appkeyPrefix.resize(appkeyLen);
-				SerializeKeys(changedKeys, pDictionary, multipleSet, appkeyPrefix);			
+				CApplication::SerializeKeys(changedKeys, pDictionary, multipleSet, appkeyPrefix);
 			}
 			if (changedKeys.size() > 0 || newKeys.size() > 0)
 			{
@@ -668,3 +666,4 @@ public:
 	}
 	
 };
+

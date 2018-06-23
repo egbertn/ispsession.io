@@ -7,7 +7,7 @@
 #define Demo
 // defines for ISP Session tiny edition
 
-#define EXPIREAT ( 43189) // ie: 28/2/2018
+#define EXPIREAT ( 43250) // ie: 30/5/2018
 #define MAXINSTANCES 1000
 #define STRICT
 #define UNICODE
@@ -47,14 +47,18 @@ using namespace redis3m;
 #ifdef WIN64
 #if _DEBUG
 #pragma comment(lib, "hiredis64D.lib")
+#pragma comment(lib, "Win32_Interop64D.lib")
 #else
 #pragma comment(lib, "hiredis64.lib")
+#pragma comment(lib, "Win32_Interop64.lib")
 #endif
 #else
 #if _DEBUG
 #pragma comment(lib, "hiredisD.lib")
+#pragma comment(lib, "Win32_InteropD.lib")
 #else
 #pragma comment(lib, "hiredis.lib")
+#pragma comment(lib, "Win32_Interop.lib")
 #endif
 
 #endif

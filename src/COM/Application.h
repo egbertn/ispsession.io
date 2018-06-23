@@ -137,9 +137,11 @@ public:
 	//unpacks key & value from the blob       
 	STDMETHOD (DeserializeKey)(const std::string& binaryString);
 
+	static STDMETHODIMP SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix);
 
 
 private:
+
 	STDMETHOD( HasOnStartPageBeenCalled)();
 	//IIS specific 
 	STDMETHOD(OnStartPage)(IUnknown* pctx);

@@ -445,20 +445,18 @@ STDMETHODIMP CApplication::RemoveAll() throw()
 	{
 		return hr;
 	}
+	
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
+		// avoid duplicate entries in the _removed vector
+		CComBSTR ansiKey;
+		ansiKey.Attach(((CComBSTR)k->first).ToByteString());
 		auto found = std::find_if(_removed.begin(), _removed.end(),
 			[=](string  &l){
-			CComBSTR ansiKey;
-			ansiKey.Attach(((CComBSTR2)k->first).ToByteString());
 			return l.compare((PSTR)ansiKey.m_str) == 0; });
 		if (found == _removed.end())
 		{
-			CComBSTR ansi;
-			ansi.Attach(((CComBSTR2)k->first).ToByteString());
-
-			_removed.push_back((PSTR)ansi.m_str);
-			ansi.Empty();
+			_removed.push_back((PSTR)ansiKey.m_str);
 		}
 		_dictionary.erase(k);
 	}
@@ -1349,8 +1347,68 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 	return hr;
 }
 
-/* IDatabase implementation*/
 
+/* IDatabase implementation*/
+// trim from start
+
+// todo: fire and forget ? Nice improvement
+// binary data like this "$6\r\nfoobar\r\n" (without the quotes). The bytes need no encoding or escaping.
+// however, all strings are binary safe so escaping it as 'binary' is not necessary
+ STDMETHODIMP  CApplication::SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix) throw()
+{
+
+	string k(appkeyPrefix);
+	auto prefixSize = appkeyPrefix.size();
+	string baseString;
+	CComObject<CStream>* cseqs;
+	CComObject<CStream>::CreateInstance(&cseqs);
+	CComPtr<IStream> stream;
+
+	stream = cseqs;
+	HRESULT hr = S_OK;
+	CComBSTR bstrKey;
+	LARGE_INTEGER set = { 0 };
+	ULARGE_INTEGER newpos = { 0 };
+	for (auto saddKey = 0; saddKey < keys.size(); ++saddKey)
+	{
+		ULARGE_INTEGER sze;
+		sze.QuadPart = 128;
+		stream->SetSize(sze);
+
+		stream->Seek(set, STREAM_SEEK_SET, nullptr);
+
+
+		bstrKey = keys[saddKey].c_str();
+		hr = pDictionary->SerializeKey(bstrKey, stream);
+		stream->Commit(STATFLAG_DEFAULT);//must be IStream thus 
+		hr = stream->Seek(set, STREAM_SEEK_CUR, &newpos);
+		auto cBytes = newpos.LowPart;
+		logModule.Write(L"Serialize key %s %x len %d", bstrKey, hr, cBytes);
+		BYTE buf[512] = { 0 };
+		stream->SetSize(newpos);
+		stream->Seek(set, STREAM_SEEK_SET, nullptr); //cut off to correct length
+		ULONG read = 0;
+		baseString.resize(0);
+		while (hr == S_OK)
+		{
+			hr = stream->Read(buf, sizeof(buf), &read);
+			if (read > 0)
+			{
+				baseString.append((char*)buf, read);
+			}
+		}
+		if (SUCCEEDED(hr))
+		{
+			//only set redis keys to upper, not the serialized one
+			k.resize(prefixSize);
+			k.append(str_toupper(keys[saddKey]));
+			cmd << k << baseString;
+			hr = S_OK;
+		}
+	}
+	return hr;
+
+}
 STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
 {
 	HRESULT hr = S_OK;

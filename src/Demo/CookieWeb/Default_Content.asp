@@ -96,5 +96,8 @@ We invite you to login at our website to see the secret section by clicking logi
         Response.Write Session.Contents.Key(1)
         Response.Write "<br/>"
         Response.Write Session.Contents.Exists("A0")       
+        if Cache("Count") > 30 Then
+            cache.removeall
+        End If
     %>
 </pre>

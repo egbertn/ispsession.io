@@ -9,8 +9,8 @@ Set Cache = Server.CreateObject("NWCTools.CApplication")
     
 Cache("count") = CLng(Cache("count") + 1)
 'Cache.RemoveKey "count" 'bu
-if Err.Number = &H80020009 Then
-   Response.Write "Access to Redis is denied, Check your password"
+if Err.Number = &H80020009 Or Err.Number = &HD Then
+   Response.Write "Access to Redis is denied, Check your password, connection string or server status"
    Response.End
 elseIf Err.Number <> 0 Then
 	Response.Write "During ISP Session initializiation an error occurred: 0x" 
@@ -20,7 +20,6 @@ elseIf Err.Number <> 0 Then
 	Response.Write Err.Description	
 	Response.Write "<BR>"
 	
-	Response.Write "Please check the Application Event Log to see the description for this error"
 	Response.End
 End If
 On Error GoTo 0

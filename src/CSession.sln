@@ -1,16 +1,18 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISPSessionClassicAsp", "CSessionManaged\ISPSessionClassicAsp.csproj", "{62A4037A-4427-4594-A471-BE8B3714BB24}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "ISPSessionAspNetCore", "ispsession.io.core\ISPSessionAspNetCore.xproj", "{6CDF6CF5-40DD-4267-BA27-33825DDF7B14}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{E689F604-F0DC-4B9A-87AD-84C34B05F421}"
 	ProjectSection(SolutionItems) = preProject
 		License 2016.txt = License 2016.txt
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DemoSites", "DemoSites", "{ADEB1F37-D68C-48A2-9851-81B70DC38C61}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ISPSessionClassicAsp", "CSessionManaged\ISPSessionClassicAsp.csproj", "{62A4037A-4427-4594-A471-BE8B3714BB24}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ispsession.io.core", "ispsession.io.core\ispsession.io.core.csproj", "{6CDF6CF5-40DD-4267-BA27-33825DDF7B14}"
 EndProject
 Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "nuget", "nuget.exe", "{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}"
 	ProjectSection(DebuggerProjectSystem) = preProject
@@ -27,9 +29,7 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "nuget", "nuget.exe", "{5C8A
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CSession", "COM\CSession.vcxproj", "{13A83C8F-5DFB-444F-8E89-AF41261DE804}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DemoSites", "DemoSites", "{ADEB1F37-D68C-48A2-9851-81B70DC38C61}"
-EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "CookieWebCore", "Demo\CookieWebCore\CookieWebCore.xproj", "{0FF0B2A0-E4E4-4ECC-A3F7-28026B63D069}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CookieWebCore", "Demo\CookieWebCore\CookieWebCore.csproj", "{0FF0B2A0-E4E4-4ECC-A3F7-28026B63D069}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CookieWeb", "Demo\CookieWeb\CookieWeb.csproj", "{EF69F0FC-940D-40BE-849B-DF97F50D44F8}"
 EndProject
@@ -95,18 +95,18 @@ Global
 		{6CDF6CF5-40DD-4267-BA27-33825DDF7B14}.Release|x64.Build.0 = Release|Any CPU
 		{6CDF6CF5-40DD-4267-BA27-33825DDF7B14}.Release|x86.ActiveCfg = Release|Any CPU
 		{6CDF6CF5-40DD-4267-BA27-33825DDF7B14}.Release|x86.Build.0 = Release|Any CPU
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|Any CPU.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|Lib.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|Mixed Platforms.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|Win32.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|x64.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|x86.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|Any CPU.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|Lib.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|Mixed Platforms.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|Win32.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|x64.ActiveCfg = Debug
-		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|x86.ActiveCfg = Debug
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|Any CPU.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|Lib.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|Mixed Platforms.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|Win32.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|x64.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Debug|x86.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|Any CPU.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|Lib.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|Mixed Platforms.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|Win32.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|x64.ActiveCfg = Release
+		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|x86.ActiveCfg = Release
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Lib.ActiveCfg = Debug|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
@@ -119,8 +119,8 @@ Global
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|x86.Build.0 = Debug|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Release|Any CPU.ActiveCfg = Release|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Release|Lib.ActiveCfg = Release|Win32
-		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Release|Mixed Platforms.Build.0 = Release|x64
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Release|Win32.ActiveCfg = Release|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Release|Win32.Build.0 = Release|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Release|x64.ActiveCfg = Release|x64
@@ -231,5 +231,8 @@ Global
 		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9} = {E689F604-F0DC-4B9A-87AD-84C34B05F421}
 		{0FF0B2A0-E4E4-4ECC-A3F7-28026B63D069} = {ADEB1F37-D68C-48A2-9851-81B70DC38C61}
 		{EF69F0FC-940D-40BE-849B-DF97F50D44F8} = {ADEB1F37-D68C-48A2-9851-81B70DC38C61}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CB05EA8C-EF5B-4016-9A8C-14D6BA07167A}
 	EndGlobalSection
 EndGlobal

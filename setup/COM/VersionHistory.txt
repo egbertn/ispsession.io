@@ -1,3 +1,9 @@
+8.2.0.158
+	Fixes cache.removeall() which caused a crash.
+	Note, that the cache feature, needs to be licensed seperately.
+	Add the key like this for the demo.
+	<add key="ispsession_io:CacheLicense" value="F01FB5D0BCA6CE4C8CC773916F281C32"/>
+	
 8.2
 	Interface
 	=========

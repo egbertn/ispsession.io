@@ -446,7 +446,7 @@ STDMETHODIMP CApplication::RemoveAll() throw()
 		return hr;
 	}
 	
-	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
+	for (auto k = _dictionary.begin(); k != _dictionary.end(); )
 	{
 		// avoid duplicate entries in the _removed vector
 		CComBSTR ansiKey;
@@ -458,7 +458,7 @@ STDMETHODIMP CApplication::RemoveAll() throw()
 		{
 			_removed.push_back((PSTR)ansiKey.m_str);
 		}
-		_dictionary.erase(k);
+		_dictionary.erase(k++);
 	}
 	return hr;
 }
@@ -592,12 +592,43 @@ STDMETHODIMP CApplication::InitializeDataSource() throw()
 		}
 	}
 
-    bstrProp = L"APP_KEY";
+	GUID license = { 0 };
+
+	bstrProp = L"CacheLicense";
+	bstrProp.Insert(0, prefix);
+	bstrProp.Attach(config.AppSettings(bstrProp));
+	if (!bstrProp.IsEmpty())
+	{
+		setstring((const PUCHAR)&license, bstrProp);
+	}
+	bstrProp = L"ClassicCsession.LIC";
+	bstrProp.Insert(0, prefix);
+	bstrProp.Attach(config.AppSettings(bstrProp));
+	CComBSTR strLicensedFor;
+	if (bstrProp.Length() != 0)
+	{
+		strLicensedFor.Attach(bstrProp.Detach());//move
+	}
+
+	auto licenseOK = LicentieCheck(&license, strLicensedFor);
+
+#ifndef Demo	
+	if (licenseOK == false)
+	{
+		hr = CLASS_E_NOTLICENSED;
+		Error(L"No valid License Found", CLSID_NWCSession, hr);
+		return hr;
+	}if (licenseOK == false)
+	{
+		Sleep(200);
+	}
+#endif
+
+	bstrProp = L"APP_KEY";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 
 	logModule.Write(L"AppKey: (%s)", bstrProp.m_str);
-
 
 	if (setstring(reinterpret_cast<PUCHAR>(&m_AppKey), bstrProp) == FALSE)
 	{

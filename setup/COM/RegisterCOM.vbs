@@ -23,14 +23,14 @@ isW64 = (oEnv("PROCESSOR_ARCHITECTURE") = "AMD64")
 '=========== check bitness and download & run VC runtime setup silently
 If isW64 Then
     version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "system32"), "msvcp140.dll"))
-    'vc 14.0.24210.0
-    
-    If version(2) < 24210  Then  
+    'vc 14.0.26405.0
+    'WScript.Echo version(2)    
+    If version(2) < 26405  Then  
         DownloadToTempAndRun 64
     End If
 
     version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "SysWOW64"), "msvcp140.dll"))    
-    If version(2) < 24210  Then  
+    If version(2) < 26405  Then  
         DownloadToTempAndRun 32
     End If
     'register COM components
@@ -72,11 +72,11 @@ Sub DownloadToTempAndRun(bits)
     Set owinHttp = CreateObject("WinHttp.WinHttpRequest.5.1")
     Set stream = CreateObject("ADODB.Stream")
     stream.Type = 1 'binary
-    'as of 2016, november these files exist
+    'checked at June 24, 2018: these files exist
     ' english runtime
 
-    vArray = Array("https://download.visualstudio.microsoft.com/download/pr/11100230/15ccb3f02745c7b206ad10373cbca89b/VC_redist.x64.exe", _
-        "https://download.visualstudio.microsoft.com/download/pr/11100229/78c1e864d806e36f6035d80a0e80399e/VC_redist.x86.exe")
+    vArray = Array("https://download.visualstudio.microsoft.com/download/pr/12328699/a80e967515b2a4faf37bf15387f1c5c3/VC_redist.x64.exe", _
+        "https://download.visualstudio.microsoft.com/download/pr/12319034/ccd261eb0e095411af3b306273231b68/VC_redist.x86.exe")
     
     If Bits = 32 Then
         pos = 1       

@@ -219,7 +219,7 @@ void LoggingModule::Write(PCWSTR pszFormat, ...) throw()
 	{
 		ULONGLONG nCurLen;
 		m_file.GetPosition(nCurLen);
-		CComBSTR ansi;
+	
 
 		if (nCurLen > 1024  * 1024 * 1024)
 		{
@@ -260,9 +260,9 @@ void LoggingModule::Write(PCWSTR pszFormat, ...) throw()
 		
 		if (appendCrLf)
 			m_bstrTrace.Append(L"\r\n", 2);
+		auto ansi = m_bstrTrace.ToString();
 		
-		ansi.Attach((m_bstrTrace.ToByteString()));
-		m_file.Write(ansi.m_str, ansi.ByteLength());
+		m_file.Write(ansi.c_str(), ansi.length());
 		//clear buffer so we can be sure the buffer advances
 	//	m_file.Flush();
 		//if (mutResult != NULL)

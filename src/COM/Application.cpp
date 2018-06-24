@@ -416,23 +416,18 @@ STDMETHODIMP CApplication::Remove(BSTR Key) throw()
 	{
 		_dictionary.erase(pos);
 		//avoid duplicates the vector is not a unique dictionary
-		CComBSTR ansiKey, k;
+		CComBSTR ansiKey;
 		ansiKey.Attach(Key);//steal
-		k.Attach(ansiKey.ToByteString());
+		auto k = ansiKey.ToString();
 		ansiKey.Detach();//give back
 
 		auto found = std::find_if(_removed.begin(), _removed.end(),
 			[=](string  &l){ 
-			return  l.compare((PCSTR)k.m_str) == 0; });
+			return  l.compare(k) == 0; });
 		if (found == _removed.end())
 		{
-			CComBSTR ansi;
-			CComBSTR orig;
-			orig.Attach(Key);
-			ansi.Attach(orig.ToByteString());
-			orig.Detach();
-			_removed.push_back((PSTR)ansi.m_str);
-			ansi.Empty();
+			_removed.push_back(k);
+			
 		}
 		logModule.Write(L"remove key %s", Key);		
 	}
@@ -450,14 +445,14 @@ STDMETHODIMP CApplication::RemoveAll() throw()
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); )
 	{
 		// avoid duplicate entries in the _removed vector
-		CComBSTR ansiKey;
-		ansiKey.Attach(((CComBSTR)k->first).ToByteString());
+		auto ansiKey = k->first.ToString();
+		
 		auto found = std::find_if(_removed.begin(), _removed.end(),
 			[=](string  &l){
-			return l.compare((PSTR)ansiKey.m_str) == 0; });
+			return l.compare(ansiKey) == 0; });
 		if (found == _removed.end())
 		{
-			_removed.push_back((PSTR)ansiKey.m_str);
+			_removed.push_back(ansiKey);
 		}
 		_dictionary.erase(k++);
 	}
@@ -473,11 +468,11 @@ STDMETHODIMP  CApplication::LockKey(BSTR Key) throw()
 		return hr;
 	}
 	CComBSTR appkey(m_AppKey);
-	CComBSTR bytesAppKey;
-	bytesAppKey.Attach(appkey.ToByteString());
+	auto  bytesAppKey = appkey.ToString();
+	
 	//https://github.com/jacket-code/redlock-cpp/blob/master/LockExample.cpp
 	//dlm->Lock((PSTR)bytesAppKey, 100000, myLock);
-	CComBSTR appKey(m_AppKey);
+	//CComBSTR appKey(m_AppKey);
 
 	return hr;	
 }
@@ -1507,8 +1502,7 @@ STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString) throw
 		{
 			pos->second.IsSerialized = TRUE;
 		}
-		val.Detach(&pos->second.val);		 
-
+		val.Detach(&pos->second.val);	
 	}
 	else
 	{
@@ -1533,39 +1527,35 @@ STDMETHODIMP CApplication::get_KeyStates(
 	removed_keys.clear();
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
-		CComBSTR ansi;
-		ansi.Attach(((CComBSTR2)(*k).first).ToByteString());
-		if (ansi.IsEmpty())
+		auto ansi = (*k).first.ToString();
+		
+		if (ansi.empty())
 		{
 			logModule.Write(L"Severe error, empty key found");
 			continue;
-		}		
-		string key((PSTR)ansi.m_str, ansi.ByteLength());
-		ansi.Empty();
-
+		}				
 		
 		if (k->second.IsNew == TRUE)
 		{
-			new_keys.push_back(key);
+			new_keys.push_back(ansi);
 		}
 		else if (k->second.IsDirty == TRUE)
 		{
-			dirty_keys.push_back(key);
-
+			dirty_keys.push_back(ansi);
 		}
 		else
 		{
-			other_keys.push_back(key);
+			other_keys.push_back(ansi);
 		}
 		if (k->second.ExpireAt > 0)
 		{
-			expire_keys.push_back(std::pair<string, INT>(key, k->second.ExpireAt));
+			expire_keys.push_back(std::pair<string, INT>(ansi, k->second.ExpireAt));
 		}
 	}
 	auto sz = _removed.size();
 	for (auto x = 0; x < sz; ++x)
 	{
-		removed_keys.push_back(_removed[x].c_str());
+		removed_keys.push_back(_removed[x]);
 	}
 	return hr;
 }

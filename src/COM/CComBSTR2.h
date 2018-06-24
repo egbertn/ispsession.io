@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string>
 #ifndef CComBSTR
 #define CComBSTR CComBSTR2
 #endif
@@ -182,17 +182,36 @@ public:
 #endif
 		return &m_str;
 	}
-
+	// returns a UTF-8 encoded string of type std::string
+	std::string __stdcall ToString() const
+	{
+		if (*this == NULL)
+		{
+			return nullptr;
+		}
+		CComBSTR utf8;
+		auto copyByteSTring = ToByteString();
+		utf8.Attach(copyByteSTring);
+		return std::move( std::string((PSTR)utf8.m_str, utf8.ByteLength()));
+	}
+	std::wstring __stdcall ToWString() const throw()
+	{
+		if (*this == NULL)
+		{
+			return nullptr;
+		}
+	
+		return std::move(std::wstring(m_str, Length()));
+	}
 	BSTR __stdcall Copy() const throw()
 	{
 		if (*this == NULL)
 			return NULL;
-		else
-		{
-			unsigned int copyLen = ByteLength();
-			BSTR retVal = ::SysAllocStringByteLen((char*)m_str, copyLen);			
-			return retVal;
-		}
+
+		unsigned int copyLen = ByteLength();
+		BSTR retVal = ::SysAllocStringByteLen((char*)m_str, copyLen);			
+		return retVal;
+		
 	
 	}
 	_Check_return_ HRESULT CopyTo(_Outptr_result_maybenull_ _Result_nullonfailure_ BSTR* pbstr) const throw()
@@ -212,9 +231,9 @@ public:
 	}
 
 	// *** returns true if length equals zero characters or when unallocated(null pointer)
-	bool __stdcall IsEmpty (void) throw()
+	bool __stdcall IsEmpty (void) const throw()
 	{
-		return m_str == NULL || Length() == 0;
+		return m_str == NULL || ByteLength() == 0;
 	}
 	/* added by may 2005 e.n. needs #include 'wchar.h'*/
 	STDMETHODIMP Format(_In_ PCWSTR pszFormat, _In_ va_list args) throw()
@@ -1096,25 +1115,29 @@ public:
 	}
 	//creates a copy to a byteencoded string
 	// optimal usage, attach to it...
-	BSTR ToByteString(_In_ UINT codePage=CP_UTF8) 
+	BSTR ToByteString(_In_ UINT codePage=CP_UTF8) const
 	{
 		if (!IsEmpty())
-		{
-			UINT len = Length();
-			UINT neededLen = len * 4;
-
-			BSTR pszA = SysAllocStringByteLen(NULL, neededLen);
-			memset(pszA, 0, neededLen);
+		{	
+			UINT neededLen = 0;
+			auto len = Length();
+			BSTR pszA = NULL;  ;
+			//memset(pszA, 0, neededLen);
 			SetLastError(0);
 			int _convert = WideCharToMultiByte(codePage, 0, m_str, len, (PSTR)pszA, neededLen, NULL, NULL);
-			if (_convert == 0 && GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+			auto err = GetLastError();
+			if (_convert > 0) //ERROR_INSUFFICIENT_BUFFER not always set, so do not check
 			{
-				_convert = WideCharToMultiByte(codePage, 0, m_str, len, NULL, 0, NULL, NULL);
-				_SetByteLength(&pszA, _convert);
-				_convert = WideCharToMultiByte(codePage, 0, m_str, len, (PSTR)pszA, _convert, NULL, NULL);	
+				auto hr = _SetByteLength(&pszA, _convert);
+				if (SUCCEEDED(hr))
+					_convert = WideCharToMultiByte(codePage, 0, m_str, len, (PSTR) pszA, _convert, NULL, NULL);
+				else
+					AtlThrowImpl(hr);
+				
 			}
-			if (_convert == 0 && GetLastError() > 0)
-				AtlThrowLastWin32();
+			err = GetLastError();
+			if (_convert == 0 && err > 0)
+				AtlThrowImpl(HRESULT_FROM_WIN32(err));
 			_SetByteLength(&pszA, _convert);
 
 			return pszA;

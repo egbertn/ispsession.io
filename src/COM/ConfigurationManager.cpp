@@ -44,10 +44,9 @@ void ConfigurationManager::Init() throw()
 time_t ConfigurationManager::GetFileTime() throw()
 {	
 	struct ::stat stResult;
-	CComBSTR ansi(_szFilePath);
-	ansi.Attach(ansi.ToByteString());
+	auto  ansi = _szFilePath.ToString();	
 	
-	auto result=	stat((char*)ansi.m_str, &stResult);		// get the attributes of afile.txt
+	auto result=	stat(ansi.c_str(), &stResult);		// get the attributes of afile.txt
 	if (result != 0)
 	{
 		return 0;

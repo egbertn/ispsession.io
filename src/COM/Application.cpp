@@ -1,3 +1,4 @@
+// CApplication Copyright ADC Cure 2017-2018
 #include "stdafx.h"
 //TODO: 15-10-2017 make a REAL headerfile for CSessionDL because the split functions are not included at all in secundary includes.
 #include "CSessionDL.h"
@@ -1379,7 +1380,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 }
 
 
-/* IDatabase implementation*/
+/* IKeySerializer implementation*/
 // trim from start
 
 // todo: fire and forget ? Nice improvement
@@ -1569,7 +1570,7 @@ STDMETHODIMP CApplication::get_KeyStates(
 	return hr;
 }
 
-/* END IDatabase*/
+/* END IKeySerializer*/
 
 STDMETHODIMP CApplication::EnsureBuffer(INT newBuffer) throw()
 {

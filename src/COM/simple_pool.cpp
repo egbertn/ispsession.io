@@ -1,5 +1,8 @@
 // Copyright (c) 2014 Luca Marturana. All rights reserved.
 // Licensed under Apache 2.0, see LICENSE for details
+// Added some pooling logics. e.g. a mutex was added to create thread safety
+// Added timing logic (TimerThread), after X (say 20) seconds, a connection is removed from the pool.
+
 #include "stdafx.h"
 #include "include/redis3m/simple_pool.h"
 #include "include/redis3m/command.h"

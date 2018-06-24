@@ -126,7 +126,7 @@ public:
 	STDMETHOD(get_KeyType)(BSTR Key, SHORT* pVal);
 
 	// public but not exposed to IDL
-	////IDatabase
+	////IKeySerializer
 	STDMETHOD (get_KeyStates)(
 		std::vector<string> &dirty_keys,
 		std::vector<string> &new_keys,

@@ -1,5 +1,6 @@
 // Copyright (c) 2014 Luca Marturana. All rights reserved.
 // Licensed under Apache 2.0, see LICENSE for details
+// Some modifications, added some fixes, times out within 5 seconds
 #include "stdafx.h"
 #include "include\redis3m\connection.h"
 #include "include\hiredis\hiredis.h"
@@ -15,21 +16,7 @@ connection::connection(const std::string& host, const unsigned port/*, const std
         redisFree(c);
         throw unable_to_connect();
     }
-	//if (!password.empty())
-	//{
-	//	redisReply *reply = (redisReply*)redisCommand(c, "AUTH %s", password.c_str());
-	//	auto status = false; 
-	//	if (reply != nullptr)
-	//	{
-	//		status = reply->type == REDIS_REPLY_STRING;
-	//		freeReplyObject(reply);
-	//	}		
 
-	//	if (status == false)
-	//	{
-	//		throw unable_to_connect("authentication error");
-	//	}
-	//}
 }
 
 connection::connection(const std::string& path)

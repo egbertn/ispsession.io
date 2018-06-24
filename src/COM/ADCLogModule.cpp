@@ -2,8 +2,8 @@
 #include "adclogmodule.h" 
 #include "tools.h"
 
-// Copyright 2006 ADC Cure
-// this code is no free public source.
+// Copyright ADC Cure 2006-2018 
+// this code is no free public source, but only provided as shared source, when you have obtained a license
 
 LoggingModule::LoggingModule(void) throw() : 
 	m_LoggingEnabled(0)	

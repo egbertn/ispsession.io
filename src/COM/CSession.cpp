@@ -1,5 +1,5 @@
 // CSession.cpp : Implementation of DLL Exports.
-
+// CSession Copyright ADC Cure 2002-2018
 #include "stdafx.h"
 #include "resource.h"
 #include "CSession_i.c"

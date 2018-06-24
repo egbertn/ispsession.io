@@ -1,4 +1,4 @@
-//copyright ADC Cure 2014
+//copyright ADC Cure 2014-2018
 #include "StdAfx.h"
 #include "CStream.h"
 

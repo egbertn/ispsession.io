@@ -1,3 +1,4 @@
+// Tools Copyright ADC Cure 2017-2018
 #include "stdafx.h"
 #include <string>
 #include "tools.h"

@@ -1,4 +1,4 @@
-// CVariantDictionary Copyright ADC Cure 2005-2017
+// CVariantDictionary Copyright ADC Cure 2005-2018
 #include "stdafx.h"
 
 #include "CStream.h"

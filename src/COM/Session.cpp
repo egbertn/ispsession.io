@@ -1,5 +1,5 @@
 // Session.cpp : Implementation of NWCSession
-// Copyright ADC Cure 2014
+// Copyright ADC Cure 2002-2018
 #include "stdafx.h"
 #include "CSessionDL.h"
 #include "ConfigurationManager.h"

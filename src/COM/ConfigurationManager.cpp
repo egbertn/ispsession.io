@@ -1,3 +1,4 @@
+// ConfigurationManager Copyright ADC Cure 2015-2018
 #include "stdafx.h"
 #include "tools.h"
 #include <ctime>

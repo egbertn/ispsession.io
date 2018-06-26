@@ -844,6 +844,7 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 			}
 			int backup = logModule.get_Logging(); // disable for the moment
 			logModule.set_Logging(0);
+			logModule.set_TempLocation(0);
 			for (;;)
 			{
 				if (rgIndices[dimPointer] <

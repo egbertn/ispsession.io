@@ -146,6 +146,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	{
 		auto enableLogging = bstrProp.ToLong();
 		logModule.set_Logging(enableLogging);
+		logModule.set_TempLocation(0);
 		logModule.Write(L"Read dologging %d", enableLogging);
 	}
 

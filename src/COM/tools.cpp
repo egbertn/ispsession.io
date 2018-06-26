@@ -5,7 +5,9 @@
 
 #include "CStream.h"
 #include "ConfigurationManager.h"
-
+//#include <sys/stat.h>
+#include <filesystem>
+using namespace std::experimental;
 std::wstring& __stdcall ltrim(std::wstring &s) 
 {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
@@ -92,13 +94,9 @@ void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elem
 
 bool __stdcall FileExists(const wchar_t * FileName) throw()
 {
-	FILE *file;
-	bool result = false;
-	if ((_wfopen_s(&file , FileName, L"r") == 0)) {
-		fclose(file);
-		result = true;
-	}
-	return result;
+	CComBSTR bstrFileName(FileName);
+	auto ansi = bstrFileName.ToString();
+	return filesystem::exists(ansi);
 }
 //attach to it
 // e.g. searching on web.Config will return .Config

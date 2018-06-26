@@ -5,8 +5,8 @@
 // Copyright ADC Cure 2006-2018 
 // this code is no free public source, but only provided as shared source, when you have obtained a license
 
-LoggingModule::LoggingModule(void) throw() : 
-	m_LoggingEnabled(0)	
+LoggingModule::LoggingModule(void) throw() :
+	m_LoggingEnabled(0)
 {
 }
 void LoggingModule::set_TempLocation(int location) throw()
@@ -23,24 +23,34 @@ bool LoggingModule::HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask = (FILE_
 		return false;
 	}
 	CDacl pDacl;
-	s.GetDacl(&pDacl);
-	/*DWORD maxSid = SECURITY_MAX_SID_SIZE;
-	PSID buf = ::LocalAlloc(LMEM_FIXED, maxSid);
-	
-	
-	BOOL resultSid = ::CreateWellKnownSid(WELL_KNOWN_SID_TYPE::WinBuiltinIUsersSid, NULL, buf, &maxSid);
-	PWSTR stringSid = NULL;
-	resultSid = ::ConvertSidToStringSidW(buf, &stringSid);*/
-	
-	//::LocalFree(buf);		
-	TRUSTEEW trustee = { nullptr, NO_MULTIPLE_TRUSTEE,
-		TRUSTEE_FORM::TRUSTEE_IS_NAME,
-		TRUSTEE_TYPE::TRUSTEE_IS_USER,  L"CURRENT_USER"}; //stringSid
-	
+	if (s.GetDacl(&pDacl) == false)
+	{
+		return false;
+	}
 
-	ACCESS_MASK accessRights;
-	DWORD checkRights = ::GetEffectiveRightsFromAclW((PACL)pDacl.GetPACL(), &trustee, &accessRights);
-	//::LocalFree(stringSid);
+
+	CAccessToken accessToken;
+	CSid currentUserSid;
+	if (!(accessToken.GetThreadToken(TOKEN_READ) && accessToken.GetUser(&currentUserSid)))
+	{
+		bool result = accessToken.GetProcessToken(TOKEN_READ) &&
+			accessToken.GetUser(&currentUserSid);
+		if (result == false)
+		{
+			return result;
+		}
+	}
+	
+	TRUSTEEW trustee = { nullptr, NO_MULTIPLE_TRUSTEE,
+		TRUSTEE_FORM::TRUSTEE_IS_SID,
+		TRUSTEE_TYPE::TRUSTEE_IS_USER, (LPTSTR) currentUserSid.GetPSID() };
+	
+	// note TRUSTEE_IS_UNKNOWN delivers invalid SID at EffectiveRightsFromAcl (1337)
+	
+	ACCESS_MASK accessRights; //Remember you won't get IIS AppPool\DefaultAppPool but IUSR when currentUserSid.AccountName()
+	auto checkRights = ::GetEffectiveRightsFromAcl((PACL)pDacl.GetPACL(), &trustee, &accessRights);
+	
+	auto error = ::GetLastError();
 	if (checkRights != ERROR_SUCCESS)
 	{	
 		return false;

@@ -477,9 +477,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Application.rgs" />
-    <None Include="CSession.config">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="CSession.def" />
     <None Include="CSession.rgs" />
     <CustomBuild Include="message.mc">

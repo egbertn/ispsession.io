@@ -327,11 +327,10 @@ STDMETHODIMP NWCSession::Initialize() throw()
 	
 	tmpdate = Now();
 	if (tmpdate > MAXTIME) 
-	{	hr = E_ACCESSDENIED;
-		Error(L"NWCTools.CSession DEMO Compatible ASP Session replacer expired! We would welcome your order at <a href=\"http://www.nieropwebconsult.nl/asp_session_manager.htm?page=order\">order here</a>", GUID_NULL, hr);				
-		goto error;
+	{
+		strTemp = L"NWCTools.CSession DEMO Compatible ISP Session - Session replacer expired! We would welcome your order at <a href=\"https://ispsession.io/purchase\">order here</a>";
+		m_piResponse->Write(CComVariant(strTemp));
 	}	
-	strTemp = L"NWCTools.CSession DEMO Compatible ASP Session replacer expired! We would welcome your order at <a href=\"http://www.nieropwebconsult.nl/asp_session_manager.htm?page=order\">order here</a>";
 	t = strTemp.Length();	
 	#endif
 	if (blnSnifQueryStringFirst == TRUE)

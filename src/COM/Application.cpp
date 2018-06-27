@@ -27,6 +27,9 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 	{
 		return E_POINTER;
 	}
+#ifdef EXPIREAT 
+	DATE MAXTIME = EXPIREAT;
+#endif
 	HRESULT hr = aspsvc->QueryInterface(&m_pScriptContext);
 	if (FAILED(hr))
 	{
@@ -53,12 +56,34 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 	{
 		m_OnStartPageCalled = TRUE;
 	}
-//#ifndef Demo
-//	if (licenseOK == false)
-//	{
-//		m_piResponse->Write(CComVariant(L"The license for this server is invalid. Please contact ADC Cure for an updated license at information@adccure.nl"));
-//	}
-//#endif
+#ifndef Demo
+	if (m_licenseOK == false)
+	{
+		CComPtr<IResponse> pResponse;
+		m_pScriptContext->get_Response(&pResponse);
+		pResponse->Write(CComVariant(L"The Cache Module License for this server is invalid. Please contact ADC Cure for an updated license at informationATadccure.nl"));
+	}
+#else
+
+	CComBSTR strTemp;
+	int t;
+	double tmpdate;
+
+	tmpdate = Now();
+	CComPtr<IResponse> pResponse;
+	m_pScriptContext->get_Response(&pResponse);
+	strTemp = L"NWCTools.CSession DEMO Compatible ISP Session Application Cache expired! We would welcome your order at <a href=\"https://ispsession.io/purchase\">order here</a>";
+	if (tmpdate > MAXTIME)
+	{
+		pResponse->Write(CComVariant(strTemp));
+	}
+	t = strTemp.Length();
+	t = t / t;
+	if (t == 0)
+	{
+		return E_ABORT;
+	}
+#endif
 	return hr;
 
 }
@@ -606,18 +631,16 @@ STDMETHODIMP CApplication::InitializeDataSource() throw()
 		strLicensedFor.Attach(bstrProp.Detach());//move
 	}
 
-	auto licenseOK = LicentieCheck(&license, strLicensedFor);
+	m_licenseOK = LicentieCheck(&license, strLicensedFor);
 
 #ifndef Demo	
-	if (licenseOK == false)
+	/*if (licenseOK == false)
 	{
 		hr = CLASS_E_NOTLICENSED;
 		Error(L"No valid License Found", CLSID_NWCSession, hr);
 		return hr;
-	}if (licenseOK == false)
-	{
-		Sleep(200);
-	}
+	}*/
+	
 #endif
 
 	bstrProp = L"APP_KEY";

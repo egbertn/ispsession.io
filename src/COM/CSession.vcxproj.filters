@@ -102,9 +102,6 @@
     <None Include="Session.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="CSession.config">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="Application.rgs">
       <Filter>Resource Files</Filter>
     </None>

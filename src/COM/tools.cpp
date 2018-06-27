@@ -711,7 +711,7 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 		buf.Insert(0, L" ");
 		lines.Attach(buf.Split(L" "));
 	}
-	lines.SetAt(0, ::SysAllocString(L"ISP Session Version 8.0"), false);
+	lines.SetAt(0, ::SysAllocString(licenseType>=5 ? L"ISP Session Cache 8.0": L"ISP Session Version 8.0"), false);
 
 	ULONG arraySize = lines.GetCount();
 	bool foundLicensedItem = false;
@@ -725,7 +725,7 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 			break;
 		}
 	}
-	if (foundLicensedItem == false && licenseType != 4)
+	if (foundLicensedItem == false && (licenseType != 4 && licenseType != 8))
 	{
 		logModule.Write(L"Could not find licensedItem %s in allowed licensee %s", cwName.m_str, buf);
 		return false;
@@ -745,11 +745,14 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 		checkCode, hashcode, checkCode2);
 	switch (licenseType)
 	{
+	case 5: case 6: case 7:
+		
 	case 1: case 2: case 3://isp session simple / advanced & ent
 		if (hashcode == checkCode)
 			retVal = true;
 
 		break;
+	case 8:
 	case 4://isp session blk this just checks the GUID, not the given domain name
 
 		buf = (LONG)licenseType;

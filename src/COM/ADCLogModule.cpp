@@ -20,6 +20,7 @@ bool LoggingModule::HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask = (FILE_
 	auto result = AtlGetSecurityDescriptor(fileToCheck, SE_OBJECT_TYPE::SE_FILE_OBJECT, &s, DACL_SECURITY_INFORMATION, true);
 	if (result == false)
 	{
+		logModule.Write(L"Fail on AtlGetSecurityDescriptor %x", AtlHresultFromLastError());
 		return false;
 	}
 	CDacl pDacl;
@@ -28,31 +29,28 @@ bool LoggingModule::HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask = (FILE_
 		return false;
 	}
 
-
 	CAccessToken accessToken;
 	CSid currentUserSid;
-	if (!(accessToken.GetThreadToken(TOKEN_READ) && accessToken.GetUser(&currentUserSid)))
-	{
-		bool result = accessToken.GetProcessToken(TOKEN_READ) &&
-			accessToken.GetUser(&currentUserSid);
-		if (result == false)
-		{
-			return result;
-		}
+	if (!(accessToken.GetThreadToken(TOKEN_READ, 0, false) && accessToken.GetUser(&currentUserSid))) // return IUSR
+	{	
+		logModule.Write(L"Fail on GetProcessToken %x", AtlHresultFromLastError());
 	}
+
 	
-	TRUSTEEW trustee = { nullptr, NO_MULTIPLE_TRUSTEE,
+	TRUSTEE trustee = { nullptr, MULTIPLE_TRUSTEE_OPERATION::NO_MULTIPLE_TRUSTEE,
 		TRUSTEE_FORM::TRUSTEE_IS_SID,
-		TRUSTEE_TYPE::TRUSTEE_IS_USER, (LPTSTR) currentUserSid.GetPSID() };
+		TRUSTEE_TYPE::TRUSTEE_IS_USER, (LPTSTR) currentUserSid.GetPSID() }; //don't use BuildTrusteeWithSid it sets TRUSTEE_IS_UNKNOWN
 	
 	// note TRUSTEE_IS_UNKNOWN delivers invalid SID at EffectiveRightsFromAcl (1337)
 	
 	ACCESS_MASK accessRights; //Remember you won't get IIS AppPool\DefaultAppPool but IUSR when currentUserSid.AccountName()
 	auto checkRights = ::GetEffectiveRightsFromAcl((PACL)pDacl.GetPACL(), &trustee, &accessRights);
 	
-	auto error = ::GetLastError();
+
 	if (checkRights != ERROR_SUCCESS)
 	{	
+		
+		logModule.Write(L"Fail on GetEffectiveRightsFromAcl %d", checkRights);
 		return false;
 	}
 	
@@ -80,7 +78,8 @@ void LoggingModule::set_Logging(int enable) throw()
 			m_logFileName.SetLength((unsigned int)wcslen(m_logFileName));
 			//	m_MutexName.Format(L"Global\\%s", m_logFileName.m_str);
 			CComBSTR buf(MAX_PATH);
-
+			// note, GetTempPathW would attempt IUSR in C:\Users\IUSR\AppData\Local\Temp
+			// it automatically will return \Windows\Temp but that is undocumented. So we do it ourselves
 			UINT bufLen = m_tempLocation == 0 ? ::GetSystemWindowsDirectoryW(buf, MAX_PATH) : ::GetTempPathW(MAX_PATH, buf);
 
 			if (bufLen == 0)
@@ -108,28 +107,6 @@ void LoggingModule::set_Logging(int enable) throw()
 			m_logFileName.Insert(0, path);			
 		}
 
-		//Create EveryOne in a language independent way
-		//SID_IDENTIFIER_AUTHORITY sia = { SECURITY_WORLD_SID_AUTHORITY };
-		//CSid everyone(sia, 1, SECURITY_WORLD_RID);
-
-		//// we must use a Security Descriptor, otherwise other w3wp.exe processes cannot
-		//// inherit the mutex!
-		//CSecurityDescriptor secDescr;
-		//// ATL does not initialize this object at construction??
-		//HRESULT hr = secDescr.Initialize();
-		//if (hr == S_OK) hr = secDescr.Allow((PSID)everyone.GetPSID(), SYNCHRONIZE);
-		//if (FAILED(hr))
-		//{
-		//	buf.Format(L"secDescr.Allow failed with %x\n", hr);
-		//	OutputDebugStringW(buf);
-		//	m_LoggingEnabled ^= 1;
-		//	return;
-		//}
-		//SECURITY_ATTRIBUTES SecAttrs = { sizeof(SecAttrs), secDescr, TRUE };
-		// create the mutex without owning it.
-		// if another process (w3wp) already did the creation
-		// we just ignore the error and m_hMutex stays nill
-//		m_hMutex.Create(&SecAttrs, FALSE, m_MutexName);
 		OpenFile();
 	}
 	else
@@ -168,35 +145,7 @@ void LoggingModule::Write(PCWSTR pszFormat, ...) throw()
 	else if ((m_LoggingEnabled & 1) == 1)
 	{
 		
-		//BOOL result = mutResult.Open(SYNCHRONIZE, FALSE, m_MutexName);
-		//if (result == TRUE)
-		//{			
-		//	DWORD dwWaitResult = ::WaitForSingleObject( 
-		//			mutResult,   // handle to mutex
-		//			10L);   // 10 ms second
-	 //
-		//	switch (dwWaitResult) 
-		//	{
-		//		// The thread got mutex ownership.
-		//	case WAIT_OBJECT_0: break; //ok
-		//	// Cannot get mutex ownership due to time-out.
-		//	case WAIT_TIMEOUT:
-		//	// Got ownership of the abandoned mutex object.
-		//	case WAIT_ABANDONED: 
-		//		OutputDebugStringW(L"error on LoggingModule::Write OpenMutex\n");
-		//		noFileAccess = true;
-		//		mutResult.Release();
-		//		mutResult.Close();
-		//		break;
-		//	}
-		//}
-		//else
-		//{
-		///*	m_fmt.Format(L"coult not create mutex to %s err(%d)\n", m_logFileName, GetLastError());
-		//	OutputDebugStringW(m_fmt);*/
-		//	
-		//	noFileAccess = true;
-		//}
+		
 	}
 	CComBSTR m_bstrTrace;
 	va_list ptr;

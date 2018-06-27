@@ -102,6 +102,7 @@ private:
 	BOOL m_doLogging;
 	BOOL m_OnStartPageCalled ;
 	GUID m_AppKey;
+	BOOL m_licenseOK;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 	std::map<CComBSTR, ElementModel, KeyComparer> _dictionary;
 	std::vector<string> _removed; // do not change to char* for some unknown reason, this gets corrupted

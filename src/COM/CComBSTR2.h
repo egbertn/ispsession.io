@@ -1651,8 +1651,30 @@ public:
 		HRESULT hr = ::VarBstrFromR8(pSrc, ::GetThreadLocale(), LOCALE_NOUSEROVERRIDE, &m_str);
 		if (FAILED(hr)) AtlThrow(hr);
 		return *this;
-	}	
+	}
+	CComBSTR2& __stdcall operator=(_In_opt_ const std::wstring pSrc)
+	{
+		
+		if (!pSrc.empty())
+		{
+			if (::SysReAllocStringLen(&m_str, pSrc.c_str(), pSrc.length()) == FALSE)
+				AtlThrow(E_OUTOFMEMORY);
+		}
+		else
+		{
+			Empty();
+		}
+		return *this;
+	}
 
+	CComBSTR2& __stdcall operator=(_In_opt_ const std::string pSrc)
+	{
+		Empty();
+		m_str = A2WBSTR(pSrc.c_str(), pSrc.length());
+		if (m_str == NULL && !pSrc.empty())
+			AtlThrow(E_OUTOFMEMORY);
+		return *this;
+	}
 	CComBSTR2& __stdcall operator=(_In_opt_ LPCSTR pSrc)
 	{
 		Empty();

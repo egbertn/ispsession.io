@@ -1,7 +1,8 @@
 #include "stdafx.h" 
 #include "adclogmodule.h" 
 #include "tools.h"
-
+#include <filesystem>
+using namespace std::experimental;
 // Copyright ADC Cure 2006-2018 
 // this code is no free public source, but only provided as shared source, when you have obtained a license
 
@@ -77,27 +78,24 @@ void LoggingModule::set_Logging(int enable) throw()
 			//strip right length
 			m_logFileName.SetLength((unsigned int)wcslen(m_logFileName));
 			//	m_MutexName.Format(L"Global\\%s", m_logFileName.m_str);
-			CComBSTR buf(MAX_PATH);
+			
 			// note, GetTempPathW would attempt IUSR in C:\Users\IUSR\AppData\Local\Temp
 			// it automatically will return \Windows\Temp but that is undocumented. So we do it ourselves
-			UINT bufLen = m_tempLocation == 0 ? ::GetSystemWindowsDirectoryW(buf, MAX_PATH) : ::GetTempPathW(MAX_PATH, buf);
-
-			if (bufLen == 0)
+		
+			std::wstring buf = m_tempLocation == 0 ? std::wstring(_wgetenv(L"windir")) : std::wstring( filesystem::temp_directory_path().c_str());
+			if (m_tempLocation == 0) buf += L"\\temp";
+			if (buf.empty())
 			{
-				buf.Format(L"error %d\n", GetLastError());
-				OutputDebugStringW(buf);
 				m_logFileName.Empty();
 				m_LoggingEnabled ^= 1;
 				return;
 			}
 			else
-			{
-				//strip right length again
-				buf.SetLength(bufLen);
-				buf += L"\\TEMP\\";
+			{			
+				buf += L'\\';
 				buf += m_logFileName;
 				// now m_LogFileName looks like C:\Windows\Temp\myDll.Log
-				m_logFileName.Attach(buf.Detach());
+				m_logFileName = buf;
 			}
 		}
 		//it's ok to log in Current Directory

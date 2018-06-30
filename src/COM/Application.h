@@ -80,19 +80,18 @@ public:
 
 		SEEK_NULL.QuadPart = 0;
 		m_currentBufLen = 0;
-		
+		dlm = new CRedLock();
 		return S_OK;
 	}
 	void FinalRelease() throw()
 	{
-		m_piServer.Release();
-		m_pScriptContext.Release();
+		if (dlm != NULL) {
 		delete dlm;
+		}
 
 	}
 private:
-	CComPtr<IScriptingContext> m_pScriptContext;
-	CComPtr<IServer> m_piServer;
+	
 	CRedLock  * dlm;
 	CLock my_lock;
 	//redis connection pool
@@ -165,7 +164,7 @@ private:
 	STDMETHOD(ConvertVStreamToObject)(ElementModel& val);
 
 	
-	STDMETHOD(InitializeDataSource)();
+	STDMETHOD(InitializeDataSource)(IServer* pServer);
 	STDMETHOD(PersistApplication)();
 	STDMETHOD(EnsureBuffer)(INT newBuffer);
 	

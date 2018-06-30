@@ -195,13 +195,8 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 	}
 	bstrProp = L"DataSource";
 	bstrProp.Insert(0, prefix);
-	strConstruct.SetLength(512);
-	auto stored = ::GetEnvironmentVariableW(bstrProp, strConstruct, 512);
-	if (stored > 0)
-	{
-		strConstruct.SetLength(stored);		
-	}
-	else
+	strConstruct = _wgetenv(bstrProp);
+	if (strConstruct.IsEmpty()) // try web.Config
 	{
 		strConstruct.Attach(config.AppSettings(bstrProp));
 	}
@@ -326,11 +321,8 @@ STDMETHODIMP NWCSession::Initialize() throw()
 	double tmpdate;
 	
 	tmpdate = Now();
-	if (tmpdate > MAXTIME) 
-	{
-		strTemp = L"NWCTools.CSession DEMO Compatible ISP Session - Session replacer expired! We would welcome your order at <a href=\"https://ispsession.io/purchase\">order here</a>";
-		m_piResponse->Write(CComVariant(strTemp));
-	}	
+	strTemp = L"NWCTools.CSession DEMO Compatible ISP Session - Session replacer expired! We would welcome your order at <a href=\"https://ispsession.io/purchase\">order here</a>";
+	
 	t = strTemp.Length();	
 	#endif
 	if (blnSnifQueryStringFirst == TRUE)
@@ -397,14 +389,14 @@ STDMETHODIMP NWCSession::Initialize() throw()
 	blnExpired = 
 	blnCancel = FALSE;
 	#ifdef Demo 
-		if (!strTemp.IsEmpty()) 
-		{
-			vitem.Clear();
-			vitem.vt = VT_BSTR;
-			vitem.bstrVal = strTemp;
-			m_piResponse->Write (vitem);			
-			vitem.vt = VT_EMPTY;
-		}
+	if (tmpdate > MAXTIME)
+	{
+		vitem.Clear();
+		vitem.vt = VT_BSTR;
+		vitem.bstrVal = strTemp;
+		m_piResponse->Write (vitem);			
+		vitem.vt = VT_EMPTY;
+	}
 	#endif 		
 		
 	if (g_blnValid  == FALSE)
@@ -414,10 +406,10 @@ STDMETHODIMP NWCSession::Initialize() throw()
 	}
 	else 
 		oldGuid = guid;
-	#ifdef Demo
+	
+#ifdef Demo
 	t = t / t;
-	#endif
-		
+#endif
 	
 	// if it *is* nullptr it should be done using put_SessionID () = "02003 etc"	
 	if (SUCCEEDED(hr))

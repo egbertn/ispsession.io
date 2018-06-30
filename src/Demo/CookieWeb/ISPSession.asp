@@ -2,9 +2,24 @@
 Public Session, Cache
 ' you might disable this line if you do 
 ' not wish to use the application replacement object
+
 On Error Resume Next
 ' Note, we require Server.CreateObject.
 Set Session = Server.CreateObject("NWCTools.CSession")
+
+if Err.Number = &H80020009 Or Err.Number = &HD Then
+   Response.Write "Access to Redis is denied, Check your password, connection string or server status"
+   Response.End
+elseIf Err.Number <> 0 Then
+	'Response.Write "During ISP Cache initializiation an error occurred: 0x" 
+	'Response.Write Hex(Err.Number)
+	'too vague
+	'Response.Write "<br>COM+ error: "
+	'Response.Write Err.Description	
+	'Response.Write "<BR>"
+	
+	'Response.End
+End If
 Set Cache = Server.CreateObject("NWCTools.CApplication")
     
 Cache("count") = CLng(Cache("count") + 1)

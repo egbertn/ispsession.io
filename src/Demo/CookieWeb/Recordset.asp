@@ -21,10 +21,50 @@ Dim RQ, OrderBy, stD, strDir, TTT, strB
 TTT = Timer - TT
 TT = Timer
 Dim testPersist
+
+
+If Cache("washere") <> True Then
+	Set Rs = CreateObject("ADODB.Recordset")
+	' Session.CreateInstance also cares for calling the InitNew method!	
+	' you must register CPPPersist.DLL (on 32 bit systems) before you run this!
+	' on 64 bit systems, it is CPPPersist64.dll to register.
+    Set testPersist =  CreateObject("Msxml2.FreeThreadedDOMDocument.6.0")
+    testPersist.loadxml "<blah>Contents</blah>"
+	Dim sXMLData
+	sXMLData=Server.MapPath(".") + "\thestuff.xml"	
+	Cache("washere") = True
+	Rs.CursorLocation = 3
+
+	'to get the recordset persisted.
+	' it is possible that this provider was not installed on Windows 2008 and higher
+	Rs.Open sXMLData, "Provider=MSPersist"
+
+	'Disconnect now	but keep the recordset still open
+	Set Rs.ActiveConnection = Nothing
+	Rs.MoveFirst
+	Set Cache("CachedRs") = Rs
+	Set Cache("TestPersist") = testPersist
+	
+	blnNew = True
+Else
+	'Activate the ADO rs JIT
+
+	Set Rs = Cache("CachedRs")
+
+	Set testPersist = Cache("TestPersist")
+	
+	Rs.Delete ' this proves that modified data also is persisted
+	Rs.MoveNext ' avoid no current record position error
+
+	blnNew = False
+	
+End If
 'Response.Write "<html></html>"
 'REsponse.End
-Set Rs = Cache("CachedRs")
-Set testPersist = Cache("TestPersist")
+' If Not IsEmpty(Cache("CachedRs")) Then 
+	' Set Rs = Cache("CachedRs")
+' End If
+' Set testPersist = Cache("TestPersist")
 
 
 Set RQ = Request.QueryString

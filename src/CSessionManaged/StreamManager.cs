@@ -376,11 +376,11 @@ namespace ispsession.io
 #if OPT
         internal unsafe void WriteDecimal(decimal value)
         {
+            void* decPtr = &value;
             fixed (byte* ptr = _memoryBuff)
-            {
-                var ptr2 = (IntPtr)ptr;
-                
-                Marshal.StructureToPtr(value, ptr2, false);                
+            {               
+                Marshal.Copy((IntPtr)decPtr, _memoryBuff, 0, sizeof(decimal));
+                         
                 *(short*)ptr = (short)VarEnum.VT_DECIMAL;//fix structure
                 
             }
@@ -630,6 +630,12 @@ namespace ispsession.io
                         {
                             switch(vT)
                             {
+                                case VarEnum.VT_VARIANT:
+                                    var v = psa.GetValue(rgIndices);
+                                    var vt = ConvertTypeToVtEnum(v);
+                                    WriteInt16((short)vt);
+                                    WriteValue(v, vt);
+                                    break;
                                 case VarEnum.VT_BSTR:
                                     WriteString((string)psa.GetValue(rgIndices));
                                     break;
@@ -1028,7 +1034,7 @@ namespace ispsession.io
                     }
                     return psa;
                 }
-                if (!isJagged && ((vT == VarEnum.VT_BSTR || vT== VarEnum.VT_DECIMAL) && lElements > 0))
+                if (!isJagged && ((vT == VarEnum.VT_BSTR || vT== VarEnum.VT_DECIMAL || vT == VarEnum.VT_VARIANT) && lElements > 0))
                 {
                     var psaBound = new SAFEARRAYBOUND[cDims];
                     var rgIndices = new int[cDims];
@@ -1048,6 +1054,10 @@ namespace ispsession.io
                         {
                             switch(vT)
                             {
+                                case VarEnum.VT_VARIANT:
+                                    var vT2 = (VarEnum)ReadInt16();
+                                    psa.SetValue(ReadValue(vT2), rgIndices);
+                                    break;
                                 case VarEnum.VT_DECIMAL:
                                     psa.SetValue(ReadDecimal(), rgIndices);
                                     break;

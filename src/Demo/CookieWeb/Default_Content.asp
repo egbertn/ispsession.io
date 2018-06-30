@@ -97,6 +97,8 @@ We invite you to login at our website to see the secret section by clicking logi
         Response.Write "<br/>"
         Response.Write Session.Contents.Exists("A0")       
         if Cache("Count") > 30 Then
+            Cache("Muke") = 10
+            Cache.Remove "Muke"
             cache.removeall
         End If
     %>

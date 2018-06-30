@@ -22,6 +22,7 @@ STDMETHODIMP CApplication::HasOnStartPageBeenCalled() throw()
 //IIS stuff
 STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 {
+
 	logModule.Write(L"Application:OnStartPage");
 	if (aspsvc == nullptr)
 	{
@@ -30,6 +31,9 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 #ifdef EXPIREAT 
 	DATE MAXTIME = EXPIREAT;
 #endif
+	CComPtr<IScriptingContext> m_pScriptContext;
+	CComPtr<IServer> m_piServer;
+
 	HRESULT hr = aspsvc->QueryInterface(&m_pScriptContext);
 	if (FAILED(hr))
 	{
@@ -43,7 +47,7 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 		return hr;
 	}
 	
-	hr = InitializeDataSource();
+	hr = InitializeDataSource(m_piServer);
 
 
 	if (FAILED(hr))
@@ -132,15 +136,14 @@ STDMETHODIMP CApplication::PersistApplication() throw()
 	hr = IsDirty(&blnIsDirty);
 	logModule.Write(L"PersistApplication err=%d, dirty=%d", m_bErrState, blnIsDirty);
 	
-	DWORD lSize = 0;
 
 	if (blnIsDirty == TRUE)
 	{	
 		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
 		CComPtr<IKeySerializer> database = this;
-		hr = CApplicationDL::ApplicationSave(pool, m_AppKey, database, lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);		
+		hr = CApplicationDL::ApplicationSave(pool, m_AppKey, database,  m_dbTimeStamp, (LONG)totalRequestTimeMS);		
 
-		logModule.Write(L"CApplicationDL::ApplicationSave  size(%d) time(%d), hr(%x)", lSize, totalRequestTimeMS, hr);
+		logModule.Write(L"CApplicationDL::ApplicationSave  time(%d), hr(%x)", totalRequestTimeMS, hr);
 
 	}
 	
@@ -529,7 +532,7 @@ STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
 
 
 // Opens a DB Connection and initialises the Dictionary with the binary contents
-STDMETHODIMP CApplication::InitializeDataSource() throw()
+STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
 {
 	PCWSTR location = L"InitializeDataSource";
 	HRESULT hr = S_OK;
@@ -587,13 +590,10 @@ STDMETHODIMP CApplication::InitializeDataSource() throw()
 	CComBSTR bstrProp ( L"DataSource"), strConstruct;
 	auto prefix = L"ispsession_io:";
 	bstrProp.Insert(0, prefix);
-	strConstruct.SetLength(512);
-	auto stored = ::GetEnvironmentVariableW(bstrProp, strConstruct, 512);
-	if (stored > 0)
-	{
-		strConstruct.SetLength(stored);
-	}
-	else
+
+	strConstruct = _wgetenv(bstrProp);
+	
+	if (strConstruct.IsEmpty()) // not in environment, then web.Config
 	{
 		strConstruct.Attach(config.AppSettings(bstrProp));
 	}
@@ -666,7 +666,7 @@ STDMETHODIMP CApplication::InitializeDataSource() throw()
 		CApplicationDL applicationDl;
 		hr = applicationDl.ApplicationGet(pool, m_AppKey, database);
 	}
-	dlm = new CRedLock();
+	
 	
 	return hr;
 }
@@ -808,7 +808,10 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 		}
 		lElements = lMemSize;
 		lMemSize *= ElSize;
-		logModule.Write(L"array memsize %d els %d", lMemSize, lElements);
+		pStream.seekg(0, ios::end);
+		auto streamlen = pStream.tellg();
+		pStream.seekg(0, ios::beg);
+		logModule.Write(L"array memsize %d els %d, istream size %d", lMemSize, lElements, streamlen);
 		if (
 			(vtype == VT_UI1) || (vtype == VT_I2) || (vtype == VT_I4) || (vtype == VT_R4) || (vtype == VT_R8)
 			|| (vtype == VT_CY) || (vtype == VT_DATE)
@@ -823,33 +826,8 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 				::SafeArrayUnaccessData(psa);
 			}
 		}
-		else if ((vtype == VT_BSTR || vtype == VT_DECIMAL) && lElements > 0)
-		{
-			hr = ::SafeArrayAccessData(psa, &psadata);
-			if (hr == S_OK)
-			{
-				logModule.Write(L"VT_BSTR array %d", lElements);
-				int backup = logModule.get_Logging(); // disable for the moment
-				logModule.set_Logging(0);
-				if (vtype == VT_BSTR)
-				{
-					auto btemp = static_cast<BSTR*>(psadata);
-					for (els = 0; els < lElements && hr == S_OK; els++)
-						hr = ReadString(pStream, &btemp[els]);
-				}
-				else if (vtype == VT_DECIMAL)
-				{
-					auto btemp = static_cast<VARIANT*>(psadata); //ugly but true
-					for (els = 0; els < lElements && hr == S_OK; els++)
-						hr = ReadValue(pStream, &btemp[els], VT_DECIMAL);
-				}
-
-				::SafeArrayUnaccessData(psa);
-				logModule.set_Logging(backup);
-			}
-
-		}
-		else if (vtype == VARENUM::VT_VARIANT && lElements > 0)
+		
+		else if ((vtype == VARENUM::VT_VARIANT || vtype == VT_BSTR || vtype == VT_DECIMAL) && lElements > 0)
 		{
 			CTempBuffer<SAFEARRAYBOUND> psaBound(cDims);
 			//LONG rgIndices[4] = {0};
@@ -873,20 +851,37 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 				if (rgIndices[dimPointer] <
 					(LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound)
 				{
-					VARIANT* pVar;
-					hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
-					//logModule.Write(L"Indices %d,%d,%d", rgIndices[0], rgIndices[1], rgIndices[2]);
-					if (FAILED(hr))
-						logModule.Write(L"FATAL: SafeArrayPtrOfIndex failed %x", hr);
-
-					if (hr == S_OK)
+					switch (vtype)
 					{
-						vtype = pVar->vt;
-						pStream.read((char*)&vtype, sizeof(VARTYPE));
-						
-							//----- recursive call ----- keep an eye on this
-							hr = ReadValue(pStream, pVar, vtype);
+					case VT_DECIMAL:
+					case VT_VARIANT:
+						VARIANT * pVar;
+						hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
+						//logModule.Write(L"Indices %d,%d,%d", rgIndices[0], rgIndices[1], rgIndices[2]);
+						if (FAILED(hr))
+							logModule.Write(L"FATAL: SafeArrayPtrOfIndex failed %x", hr);
+
+						if (hr == S_OK)
+						{
+							if (vtype == VT_VARIANT)
+							{
+								VARTYPE vt2;
+								pStream.read((char*)&vt2, sizeof(VARTYPE));
+								hr = ReadValue(pStream, pVar, vt2);
+							}
+							else if (vtype == VT_DECIMAL)
+							{
+								hr = ReadValue(pStream, pVar, VT_DECIMAL);
+							}
+						}
+						break;
+					case VT_BSTR:
+						BSTR * pBstr;
+						hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pBstr);
+						hr = ReadString(pStream, pBstr);
+						break;
 					}
+					
 					rgIndices[dimPointer]++;
 					if (++findEl == lElements)
 					{
@@ -1198,7 +1193,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 				}
 			}
 		}
-		else if ((vcopy == VT_BSTR) || (vcopy == VT_DECIMAL))
+		else if ((vcopy == VT_BSTR) )
 		{
 			if (lElements > 0)
 			{
@@ -1216,12 +1211,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 						for (; els < lElements && hr == S_OK; els++)
 							hr = WriteString(myarray[els], pStream);
 					}
-					else if (vcopy == VT_DECIMAL)
-					{
-						auto myarray = static_cast<VARIANT*>(psadata); // ugly, but true
-						for (; els < lElements && hr == S_OK; els++)
-							hr = WriteValue(VT_DECIMAL, myarray[els], pStream);
-					}
+					
 					logModule.set_Logging(backup);
 					logModule.Write(L"written VT_BSTR array length=%d %x", els, hr);
 					::SafeArrayUnaccessData(psa);
@@ -1229,7 +1219,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 			}
 		}
 		//write a variant array of type VT_VARIANT		
-		else if (vcopy == VARENUM::VT_VARIANT)
+		else if (vcopy == VARENUM::VT_VARIANT || vcopy == VT_DECIMAL)
 		{
 			// the VARIANT allocation area is contigious, but on Windows X64, 
 			// each element is 24 in size, instead of 16! So, the carry over indice 
@@ -1263,11 +1253,14 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 							SafeArrayUnlock(psa);
 							return hr;
 						}
-						vtype = pVar->vt;
-						pStream->Write((char*)&vtype, sizeof(VARTYPE), nullptr);
-						//----- recursive call ----- keep an eye on this
-						hr = WriteValue(vtype, *pVar, pStream);
+						if (vtype == VT_VARIANT)
+						{
 
+							pStream->Write(&pVar->vt, sizeof(VARTYPE), nullptr);
+							//----- recursive call ----- keep an eye on this
+							
+						}
+						hr = WriteValue(vtype, *pVar, pStream);
 						rgIndices[dimPointer]++;
 						//end of loop
 						if (++findEl == lElements)
@@ -1294,8 +1287,8 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 							rgIndices[z] = psaBound[z].lLbound;
 						dimPointer = 0;
 					}
-					::SafeArrayUnlock(psa);
 				}
+				::SafeArrayUnlock(psa);
 				logModule.set_Logging(backup);
 				logModule.Write(L"written VT_VARIANT array length=%d %x", findEl, hr);
 			} // if not zero elements
@@ -1314,7 +1307,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 	{
 		// empty and null {0,1} need not be written
 		//mask out using xor
-		logModule.Write(L"Writing simple variant type=%d", vtype);
+		
 		switch (vtype & (VT_ARRAY - 1))
 		{
 		case VT_NULL: case VT_EMPTY:
@@ -1392,7 +1385,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 	exit: // sorry
 		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL)
 			pStream->Write((char*)&TheVal.bVal, cBytes, nullptr);
-		logModule.Write(L"Simple variant size=%d", cBytes);
+		logModule.Write(L"Simple variant type =%d, size=%d", vtype, cBytes);
 	}
 
 	return hr;
@@ -1429,7 +1422,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 		stream->Seek(set, STREAM_SEEK_SET, nullptr);
 
 
-		bstrKey = keys[saddKey].c_str();
+		bstrKey = keys[saddKey];
 		hr = pDictionary->SerializeKey(bstrKey, stream);
 		stream->Commit(STATFLAG_DEFAULT);//must be IStream thus 
 		hr = stream->Seek(set, STREAM_SEEK_CUR, &newpos);
@@ -1512,7 +1505,7 @@ STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString) throw
 	CComVariant val;
 	VARTYPE vt = 0;
 	hr = ReadString(stream, &key);
-	
+
 	if (SUCCEEDED(hr))
 	{
 		stream.read((char*)&vt, sizeof(VARTYPE));

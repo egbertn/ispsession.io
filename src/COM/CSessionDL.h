@@ -123,7 +123,7 @@ public:
 	static HRESULT __stdcall ApplicationSave(const simple_pool::ptr_t &pool,
 		GUID& appKey,
 		IKeySerializer*  pDictionary,
-		LONG Expires,
+		
 		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
 		//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
 		LONG totalRequestTime
@@ -178,7 +178,7 @@ public:
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()).c_str());
 				}
 			}
 			if (removedKeys.size() > 0)
@@ -198,13 +198,13 @@ public:
 				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()).c_str());
 				}
 				reply = conn->run(srem);
 				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()).c_str());
 				}
 			}
 
@@ -227,7 +227,7 @@ public:
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()).c_str());
 				}
 			}
 			
@@ -266,13 +266,13 @@ public:
 		{
 			return E_ACCESSDENIED;
 		}
-		auto result = S_OK;
+		auto result = S_OK;		
 		auto repl = conn->run(command("SMEMBERS")(appkey));
 		auto mget = command("MGET");
 		if (repl.type() == reply::type_t::ARRAY && repl.elements().size() >0)
 		{
 			auto keys = repl.elements();	
-			string k;
+
 			for (auto it = keys.begin(); it != keys.end(); ++it)
 			{
 				//note: the key alredy is uppercase in format "{appkey}:{keyname}"
@@ -290,7 +290,7 @@ public:
 			case reply::type_t::_ERROR:
 				m_blobLength = 0;
 
-				logModule.Write(L"ApplicationGet failed because %s", s2ws(repl.str()));
+				logModule.Write(L"ApplicationGet failed because %s", s2ws(repl.str()).c_str());
 				result = E_FAIL;
 				break;
 			case reply::type_t::STRING:
@@ -313,6 +313,10 @@ public:
 					//key is format "{appkey}:{key}"
 					hr = pDictionary->DeserializeKey(subRepl.str());
 				}
+			}
+			else
+			{
+				logModule.Write(L"ApplicationGet: corrupt state for %s", appkey);
 			}
 		}
 		
@@ -395,7 +399,7 @@ public:
 				catch (too_much_retries ex)
 				{
 					auto what = std::string(ex.what());
-					logModule.Write(L"Retrying to connect because of %s", s2ws(what));
+					logModule.Write(L"Retrying to connect because of %s", s2ws(what).c_str());
 					Sleep(200);
 				}
 			}
@@ -427,11 +431,11 @@ public:
 		auto sAppkey = HexStringFromMemory(appKey, sizeof(GUID));
 
 		auto sGuid = HexStringFromMemory(guid, sizeof(GUID));
-		std::string ansi = sAppkey + ":" + sGuid;
-
-
-
-
+		std::string ansi;
+		ansi.reserve(sizeof(GUID) * 2 + 1);
+		ansi.append(sAppkey);
+		ansi.append(":");
+		ansi.append(sGuid);
 
 
 		auto c = pool->get();
@@ -456,7 +460,11 @@ public:
 			auto reply = c->run(command("EXPIRE")(ansi)(ExpiresPar * 60L)); // http://www.redis.io/commands/expire is in seconds
 
 			// could be both 0 or 1 (0 if it does not exist)
-			hr = reply.type() == reply::type_t::INTEGER && reply.integer() == 1 ? S_OK : E_FAIL;			
+			auto localHR = reply.type() == reply::type_t::INTEGER && reply.integer();
+			if (localHR != 1)
+			{
+				logModule.Write(L"A session Key was attempted to expire, but it does not seem to exist, %s, %x", s2ws( ansi).c_str(), localHR);
+			}
 		}
 		else
 		{
@@ -497,7 +505,7 @@ public:
 				auto repl = c->run(command("SET")(ansi)(strBuf) ("EX")(ExpiresPar*60));
 				if (repl.type() == reply::type_t::_ERROR)
 				{
-					logModule.Write(L"Fail CpSessionSave because of %s", s2ws(repl.str()));
+					logModule.Write(L"Fail CpSessionSave because of %s", s2ws(repl.str()).c_str());
 					hr = E_FAIL;
 				}
 			}			
@@ -549,7 +557,7 @@ public:
 
 		pool->put(conn);
 		//std::wstring wstr = s2ws(ansi); //TODO: must all be ansi
-		logModule.Write(L"insert %s", s2ws(ansi));
+		logModule.Write(L"insert %s", s2ws(ansi).c_str());
 
 		auto hr = reply.type() == reply::type_t::STATUS && reply.str() == "OK" ? S_OK : E_FAIL;
 		return hr;
@@ -619,7 +627,7 @@ public:
 		case reply::type_t::STATUS:
 		case reply::type_t::_ERROR:
 			m_zLen = m_blobLength = 0;			
-			logModule.Write(L"CpSessionGet failed because %s", s2ws(repl));
+			logModule.Write(L"CpSessionGet failed because %s", s2ws(repl).c_str());
 			result = E_FAIL;
 			break;
 		case reply::type_t::STRING:

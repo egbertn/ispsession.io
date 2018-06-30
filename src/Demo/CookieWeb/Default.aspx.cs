@@ -67,7 +67,7 @@ public partial class _Default : Page
         }
         else
         {
-            realbig.Text = ((decimal[])Session["realbig"])[1999].ToString();
+            realbig.Text = ((decimal[])Session["realbig"])[1999].ToString() + ":element 1999";
         }
         Thread.Sleep(new Random().Next(50, 500));
         /// just a COM interop test, because we can :)

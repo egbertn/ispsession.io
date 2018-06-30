@@ -120,12 +120,12 @@ connection::ptr_t simple_pool::get()
 					logModule.Write(L"SELECT database %s", response.str());
 				}
 			}
-			logModule.Write(L"Add Redis Conn to pool %d, %s, %d", _database, s2ws(_host), _port);
+			logModule.Write(L"Add Redis Conn to pool %d, %s, %d", _database, s2ws(_host).c_str(), _port);
 			ret->_startSessionRequest = std::chrono::system_clock::now();
 		}
 		catch (connection_error ex)
 		{
-			logModule.Write(L"An exception occurred %x", s2ws(ex.what()));
+			logModule.Write(L"An exception occurred %x", s2ws(ex.what()).c_str());
 		}
 	}
 	

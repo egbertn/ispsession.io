@@ -1,3 +1,7 @@
+8.2.0.160
+	Fixes array persistance that could cause crashes.
+	Fixes a problem when a session was expired, but retried in a browser, an exception ocurred.
+	.NET arrays, which Classic ASP cannot read, now are kept in sync.
 8.2.0.158
 	Fixes cache.removeall() which caused a crash.
 	Note, that the cache feature, needs to be licensed seperately.
@@ -15,12 +19,12 @@
         Cache("mykey") = "Testing"
 	Or 
 	Set Cache("myRs") = MyRs (e.g. ADO or other persistable stuff go here)
-	key = Cache.KeyIndex(1) 'result mykey
+	key = Cache.Key(1) 'result mykey
 	For Each v in Cache
 	     key = v
         Next
 	Cache.Remove "key"
-        Cache.RemoveALl
+        Cache.RemoveAll
 	Cache.Lock "key" and Cache.Unlock "key" are future feature
 	Cache.ExpireKeyAt "key", 0 'in 0 ms expire it
 	Dim exists, keyType

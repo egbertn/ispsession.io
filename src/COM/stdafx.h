@@ -4,10 +4,10 @@
 
 #pragma once
 #include "message.h"
-//#define Demo
+#define Demo
 // defines for ISP Session tiny edition
 
-//#define EXPIREAT ( 43311) // ie: 30/7/2018
+#define EXPIREAT ( 43311) // ie: 30/7/2018
 #define MAXINSTANCES 1000
 #define STRICT
 #define UNICODE
@@ -43,25 +43,6 @@ using namespace redis3m;
 //#ifdef DEBUG
 #pragma comment(lib, "netapi32.lib") // for DsGetDcNameW and such
 
-
-#ifdef WIN64
-#if _DEBUG
-#pragma comment(lib, "hiredis64D.lib")
-#pragma comment(lib, "Win32_Interop64D.lib")
-#else
-#pragma comment(lib, "hiredis64.lib")
-#pragma comment(lib, "Win32_Interop64.lib")
-#endif
-#else
-#if _DEBUG
-#pragma comment(lib, "hiredisD.lib")
-#pragma comment(lib, "Win32_InteropD.lib")
-#else
-#pragma comment(lib, "hiredis.lib")
-#pragma comment(lib, "Win32_Interop.lib")
-#endif
-
-#endif
 
 #include <asptlb.h>         // Active Server Pages Definitions
 #include <atlsecurity.h>

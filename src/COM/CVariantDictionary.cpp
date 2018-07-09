@@ -607,12 +607,13 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 							SafeArrayUnlock(psa);
 							return hr;
 						}				
+						VARTYPE vt2 = pVar->vt;
 						if (vcopy == VT_VARIANT)
 						{
-							hr = pStream->Write(&pVar->vt, sizeof(VARTYPE), nullptr);
+							hr = pStream->Write(&vt2, sizeof(VARTYPE), nullptr);
 						}
 						//----- recursive call ----- keep an eye on this
-						hr = WriteValue(pStream, pVar, vtype, strKeyName);
+						hr = WriteValue(pStream, pVar, vt2, strKeyName);
 
 						rgIndices[dimPointer]++; 
 						//end of loop
@@ -914,12 +915,11 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 		else if ((vtype == VARENUM::VT_VARIANT || vtype == VT_BSTR || vtype == VT_DECIMAL) && lElements > 0)
 		{		
 			CTempBuffer<SAFEARRAYBOUND> psaBound(cDims);
-			//LONG rgIndices[4] = {0};
 			CTempBuffer<LONG> rgIndices(cDims);
 
 			LONG dimPointer = 0; // next dimension will first be incremented
 			LONG findEl = 0, ubound, lbound;
-			::SafeArrayLock(psa);
+			hr = ::SafeArrayLock(psa);
 			for (LONG x = 0; x < cDims; x++)
 			{
 				::SafeArrayGetLBound(psa, x + 1, &lbound);
@@ -928,43 +928,37 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 				psaBound[x].lLbound = rgIndices[x] = lbound;
 			}
 			int backup = logModule.get_Logging(); // disable for the moment
-			//logModule.set_Logging(0);
+			logModule.set_Logging(0);
 			while(hr == S_OK)
 			{
-				if (rgIndices[dimPointer] < 
-					(LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound) 
+				if (rgIndices[dimPointer] < (LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound) 
 				{
 					switch(vtype) 
 					{
-					case VT_DECIMAL: // same treatment
-					case VT_VARIANT: 
-						VARIANT* pVar;
-						hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
-						//logModule.Write(L"Indices %d,%d,%d", rgIndices[0], rgIndices[1], rgIndices[2]);
-						if (FAILED(hr))
-							logModule.Write(L"FATAL: SafeArrayPtrOfIndex failed %x", hr);
-
-						else
-						{
-							if (vtype == VT_VARIANT) 
+						case VT_DECIMAL: // same treatment
+						case VT_VARIANT: 
+							VARIANT* pVar;
+							hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
+							if (SUCCEEDED(hr))
 							{
-								VARTYPE vt2 = 0;
-								hr = pStream->Read(&vt2, sizeof(VARTYPE), nullptr);
+								VARTYPE vt2;
+								if (vtype == VT_VARIANT) 
+								{
+									hr = pStream->Read(&vt2, sizeof(VARTYPE), nullptr);
+								}
+								else
+								{
+									vt2 = vtype;
+								}
 								if (hr == S_OK)
 									hr = ReadValue(pStream, pVar, vt2);
-									
 							}
-							else if (vtype == VT_DECIMAL)
-							{
-								hr = ReadValue(pStream, pVar, VT_DECIMAL);
-							}
-						}
-						break;
-					case VT_BSTR:
-						BSTR * pBstr;
-						hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pBstr);
-						hr = ReadString(pStream, pBstr);
-						break;
+							break;
+						case VT_BSTR: //VT_BSTR could be done in a simple loop, but for sake of consistancy we get the pointe to the element via-via
+							BSTR * pBstr;
+							hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pBstr);
+							hr = ReadString(pStream, pBstr);
+							break;
 					}
 					
 					rgIndices[dimPointer]++; 
@@ -994,7 +988,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 					dimPointer= 0;			
 				}
 			}
-			//logModule.set_Logging(backup);
+			logModule.set_Logging(backup);
 			::SafeArrayUnlock(psa);
 			logModule.Write(L"VT_VARIANT array elements %d %x", findEl, hr);
 		}

@@ -830,7 +830,6 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 		else if ((vtype == VARENUM::VT_VARIANT || vtype == VT_BSTR || vtype == VT_DECIMAL) && lElements > 0)
 		{
 			CTempBuffer<SAFEARRAYBOUND> psaBound(cDims);
-			//LONG rgIndices[4] = {0};
 			CTempBuffer<LONG> rgIndices(cDims);
 
 			LONG dimPointer = 0; // next dimension will first be incremented
@@ -846,40 +845,35 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 			int backup = logModule.get_Logging(); // disable for the moment
 			logModule.set_Logging(0);
 			logModule.set_TempLocation(0);
-			for (;;)
+			while(hr == S_OK)
 			{
-				if (rgIndices[dimPointer] <
-					(LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound)
+				if (rgIndices[dimPointer] < (LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound)
 				{
 					switch (vtype)
 					{
-					case VT_DECIMAL:
-					case VT_VARIANT:
-						VARIANT * pVar;
-						hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
-						//logModule.Write(L"Indices %d,%d,%d", rgIndices[0], rgIndices[1], rgIndices[2]);
-						if (FAILED(hr))
-							logModule.Write(L"FATAL: SafeArrayPtrOfIndex failed %x", hr);
-
-						if (hr == S_OK)
-						{
-							if (vtype == VT_VARIANT)
+						case VT_DECIMAL:
+						case VT_VARIANT:
+							VARIANT * pVar;
+							hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
+							if (SUCCEEDED(hr))
 							{
 								VARTYPE vt2;
-								pStream.read((char*)&vt2, sizeof(VARTYPE));
+								if (vtype == VT_VARIANT)
+								{								
+									pStream.read((char*)&vt2, sizeof(VARTYPE));								
+								}
+								else if (vtype == VT_DECIMAL)
+								{
+									vt2 = vtype;
+								}
 								hr = ReadValue(pStream, pVar, vt2);
 							}
-							else if (vtype == VT_DECIMAL)
-							{
-								hr = ReadValue(pStream, pVar, VT_DECIMAL);
-							}
-						}
-						break;
-					case VT_BSTR:
-						BSTR * pBstr;
-						hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pBstr);
-						hr = ReadString(pStream, pBstr);
-						break;
+							break;
+						case VT_BSTR:
+							BSTR * pBstr;
+							hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pBstr);
+							hr = ReadString(pStream, pBstr);
+							break;
 					}
 					
 					rgIndices[dimPointer]++;
@@ -1253,14 +1247,15 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 							SafeArrayUnlock(psa);
 							return hr;
 						}
+						VARTYPE vt2 = pVar->vt;
 						if (vtype == VT_VARIANT)
 						{
 
-							pStream->Write(&pVar->vt, sizeof(VARTYPE), nullptr);
+							pStream->Write(&vt2, sizeof(VARTYPE), nullptr);
 							//----- recursive call ----- keep an eye on this
 							
 						}
-						hr = WriteValue(vtype, *pVar, pStream);
+						hr = WriteValue(vt2, *pVar, pStream);
 						rgIndices[dimPointer]++;
 						//end of loop
 						if (++findEl == lElements)

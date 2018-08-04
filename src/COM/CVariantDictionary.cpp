@@ -608,7 +608,7 @@ STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
 							return hr;
 						}				
 						VARTYPE vt2 = pVar->vt;
-						if (vcopy == VT_VARIANT)
+						if (vcopy == VARENUM::VT_VARIANT)
 						{
 							hr = pStream->Write(&vt2, sizeof(VARTYPE), nullptr);
 						}

@@ -622,6 +622,12 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
 	{
 		setstring((const PUCHAR)&license, bstrProp);
 	}
+	else
+	{
+		m_bErrState = TRUE;
+		Error(bstrProp.Append(L" key not found"), this->GetObjectCLSID(), E_INVALIDARG);
+		return E_INVALIDARG;
+	}
 	bstrProp = L"ClassicCsession.LIC";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
@@ -629,6 +635,12 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
 	if (bstrProp.Length() != 0)
 	{
 		strLicensedFor.Attach(bstrProp.Detach());//move
+	}
+	else
+	{
+		m_bErrState = TRUE;
+		Error(bstrProp.Append(L" key not found"), this->GetObjectCLSID(), E_INVALIDARG);
+		return E_INVALIDARG;
 	}
 
 	m_licenseOK = LicentieCheck(&license, strLicensedFor);
@@ -670,13 +682,13 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
 	
 	return hr;
 }
-STDMETHODIMP CApplication::ReadString(std::istream& pStream, BSTR *retval) throw()
+STDMETHODIMP CApplication::ReadString(IStream* pStream, BSTR *retval) throw()
 {
 	HRESULT hr = S_OK;
 	UINT lTempSize = 0;
 	
 	// size excludes the terminating zero!
-	pStream.read((char*)&lTempSize, sizeof(UINT));
+	hr = pStream->Read((char*)&lTempSize, sizeof(UINT), nullptr);
 	if (hr == S_OK)
 	{
 		//TODO: find how vbNullString is written to the native Session
@@ -696,7 +708,7 @@ STDMETHODIMP CApplication::ReadString(std::istream& pStream, BSTR *retval) throw
 			if (hr == S_OK)
 			{
 				
-				pStream.read((char*)m_lpstrMulti.m_pData, lTempSize);
+				pStream->Read((char*)m_lpstrMulti.m_pData, lTempSize, nullptr);
 				//because we specify the exact length, writtenbytes is excluding the terminating 0
 				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, (PSTR) m_lpstrMulti.m_pData, lTempSize, nullptr, 0);
 				if (writtenbytes == 0)
@@ -728,7 +740,7 @@ STDMETHODIMP CApplication::ReadString(std::istream& pStream, BSTR *retval) throw
 ///<param name="TheValue">asdf</param>
 ///<param name="vtype">VT variant type</param>
 ///<returns>a HRESULT</returns>
-STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype) throw()
+STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYPE vtype) throw()
 {
 	LONG cBytes = 0,
 		ElSize = 0,
@@ -746,7 +758,7 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 	if ((vtype & VT_ARRAY) == VT_ARRAY)
 	{
 		ARRAY_DESCRIPTOR descriptor;
-		pStream.read((char*)&descriptor, sizeof(ARRAY_DESCRIPTOR));
+		pStream->Read((char*)&descriptor, sizeof(ARRAY_DESCRIPTOR), nullptr);
 		vtype = descriptor.type;
 		ElSize = descriptor.ElemSize;
 		cDims = descriptor.Dims;
@@ -794,7 +806,7 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 		//int bx=cDims;
 		for (LONG cx = 0; cx < cDims; cx++)// cDims - 1; cx != 0; cx--)
 		{
-			pStream.read((char*)&safebound[cx], sizeof(SAFEARRAYBOUND));
+			pStream->Read((char*)&safebound[cx], sizeof(SAFEARRAYBOUND), nullptr);
 			{
 				lMemSize *= safebound[cx].cElements;
 			}
@@ -808,10 +820,9 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 		}
 		lElements = lMemSize;
 		lMemSize *= ElSize;
-		pStream.seekg(0, ios::end);
-		auto streamlen = pStream.tellg();
-		pStream.seekg(0, ios::beg);
-		logModule.Write(L"array memsize %d els %d, istream size %d", lMemSize, lElements, streamlen);
+		STATSTG stat = { 0 };
+		pStream->Stat(&stat, STATFLAG_NONAME);
+		logModule.Write(L"array memsize %d els %d, istream size %d", lMemSize, lElements, stat.cbSize);
 		if (
 			(vtype == VT_UI1) || (vtype == VT_I2) || (vtype == VT_I4) || (vtype == VT_R4) || (vtype == VT_R8)
 			|| (vtype == VT_CY) || (vtype == VT_DATE)
@@ -822,7 +833,7 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 			hr = ::SafeArrayAccessData(psa, &psadata);
 			if (hr == S_OK)
 			{
-				pStream.read((char*)psadata, lMemSize);
+				pStream->Read((char*)psadata, lMemSize, nullptr);
 				::SafeArrayUnaccessData(psa);
 			}
 		}
@@ -844,7 +855,7 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 			}
 			int backup = logModule.get_Logging(); // disable for the moment
 			logModule.set_Logging(0);
-			logModule.set_TempLocation(0);
+			
 			while(hr == S_OK)
 			{
 				if (rgIndices[dimPointer] < (LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound)
@@ -860,9 +871,9 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 								VARTYPE vt2;
 								if (vtype == VT_VARIANT)
 								{								
-									pStream.read((char*)&vt2, sizeof(VARTYPE));								
+									pStream->Read((char*)&vt2, sizeof(VARTYPE), nullptr);
 								}
-								else if (vtype == VT_DECIMAL)
+								else 
 								{
 									vt2 = vtype;
 								}
@@ -934,7 +945,7 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 			break;
 		case VT_DECIMAL:
 			cBytes = sizeof(DECIMAL);
-			pStream.read((char*)TheValue, cBytes);
+			pStream->Read((char*)TheValue, cBytes, nullptr);
 			break;
 		case VT_BSTR:
 			hr = ReadString(pStream, &TheValue->bstrVal);
@@ -944,11 +955,11 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 		case VT_UNKNOWN:
 		{
 			//Puts the IID_IStream interface as a type of the TheValue->punkVal
-			pStream.read((char*)&cBytes, sizeof(cBytes));
+			pStream->Read((char*)&cBytes, sizeof(cBytes), nullptr);
 			if (cBytes > 0)
 			{
 				HGLOBAL hGlob = ::GlobalAlloc(GMEM_MOVEABLE, cBytes);
-				pStream.read((char*)::GlobalLock(hGlob), cBytes);
+				pStream->Read(::GlobalLock(hGlob), cBytes, nullptr);
 				::GlobalUnlock(hGlob);
 				IStream * pTemp;
 				hr = ::CreateStreamOnHGlobal(hGlob, TRUE, &pTemp);
@@ -977,7 +988,7 @@ STDMETHODIMP CApplication::ReadValue(std::istream& pStream, VARIANT* TheValue, V
 	exit:
 		logModule.Write(L"Done variant type=%d, size=%d", vtype, cBytes);
 		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL)
-			pStream.read((char*)&TheValue->bVal, cBytes);
+			pStream->Read(&TheValue->bVal, cBytes, nullptr);
 	}
 	//error:
 	if (FAILED(hr))
@@ -1213,7 +1224,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 			}
 		}
 		//write a variant array of type VT_VARIANT		
-		else if (vcopy == VARENUM::VT_VARIANT || vcopy == VT_DECIMAL)
+		else if (vcopy == VARENUM::VT_VARIANT || vcopy == VARENUM::VT_DECIMAL)
 		{
 			// the VARIANT allocation area is contigious, but on Windows X64, 
 			// each element is 24 in size, instead of 16! So, the carry over indice 
@@ -1232,7 +1243,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 				LONG dimPointer = 0, // next dimension will first be incremented
 					findEl = 0;
 				int backup = logModule.get_Logging(); // disable for the moment
-				logModule.set_Logging(0);
+			 	logModule.set_Logging(0);
 				for (;;)
 				{
 					if (rgIndices[dimPointer] <
@@ -1248,14 +1259,13 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 							return hr;
 						}
 						VARTYPE vt2 = pVar->vt;
-						if (vtype == VT_VARIANT)
+						if (vcopy == VARENUM::VT_VARIANT)
 						{
-
 							pStream->Write(&vt2, sizeof(VARTYPE), nullptr);
-							//----- recursive call ----- keep an eye on this
-							
 						}
+						//----- recursive call ----- keep an eye on this
 						hr = WriteValue(vt2, *pVar, pStream);
+
 						rgIndices[dimPointer]++;
 						//end of loop
 						if (++findEl == lElements)
@@ -1285,7 +1295,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 				}
 				::SafeArrayUnlock(psa);
 				logModule.set_Logging(backup);
-				logModule.Write(L"written VT_VARIANT array length=%d %x", findEl, hr);
+				logModule.Write(L"written VT_VARIANT array length=%d Error = %x", findEl, hr);
 			} // if not zero elements
 		}
 		else
@@ -1488,7 +1498,14 @@ STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
 STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString) throw()
 {
 	HRESULT hr = S_OK;
-	auto stream = std::stringstream(binaryString, ios_base::in || ios_base::binary);
+	CComObject<CStream>* cseqs;
+	CComObject<CStream>::CreateInstance(&cseqs);
+	CComPtr<IStream> stream;
+
+	stream = cseqs;
+	stream->Write(binaryString.c_str(), binaryString.size(), nullptr);
+	stream->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
+
 	/*
 	1. read the keyname
 	2. read the VARTYPE (VarType)
@@ -1503,7 +1520,7 @@ STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString) throw
 
 	if (SUCCEEDED(hr))
 	{
-		stream.read((char*)&vt, sizeof(VARTYPE));
+		stream->Read((char*)&vt, sizeof(VARTYPE), nullptr);
 		logModule.Write(L"Deserialized key %s, with type %d", key, vt);
 		hr = ReadValue(stream, &val, vt);
 		ElementModel m;

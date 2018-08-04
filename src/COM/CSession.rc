@@ -37,8 +37,8 @@ IDR_APPLICATION         REGISTRY                "Application.rgs"
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 8,2,0,160
- PRODUCTVERSION 8,2,0,160
+ FILEVERSION 8,2,0,161
+ PRODUCTVERSION 8,2,0,161
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -53,15 +53,15 @@ BEGIN
     BEGIN
         BLOCK "000004b0"
         BEGIN
-            VALUE "Comments", "Provides Cache and Session State Management for classic ASP on IIS 7 and 8.x  for classic ASP (compatible with ASP.NET and AspNetCore, using ISP Session 8.5 and 9.0)"
+            VALUE "Comments", "Provides Cache and Session State Management for classic ASP on IIS 7 and higher  for classic ASP (compatible with ASP.NET and AspNetCore, using ISP Session 8.5 and 9.0)"
             VALUE "CompanyName", "ADC Cure (Nierop Webconsultancy)"
             VALUE "FileDescription", "Clasic ASP pages Session and Application Replacement COM component"
-            VALUE "FileVersion", "8.2.0.160"
+            VALUE "FileVersion", "8.2.0.161"
             VALUE "InternalName", "CSession"
             VALUE "LegalCopyright", "2001-2018 (c) ADC Cure."
             VALUE "OriginalFilename", "CSession.dll"
             VALUE "ProductName", "ISP Session"
-            VALUE "ProductVersion", "8.2.0.160"
+            VALUE "ProductVersion", "8.2.0.161"
         END
     END
     BLOCK "VarFileInfo"

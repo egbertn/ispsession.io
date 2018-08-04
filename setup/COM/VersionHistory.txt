@@ -1,3 +1,5 @@
+8.2.0.161	
+	Fixes multidemensional array persistance for the Application Cache.
 8.2.0.160
 	Fixes array persistance that could cause crashes.
 	Fixes a problem when a session was expired, but retried in a browser, an exception ocurred.

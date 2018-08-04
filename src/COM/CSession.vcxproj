@@ -151,7 +151,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/NODEFAULTLIB:libcmt.lib /LTCG %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hiredisD.lib; Win32_InteropD.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)CSession.dll</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <ModuleDefinitionFile>.\CSession.def</ModuleDefinitionFile>

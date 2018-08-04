@@ -153,8 +153,8 @@ private:
 
 	STDMETHOD(IsDirty)(BOOL* pRet);
 	//std:vector<byte> probably semantically is better, instead of std::string
-	STDMETHOD(ReadString)(std::istream& stream, BSTR* outputString);
-	STDMETHOD(ReadValue)(std::istream& pStream, VARIANT* TheValue, VARTYPE vtype);
+	STDMETHOD(ReadString)(IStream* stream, BSTR* outputString);
+	STDMETHOD(ReadValue)(IStream* pStream, VARIANT* TheValue, VARTYPE vtype);
 	//allows recursion
 	STDMETHOD(WriteString)(BSTR Key, IStream* inoutputString);
 	STDMETHOD(WriteValue)(VARTYPE vt, VARIANT& val, IStream* binaryString);

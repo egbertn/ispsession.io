@@ -637,7 +637,7 @@ public:
 			m_blobLength = repl.strlen();
 			PersistMetaData meta;
 			//against all sanity. But justified, we do not modify the string, just read from it
-			memcpy(&meta, (void*)str.data(), meta.sizeofMeta);
+			memcpy(&meta, (void*)str.c_str(), meta.sizeofMeta);
 			m_LastUpdated = meta.m_LastUpdated;
 			m_Expires = meta.m_Expires;
 			m_Liquid = meta.m_Liquid;
@@ -653,7 +653,7 @@ public:
 				for (int x = m_blobLength - baseX; x > 0; x -= buf)
 				{	//if 128 > 0x1000 ? buf : m_blobLength = 128
 					ULONG BytesToWrite = (x > buf ? buf : x);						
-					m_pStream->Write((void*)&str.data()[baseX], BytesToWrite, nullptr);
+					m_pStream->Write((void*)&str.c_str()[baseX], BytesToWrite, nullptr);
 					baseX += BytesToWrite;
 				}
 				LARGE_INTEGER nl = { 0 };

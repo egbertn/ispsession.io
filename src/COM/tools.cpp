@@ -170,18 +170,7 @@ BSTR __stdcall GetModulePath() throw()
 //
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName = false) throw()
 {
-	DWORD compNameLength = GiveDnsName ? 255 : MAX_COMPUTERNAME_LENGTH;
-	CComBSTR NT4NETBIOSNAME(compNameLength);
-	compNameLength++;
-	if (GetComputerNameExW(
-		GiveDnsName ? ComputerNameDnsHostname : ComputerNameNetBIOS, NT4NETBIOSNAME, &compNameLength) == TRUE)
-		// success
-		NT4NETBIOSNAME.SetLength(compNameLength);
-	else
-	{
-		return NULL;
-	}
-	return NT4NETBIOSNAME.Detach();
+	return CComBSTR  ( _wgetenv (L"COMPUTERNAME")).Detach();
 }
 
 void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = NULL, int els = 0) throw()
@@ -648,50 +637,9 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 	memcpy(&licenseType, license, sizeof(licenseType));
 	// the domain name or PC name
 	// prefer dns name, then NT4 Domain Name, then PC name.
-	DWORD compName = MAX_COMPUTERNAME_LENGTH + 1;
-	CComBSTR cwName, NT4NETBIOSNAME(compName), WORKGROUPNAME(L"");
-	NT4NETBIOSNAME.Attach(GetNetBIOSName(false));
-
-	// try to get the computer name through another API
-	if (NT4NETBIOSNAME.Length() == 0)
-	{
-		logModule.Write(L"NO NETBIOS Name (%d)", GetLastError());
-		NT4NETBIOSNAME.Attach(GetNetBIOSName(true));
-
-	}
-	//mostly ERROR_NO_SUCH_DOMAIN		
-	PDOMAIN_CONTROLLER_INFOW pdomInfo;
-	DWORD result1 = DsGetDcNameW(NT4NETBIOSNAME, nullptr, nullptr, nullptr, DS_DIRECTORY_SERVICE_PREFERRED | DS_RETURN_DNS_NAME, &pdomInfo);
-	if (result1 != ERROR_SUCCESS)
-	{
-		logModule.Write(L"NO AD DOMAIN (%d)", result1);		//mostly ERROR_NO_SUCH_DOMAIN
-		NETSETUP_JOIN_STATUS status;
-		PWSTR wgname = nullptr;
-		NET_API_STATUS apistatus = ::NetGetJoinInformation(nullptr, &wgname, &status);
-		if (apistatus == NERR_Success)
-		{
-			if (status == NetSetupUnjoined || status == NetSetupUnknownStatus)
-			{
-				cwName.Attach(NT4NETBIOSNAME.Detach());
-			}
-			else if (status == NetSetupWorkgroupName)
-			{
-				cwName = wgname;
-			}
-			::NetApiBufferFree(wgname);
-		}
-		else
-		{
-			cwName.Attach(NT4NETBIOSNAME.Detach());
-		}
-	}
-	else
-	{
-		cwName = pdomInfo->DomainName;
-		::NetApiBufferFree(pdomInfo);
-	}
-	logModule.Write(L"Names %s, %s", NT4NETBIOSNAME.m_str, cwName);
-
+	
+	CComBSTR NT4NETBIOSNAME(_wgetenv(L"COMPUTERNAME"));
+	CComBSTR dnsDomain(_wgetenv(L"USERDNSDOMAIN"));
 	CComBSTR buf(strLicensedFor);
 
 
@@ -717,9 +665,8 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 	bool foundLicensedItem = false;
 	while (arraySize-- != 1) // line 0 contains 
 	{
-		if (cwName.CompareTo(lines.GetAt(arraySize), true) == 0
-			|| NT4NETBIOSNAME.CompareTo(lines.GetAt(arraySize), true) == 0
-			|| WORKGROUPNAME.CompareTo(lines.GetAt(arraySize), true) == 0)
+		if (NT4NETBIOSNAME.CompareTo(lines.GetAt(arraySize), true) == 0
+			|| dnsDomain.CompareTo(lines.GetAt(arraySize), true) == 0)
 		{
 			foundLicensedItem = true;
 			break;
@@ -727,7 +674,7 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 	}
 	if (foundLicensedItem == false && (licenseType != 4 && licenseType != 8))
 	{
-		logModule.Write(L"Could not find licensedItem %s in allowed licensee %s", cwName.m_str, buf);
+		logModule.Write(L"Could not find licensedItem %s in allowed licensee %s", NT4NETBIOSNAME.m_str, buf);
 		return false;
 	}
 	CComBSTR space(L" "); // reuse variable

@@ -47,8 +47,7 @@ using namespace redis3m;
 #include <asptlb.h>         // Active Server Pages Definitions
 #include <atlsecurity.h>
 #include <atlsafe.h>
-#include <lm.h>
-#include <Dsgetdc.h>
+
 #define ONEMINUTE  0.00069444444444444F
 
 #define CHECKHR2 if (FAILED(hr)) {/* ReportComError2(hr, location);*/ goto error; }

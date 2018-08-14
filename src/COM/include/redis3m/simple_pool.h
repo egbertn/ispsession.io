@@ -97,6 +97,7 @@ private:
     std::string _path;
     std::string _host;
 	std::string _password;
+	bool _useSSL;
     unsigned int _port;
     unsigned int _database;
 };

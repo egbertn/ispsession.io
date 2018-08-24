@@ -1440,6 +1440,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 		baseString.resize(0);
 		while (hr == S_OK)
 		{
+			//read in appends of 512.
 			hr = stream->Read(buf, sizeof(buf), &read);
 			if (read > 0)
 			{

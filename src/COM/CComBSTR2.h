@@ -185,10 +185,7 @@ public:
 	// returns a UTF-8 encoded string of type std::string
 	std::string __stdcall ToString() const
 	{
-		if (*this == NULL)
-		{
-			return nullptr;
-		}
+		// null is handled correctly
 		CComBSTR utf8;
 		auto copyByteSTring = ToByteString();
 		utf8.Attach(copyByteSTring);
@@ -196,11 +193,7 @@ public:
 	}
 	std::wstring __stdcall ToWString() const throw()
 	{
-		if (*this == NULL)
-		{
-			return nullptr;
-		}
-	
+		// null is handled correctly
 		return std::move(std::wstring(m_str, Length()));
 	}
 	BSTR __stdcall Copy() const throw()
@@ -1152,7 +1145,7 @@ public:
 		UINT len = ByteLength();
 		int _convert = MultiByteToWideChar(codePage, 0, (PSTR) m_str, len, NULL, 0);
 		BSTR pszW = SysAllocStringLen(NULL, _convert);
-		if (pszW != NULL)
+		if (pszW != NULL && _convert > 0)
 		{
 			MultiByteToWideChar(codePage, 0, (PSTR)m_str, len, pszW, _convert);
 		}

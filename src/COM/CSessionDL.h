@@ -178,7 +178,7 @@ public:
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()).c_str());
+					logModule.Write(L"fail SADD %s", s2ws(reply.str()).c_str());
 				}
 			}
 			if (removedKeys.size() > 0)
@@ -198,13 +198,13 @@ public:
 				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()).c_str());
+					logModule.Write(L"fail DEL %s", s2ws(reply.str()).c_str());
 				}
 				reply = conn->run(srem);
 				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()).c_str());
+					logModule.Write(L"fail SREM %s", s2ws(reply.str()).c_str());
 				}
 			}
 
@@ -227,7 +227,7 @@ public:
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail redisAdd %s", s2ws(reply.str()).c_str());
+					logModule.Write(L"fail MSET %s", s2ws(reply.str()).c_str());
 				}
 			}
 			
@@ -238,10 +238,12 @@ public:
 					//ms instead of EXPIRE seconds
 					appkeyPrefix.resize(appkeyLen);
 					appkeyPrefix.append(str_toupper( expireKeys[expireKey].first));
-					reply = conn->run(command("PEXPIRE")(appkeyPrefix)(expireKeys[expireKey].second));
-					if (FAILED(hr))
+					logModule.Write(L"Setting %s expired at %d ms", s2ws(appkeyPrefix), expireKeys[expireKey].second);
+					auto exp = command("PEXPIRE") << appkeyPrefix << expireKeys[expireKey].second;
+					reply = conn->run(exp);
+					if (reply.type() == reply::type_t::_ERROR)
 					{
-						logModule.Write(L"fail redisAdd %s", s2ws(reply.str()));
+						logModule.Write(L"fail PEXPIRE %s", s2ws(reply.str()));
 					}
 				}
 			}
@@ -269,6 +271,9 @@ public:
 		auto result = S_OK;		
 		auto repl = conn->run(command("SMEMBERS")(appkey));
 		auto mget = command("MGET");
+		
+
+		auto keyCounter = 0;
 		if (repl.type() == reply::type_t::ARRAY && repl.elements().size() >0)
 		{
 			auto keys = repl.elements();	
@@ -279,13 +284,14 @@ public:
 				mget << it->str() ;//should be string, always, its a key
 			}
 
-			switch (repl.type())
+		/*	switch (repl.type())
 			{
+			
 			case reply::type_t::NIL:
 				result = S_FALSE;
 				m_blobLength = 0;
 				IsNULL = TRUE;
-				break;
+			break;
 			case reply::type_t::STATUS:
 			case reply::type_t::_ERROR:
 				m_blobLength = 0;
@@ -301,17 +307,33 @@ public:
 				
 				
 				break;
-			}
+			}*/
+			auto srem = command("SREM");
+			srem << appkey;
+			auto hasGhostKeys = false;
 		//now get all the keys at once
 			repl = conn->run(mget);	
 			if (repl.type() == reply::type_t::ARRAY)
 			{
 				auto count = repl.elements().size();
-				for (auto it = 0; it < count; ++it)
+				for (auto it = 0; it < count; ++it, keyCounter++)
 				{
 					auto subRepl = repl.elements()[it];
-					//key is format "{appkey}:{key}"
-					hr = pDictionary->DeserializeKey(subRepl.str());
+					//ghost key, probably because of ExpireAt
+					if (subRepl.type() == reply::type_t::NIL)
+						//key is format "{appkey}:{key}"
+					{
+						srem << keys[keyCounter].str();
+						hasGhostKeys = true;
+					}
+					else
+					{
+						hr = pDictionary->DeserializeKey(subRepl.str());
+					}
+				}
+				if (hasGhostKeys)
+				{
+					auto replFixSet = conn->run(srem);
 				}
 			}
 			else

@@ -36,11 +36,6 @@ namespace ispsession.io.Store
             return new ISPSession(sessionKey, tryEstablish,  isNewSessionKey, settings);
         }
 
-        public IApplicationCache Create(SessionAppSettings settings)
-        {
-            var appCache = new ApplicationCache(settings);
-           
-            return appCache;
-        }
+     
     }
 }

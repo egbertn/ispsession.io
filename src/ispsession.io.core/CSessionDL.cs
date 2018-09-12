@@ -116,7 +116,11 @@ namespace ispsession.io
                await transaction.ExecuteAsync(CommandFlags.FireAndForget);
             }
         }
-
+        internal static IDatabase GetDatabase(CacheAppSettings settings)
+        {
+            setEndPoint(settings.DatabaseConnection);
+            return SafeConn.GetDatabase(settings.DataBase);
+        }
         internal static IDatabase GetDatabase(SessionAppSettings settings)
         {
             setEndPoint(settings.DatabaseConnection);
@@ -129,6 +133,23 @@ namespace ispsession.io
                 try
                 {
                     return db.KeyExists(settings.GetKey(cookie));
+                }
+                catch (TimeoutException) //shit happens sometimes
+                {
+                    Thread.Sleep(400);
+                    continue;
+                }
+                catch { throw; }
+            }
+            return false; //ok
+        }
+        internal static bool RedundantExists(this IDatabase db,  CacheAppSettings settings)
+        {
+            for (var x = 0; x < 3; x++)
+            {
+                try
+                {
+                    return db.KeyExists(settings.AppKey);
                 }
                 catch (TimeoutException) //shit happens sometimes
                 {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ispsession.io.core.Interfaces
 {
@@ -32,7 +33,7 @@ namespace ispsession.io.core.Interfaces
         void ExpireKeyAt(string vKey, int at);
         bool KeyExists(string Key);
         Type KeyType(string Key);
-
+        Task CommitAsync();
     };
     internal interface IKeySerializer
     {

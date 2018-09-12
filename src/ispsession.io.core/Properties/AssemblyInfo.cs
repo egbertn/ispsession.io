@@ -1,13 +1,11 @@
-﻿using System.Reflection;
-using System.Runtime.InteropServices;
+﻿
+using System;
+using System.Reflection;
 
-// General Information about an assembly is controlled through the following
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
 [assembly: AssemblyCompany("ADC Cure")]
 [assembly: AssemblyProduct("ISPSession Asp.Net Core")]
-[assembly: AssemblyVersion("9.0.8")]
-[assembly: AssemblyFileVersion("9.0.0.8")]
+[assembly: AssemblyVersion("9.0.160")]
+[assembly: AssemblyFileVersion("9.0.0.160")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyTitle("ASP.NET Session Broker")]
 [assembly: AssemblyDescription("ASP.NET Session Broker Replacement Middleware for AspNetCore")]
@@ -16,8 +14,4 @@ using System.Runtime.InteropServices;
 #else
 [assembly: AssemblyConfiguration("Release")]
 #endif
-[assembly: AssemblyMetadata("at", "42794")]
-// Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible(false)]
+[assembly: AssemblyMetadata("at", "43311")] //july 2018

@@ -225,23 +225,23 @@ namespace ispsession.io
             _sessionItems.Clear();
         }
 
-        public Task CommitAsync()
+        public async Task CommitAsync()
         {
             //return Task.Run(() =>
             //{
             if (_sessionItems == null)
             {
-                return Task.FromResult(0);
+                return;
             }
             if (_isAbandoned)
             {
                 _sessionItems.Clear();//make sure
                                       //TODO: Expire?
-                return Task.FromResult(0);
+                return ;
             }
 
 
-            CSessionDL.SessionSave(_settings, _sessionItems,
+            await CSessionDL.SessionSave(_settings, _sessionItems,
                 new PersistMetaData(false)
                 {
                     Expires = _timeOut,
@@ -249,7 +249,6 @@ namespace ispsession.io
                     ReEntrance = _reEntrance ? (short)-1 : (short)0,
                     LastUpdated = new DBTIMESTAMP()
                 });
-            return Task.FromResult(0);
             //});
 
         }

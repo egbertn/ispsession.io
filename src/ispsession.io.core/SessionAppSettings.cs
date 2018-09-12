@@ -1,5 +1,29 @@
 ﻿namespace ispsession.io
 {
+    public class CacheAppSettings
+    {
+        public string AppKey { get; set; }
+        //domains and such
+        public string Lic { get; set; }
+
+        public string LicKeyCore { get; set; }
+       
+        //redis datasource
+
+        /// <summary>
+        /// Redis, mostly, such as "localhost:6379"
+        /// </summary>
+        public string DatabaseConnection { get; set; }
+        /// <summary>
+        /// default -1 which Redis database number to use
+        /// </summary>
+        public int DataBase { get; set; }
+        /// <summary>
+        /// 0 = disable, 2=write to windows\temp 3 =outputdebug
+        /// </summary>
+        public int EnableLogging { get; set; }
+
+    }
     /// <summary>
     /// Session Default Application settings
     /// NOTE: DO not confuse with Session Settings which might differ per session (such as timeout)
@@ -8,23 +32,23 @@
     {
         //defaults to GUID
         public string CookieName { get; set; }
-        //  [Description("APP_KEY")]
+ 
         public string AppKey { get; set; }
         //cookie path
-        // [Description("AD_PATH")]
+     
         public string Path { get; set; }
         //cokie domain path
-        // [Description("AD_DOMAIN")]
+     
         public string Domain { get; set; }
-        //  [Description("SnifQueryStringFirst")]
+       
         public bool SnifQueryStringFirst { get; set; }
         /// <summary>
         /// allows both https and http to be mixed
         /// </summary>
-        //  [Description("CookieNoSSL")]
+     
         public bool CookieNoSSL { get; set; }
         public bool HttpOnly { get; set; }
-        //  [Description("CookieExpires")]
+       
         public int CookieExpires { get; set; }
 
         //defaults to 30 minutes
@@ -38,12 +62,14 @@
         public bool ReEntrance { get; set; }
         public bool Compress { get; set; }
         
-        //    [Description("Csession.LIC"]
+        
+        //domains and such
         public string Lic { get; set; }
-        // [Description("License")]
+       
         public string LicKeyCore { get; set; }
+       
         //redis datasource
-        //   [Description("DataSource")]
+       
         /// <summary>
         /// Redis, mostly, such as "localhost:6379"
         /// </summary>

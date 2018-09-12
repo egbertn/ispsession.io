@@ -97,7 +97,7 @@ namespace ispsession.io
         //}
 
 
-#if OPT
+#if !Demo
         internal unsafe char ReadChar()
         {
             Str.Read(_memoryBuff, 0, sizeof(char));
@@ -115,7 +115,7 @@ namespace ispsession.io
 
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe short ReadInt16()
         {
             Str.Read(_memoryBuff, 0, sizeof(short));
@@ -134,7 +134,7 @@ namespace ispsession.io
 #endif
 
 
-#if OPT
+#if !Demo
         internal unsafe void WriteInt16(short value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -151,7 +151,7 @@ namespace ispsession.io
 #endif
 
 
-#if OPT
+#if !Demo
         internal unsafe int ReadInt32()
         {
             Str.Read(_memoryBuff, 0, sizeof(int));
@@ -168,7 +168,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe uint ReadUInt32()
         {
             Str.Read(_memoryBuff, 0, sizeof(uint));
@@ -186,7 +186,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe void WriteInt32(int value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -205,7 +205,7 @@ namespace ispsession.io
 
 
 
-#if OPT
+#if !Demo
         internal unsafe void WriteUInt32(uint value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -267,7 +267,7 @@ namespace ispsession.io
             }
         }
 
-#if OPT
+#if !Demo
         internal unsafe long ReadInt64()
         {
             Str.Read(_memoryBuff, 0, sizeof(long));
@@ -284,7 +284,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe ulong ReadUInt64()
         {
             Str.Read(_memoryBuff, 0, sizeof(ulong));
@@ -301,7 +301,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe void WriteInt64(long value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -317,7 +317,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe void WriteUInt64(ulong value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -333,7 +333,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe float ReadFloat()
         {
             Str.Read(_memoryBuff, 0, sizeof(float));
@@ -351,7 +351,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe void WriteFloat(float value)
         {
             fixed (byte* ptr = _memoryBuff)
@@ -368,7 +368,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe decimal ReadDecimal()
         {
             Str.Read(_memoryBuff, 0, sizeof(decimal));
@@ -394,7 +394,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe void WriteDecimal(decimal value)
         {
             fixed (byte* ptr = _memoryBuff)
@@ -447,7 +447,7 @@ namespace ispsession.io
             WriteInt16(value ? (short)-1 : (short)0);
         }
 
-#if OPT
+#if !Demo
         internal unsafe double ReadDouble()
         {
             Str.Read(_memoryBuff, 0, sizeof(double));
@@ -466,7 +466,7 @@ namespace ispsession.io
 #endif
 
 
-#if OPT
+#if !Demo
         internal unsafe void WriteDouble(double value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -483,7 +483,7 @@ namespace ispsession.io
 #endif
 
 
-#if OPT
+#if !Demo
         internal unsafe void WriteChar(char value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -527,7 +527,7 @@ namespace ispsession.io
             //int done =  Encoding.UTF8.GetChars(_memoryBuff, 0, size, newstr, 0);
             //return new string(newstr);
         }
-#if OPT
+#if !Demo
         internal unsafe void WriteString(string value)
 #else
         internal void WriteString(string value)
@@ -543,7 +543,7 @@ namespace ispsession.io
                 EnsureMemory(byteSize + sizeof(int));
                 
                 _encoding.GetBytes(value, 0, wideSize, _memoryBuff, sizeof(int));
-#if OPT
+#if !Demo
                 fixed (byte*ptr = _memoryBuff)
                 {
                     *(int*)ptr = byteSize;

@@ -1,4 +1,6 @@
 ﻿using ispsession.io;
+using ispsession.io.core;
+using ispsession.io.core.Interfaces;
 using ispsession.io.Store;
 
 using System;
@@ -7,6 +9,25 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class ISPSessionServiceCollectionExtensions
     {
+        public static IServiceCollection AddISPCache(this IServiceCollection services, Action<CacheAppSettings> configure)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+            ServiceCollectionServiceExtensions.AddTransient<IISPCacheStore, ISPCacheStore>(services);
+            OptionsServiceCollectionExtensions.Configure(services, configure);
+            return services;
+        }
+        public static IServiceCollection AddISPCache(this IServiceCollection services)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+            ServiceCollectionServiceExtensions.AddTransient<IISPCacheStore, ISPCacheStore>(services);
+            return services;
+        }
         public static IServiceCollection AddISPSession(this IServiceCollection services)
         {
             if (services == null)
@@ -14,7 +35,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
             ServiceCollectionServiceExtensions.AddTransient<IISPSessionStore, ISPSessionStore>(services);
-            //DataProtectionServiceCollectionExtensions.AddDataProtection(services);
             return services;
         }
 

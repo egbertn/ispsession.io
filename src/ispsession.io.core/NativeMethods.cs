@@ -93,10 +93,10 @@ namespace ispsession.io
         internal unsafe static extern int NetApiBufferFree(void* Buffer);
 
         [DllImport("Netapi32.dll", ExactSpelling = true, CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern int DsGetDcNameW(            
-             string ComputerName,            
+        internal static extern int DsGetDcNameW(
+             string ComputerName,
             string DomainName,
-            IntPtr DomainGuid,            
+            IntPtr DomainGuid,
             string SiteName,
             [MarshalAs(UnmanagedType.U4)]
             DSGETDCNAME_FLAGS Flags,
@@ -121,17 +121,37 @@ namespace ispsession.io
         [DllImport("Shlwapi.dll")]
         internal unsafe static extern uint HashData(byte* pbData, int cbData, void* piet, int outputLen);
         [DllImport("oleaut32.dll")]
-        internal static extern unsafe int VariantChangeTypeEx( void* pvargDest, void* pvarSrc, int lcid, short wFlags, short vt);
+        internal static extern unsafe int VariantChangeTypeEx(void* pvargDest, void* pvarSrc, int lcid, short wFlags, short vt);
 
         [DllImport("oleaut32.dll")]
-        internal unsafe static extern int VariantTimeToSystemTime(double vtime,  _SYSTEMTIME* lpSystemTime);
+        internal unsafe static extern int VariantTimeToSystemTime(double vtime, _SYSTEMTIME* lpSystemTime);
         [DllImport("oleaut32.dll")]
         internal static unsafe extern int SystemTimeToVariantTime(_SYSTEMTIME* lpSystemTime, double* OaDate);
 
-        [DllImport("ole32.dll", ExactSpelling = true)]
-        internal static extern int ReadClassStm(IStream pStm, out Guid clsid);
-        [DllImport("ole32.dll", ExactSpelling = true)]
-        internal static extern int WriteClassStm(IStream pStm, [In] ref Guid clsid);
+
+        internal static int ReadClassStm(IStream pStm, out Guid clsid)
+        {
+            clsid = Guid.Empty;
+            if (pStm == null)
+            {
+                throw new ArgumentNullException(nameof(pStm));
+            }
+            var bt = new byte[16];
+
+            pStm.Read(bt, 0, IntPtr.Zero);
+            clsid = new Guid(bt);
+            return 0;
+        }
+
+        internal static int WriteClassStm(IStream pStm, ref Guid clsid)
+        {
+            if (pStm == null)
+            {
+                throw new ArgumentNullException(nameof(pStm));
+            }
+            pStm.Write(clsid.ToByteArray(), 16, IntPtr.Zero);
+            return 0;
+        }
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int OleLoadFromStream(IStream pStorage, [In] ref Guid iid, [MarshalAs(UnmanagedType.IUnknown)] out object ppvObj);
         [DllImport("ole32.dll", ExactSpelling = true)]
@@ -223,37 +243,39 @@ namespace ispsession.io
 
         internal unsafe static DOMAIN_CONTROLLER_INFO GetDomainInfo()
         {
-            var domainInfo = new DOMAIN_CONTROLLER_INFO();
-
-            var pDci = IntPtr.Zero;
-            // var guidClass = new GuidClass();
-            try
+          
+          //  System.Net.Dns.GetHostName();
+            return new DOMAIN_CONTROLLER_INFO
             {
-                var val = DsGetDcNameW(null, null, IntPtr.Zero, null,
-                  DSGETDCNAME_FLAGS.DS_DIRECTORY_SERVICE_REQUIRED |
-                    DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME, out pDci);
-                //check return value for error
-                if (ErrorSuccess == val)
-                {
-                    domainInfo = Marshal.PtrToStructure<DOMAIN_CONTROLLER_INFO>(pDci);
-                }
-            }
-            finally
-            {
-                if (pDci != IntPtr.Zero)
-                    NetApiBufferFree(pDci.ToPointer());
-            }
-            return domainInfo;
+                DomainName = Environment.GetEnvironmentVariable("USERDNSDOMAIN"),
+                DomainControllerName = Environment.GetEnvironmentVariable("LOGONSERVER"),
+            };
+          
+            //var pDci = IntPtr.Zero;
+            //// var guidClass = new GuidClass();
+            //try
+            //{
+            //    var val = DsGetDcNameW(null, null, IntPtr.Zero, null,
+            //      DSGETDCNAME_FLAGS.DS_DIRECTORY_SERVICE_REQUIRED |
+            //        DSGETDCNAME_FLAGS.DS_RETURN_DNS_NAME, out pDci);
+            //    //check return value for error
+            //    if (ErrorSuccess == val)
+            //    {
+            //        domainInfo = Marshal.PtrToStructure<DOMAIN_CONTROLLER_INFO>(pDci);
+            //    }
+            //}
+            //finally
+            //{
+            //    if (pDci != IntPtr.Zero)
+            //        NetApiBufferFree(pDci.ToPointer());
+            //}
+            //return domainInfo;
         }
         internal static string GetNetBiosName(bool giveDnsName = false)
         {
-            const int maxComputernameLength = 15;
-            var compNameLength = giveDnsName ? 255 : maxComputernameLength;
-            var nt4Netbiosname = new string('0', compNameLength);
-            compNameLength++;
-            return GetComputerNameExW(
-                giveDnsName ? COMPUTER_NAME_FORMAT.ComputerNameDnsHostname :
-                    COMPUTER_NAME_FORMAT.ComputerNameNetBIOS, nt4Netbiosname, ref compNameLength) ? nt4Netbiosname.Substring(0, compNameLength) : null;
+           
+            return Environment.MachineName;
+          
         }
 
         //[DllImport("ole32.dll", ExactSpelling = true)]

@@ -3,11 +3,11 @@ using ispsession.io.core.Interfaces;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Threading.Tasks;
 
 namespace ispsession.io
 {
@@ -15,7 +15,7 @@ namespace ispsession.io
     {
         private readonly IDictionary<string, ElementModel> _dictionary;
         private readonly HashSet<string> _removed;
-        private SessionAppSettings settings;
+        private CacheAppSettings settings;
 
         public ApplicationCache()
         {
@@ -23,7 +23,7 @@ namespace ispsession.io
             _dictionary = new Dictionary<string, ElementModel>();
         }
 
-        public ApplicationCache(SessionAppSettings settings)
+        public ApplicationCache(CacheAppSettings settings)
         {
             this.settings = settings;
         }
@@ -58,6 +58,11 @@ namespace ispsession.io
                 }
                 _dictionary[key] = element;
             }
+        }
+
+        internal Task LoadAsync()
+        {
+            return Task.CompletedTask;
         }
 
 
@@ -232,13 +237,13 @@ namespace ispsession.io
             out IList<Tuple<string, int>> expireKeys, 
             out IList<string> removedKeys)
         {
-            changedKeys = new Collection<string>();
-            newKeys = new Collection<string>();
-            otherKeys = new Collection<string>();
-            expireKeys = new Collection<Tuple<string, int>>();
+            changedKeys = new List<string>();
+            newKeys = new List<string>();
+            otherKeys = new List<string>();
+            expireKeys = new List<Tuple<string, int>>();
             var removedAry = new string[_removed.Count];
             _removed.CopyTo(removedAry);
-            removedKeys = new Collection<string>(removedAry);
+            removedKeys = new List<string>(removedAry);
             removedAry = null;
             foreach (var k in _dictionary)
             {
@@ -285,6 +290,11 @@ namespace ispsession.io
                 m.IsSerialized = true;
             }
             _dictionary[key] = m;
+        }
+      
+        public Task CommitAsync()
+        {
+            throw new NotImplementedException();
         }
     }
 }

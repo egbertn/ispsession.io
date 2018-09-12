@@ -114,6 +114,7 @@ namespace ispsession.io
             Func<bool> initialized =() => false;
             Func<ISPSession, bool> tryEstablishSession = (i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
 
+            
 #if !Demo
             if (initDone == false)
             {
@@ -145,7 +146,7 @@ namespace ispsession.io
             }
 #else
             var exp = double.Parse(StreamManager.GetMetaData("at"));
-            if (DateTime.Today > NativeMethods.FromOADate(exp))
+            if (DateTime.Today > DateTime.FromOADate(exp))
             {
                 await context.Response.WriteAsync(StreamManager.MessageString);
             }
@@ -155,7 +156,7 @@ namespace ispsession.io
             var sessionFeature = new ISPSessionFeature
             {
                 Session = this._sessionStore.Create(text2, tryEstablishSession, isNewSessionKey, _options),
-                Application = this._sessionStore.Create(_options)
+             
             };
             var database = CSessionDL.GetDatabase(_options);
             context.Features.Set<IISPSEssionFeature>(sessionFeature);
@@ -170,8 +171,7 @@ namespace ispsession.io
                 try
                 {
                     await sessionFeature.Session.CommitAsync();
-                    var keyMan = (IKeySerializer)sessionFeature.Application;
-                    CSessionDL.ApplicationSave(database, _options.AppKey, keyMan, TimeSpan.FromMilliseconds(0));
+                  
 
                 }
                 catch (Exception ex)

@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CookieWebCore.Models;
 using Microsoft.Extensions.Options;
-using MimeKit;
+
 using System.Threading.Tasks;
 //#if NETSTANDARD1_6
 
-using MailKit.Security;
-using MimeKit.Text;
+
 //#endif
 using System;
+using System.Net.Mail;
+using System.Net;
 
 namespace CookieWebCore.Controllers
 {
@@ -77,26 +78,36 @@ namespace CookieWebCore.Controllers
             Session["Email"] = resume.Email;
             Session["Word"] = resume.Word;
 //#if NETSTANDARD1_6
-            var msg = new MimeMessage();
-            msg.To.Add(new MailboxAddress(resume.Email));
-            msg.From.Add(new MailboxAddress("NOREPLY@ispsession.io"));
+            var msg = new MailMessage();
+            msg.To.Add(new MailAddress(resume.Email));
+            msg.From = new MailAddress("NOREPLY@ispsession.io");
             msg.Subject = "ISP Session resumable session demo";
             var host = Request.Scheme +  "://"+ Request.Host.ToString() + Url.Action("Resume", "Home", new { GUID = Session.SessionID });
-            msg.Body = new TextPart(TextFormat.Html) { Text = $@"<html><head></head><body>Resume your session with 
+            msg.IsBodyHtml = true;
+            msg.Body =  $@"<html><head></head><body>Resume your session with 
 
     <a href=""{host}"">Click here</a><br/>
     Please close your browser to see that the session is resumed when you start a new browser using the URL inside the email!
-    </body></html>"};
+    </body></html>";
 
 
 
 
-            var cl = new MailKit.Net.Smtp.SmtpClient();
-            var arr = this._siteSettings.Value.SmtpServer.Split('.');
-            cl.LocalDomain = string.Join(".",arr,1,arr.Length-1);
-            await cl.ConnectAsync(this._siteSettings.Value.SmtpServer, 25, SecureSocketOptions.StartTlsWhenAvailable);
-            await cl.AuthenticateAsync(this._siteSettings.Value.UserName, this._siteSettings.Value.Password);
-            await cl.SendAsync(msg);
+            var cl = new SmtpClient(this._siteSettings.Value.SmtpServer)
+            {
+                UseDefaultCredentials = false,
+                EnableSsl = true,
+                DeliveryMethod = SmtpDeliveryMethod.Network,
+                DeliveryFormat = SmtpDeliveryFormat.International,
+                Port = 25,
+                Credentials = new NetworkCredential(this._siteSettings.Value.UserName, this._siteSettings.Value.Password)
+            };
+
+            // var arr = this._siteSettings.Value.SmtpServer.Split('.');
+            //cl.LocalDomain = string.Join(".",arr,1,arr.Length-1);
+            //await cl.ConnectAsync(, 25, SecureSocketOptions.StartTlsWhenAvailable);
+            //await cl.AuthenticateAsync(this._siteSettings.Value.UserName, this._siteSettings.Value.Password);
+            await cl.SendMailAsync(msg);
             //#endif
             resume.Message = "You can close your browser now";
             return View(resume);

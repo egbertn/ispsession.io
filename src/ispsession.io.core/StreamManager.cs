@@ -22,6 +22,7 @@ namespace ispsession.io
     // 
     public class StreamManager
     {
+		public const string VERSION = "NON_OPTIMIZED_VERSION";
 
         protected byte[] _memoryBuff;
         private int _memSize;
@@ -430,12 +431,10 @@ namespace ispsession.io
 #endif
         internal decimal ReadCurrency()
         {
-            return Decimal.FromOACurrency(ReadInt64());
-          //  return NativeMethods.FromOACurrency(ReadInt64());
+            return Decimal.FromOACurrency(ReadInt64());          
         }
         internal void WriteCurrency(decimal value)
         {
-          //  Decimal.ToOACurrency(value);
             WriteInt64(Decimal.ToOACurrency(value));
         }
         internal bool ReadBoolean()
@@ -502,11 +501,9 @@ namespace ispsession.io
         internal DateTime ReadDateTime()
         {
             return DateTime.FromOADate(ReadDouble());
-           // return NativeMethods.FromOADate(ReadDouble());
         }
         internal void WriteDateTime(DateTime value)
-        {
-            // WriteDouble(NativeMethods.ToOaDate(value));
+        {           
             WriteDouble(value.ToOADate());
         }
         /// <summary>
@@ -633,7 +630,7 @@ namespace ispsession.io
                     }
                     Str.Write(straightToStream ? (byte[])psa : _memoryBuff, 0, lMemSize);
                 }
-                else if (!isJagged && ((vT == VarEnum.VT_BSTR || vT == VarEnum.VT_DECIMAL) && lElements > 0))
+                else if (!isJagged && ((vT == VarEnum.VT_BSTR || vT == VarEnum.VT_DECIMAL || vT == VarEnum.VT_VARIANT) && lElements > 0))
                 {
                     var rgIndices = new int[cDims];
                     for (var x = 0; x < cDims; x++)
@@ -649,6 +646,12 @@ namespace ispsession.io
                         {
                             switch (vT)
                             {
+ 								case VarEnum.VT_VARIANT:
+                                    var v = psa.GetValue(rgIndices);
+                                    var vt = ConvertTypeToVtEnum(v);
+                                    WriteInt16((short)vt);
+                                    WriteValue(v, vt);
+                                    break;
                                 case VarEnum.VT_BSTR:
                                     WriteString((string)psa.GetValue(rgIndices));
                                     break;
@@ -793,7 +796,7 @@ namespace ispsession.io
                             TraceInformation("COM object written bytesize={0} already serialized", bts.Length);
                             break;
                         }
-                        bool isComObject = isComObject = Marshal.IsComObject(data) && vT != VarEnum.VT_ERROR;
+                        bool isComObject = Marshal.IsComObject(data) && vT != VarEnum.VT_ERROR;
                         if (isComObject)
                         {
                             TraceInformation("Ser Com Object type {0}", TraceInfo.TraceInfo ? data.GetType().FullName : null);
@@ -1001,7 +1004,7 @@ namespace ispsession.io
                     }
                     return psa;
                 }
-                if (!isJagged && ((vT == VarEnum.VT_DECIMAL || vT == VarEnum.VT_BSTR) && lElements > 0))
+                if (!isJagged && ((vT == VarEnum.VT_DECIMAL || vT == VarEnum.VT_BSTR || vT == VarEnum.VT_VARIANT) && lElements > 0))
                 {
                     var psaBound = new SAFEARRAYBOUND[cDims];
                     var rgIndices = new int[cDims];
@@ -1021,7 +1024,11 @@ namespace ispsession.io
                         {
                             switch(vT)
                             {
-                                case VarEnum.VT_BSTR:
+                				case VarEnum.VT_VARIANT:
+                                    var vT2 = (VarEnum)ReadInt16();
+                                    psa.SetValue(ReadValue(vT2), rgIndices);
+                                    break;
+								case VarEnum.VT_BSTR:
                                     psa.SetValue(ReadString(), rgIndices);
                                     break;
                                 case VarEnum.VT_DECIMAL:
@@ -1159,42 +1166,51 @@ namespace ispsession.io
                         EnsureMemory(bytesInStream);
                         //var bytes = new byte[BytesInStream];
                         Str.Read(_memoryBuff, 0, bytesInStream);
-                        if (!isNetObject)
+                        if (!LateObjectActivation)
                         {
-                            TraceInformation("Deser Com Object");
-                            var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE, new IntPtr(bytesInStream));                           
-                            Marshal.Copy(_memoryBuff, 0, NativeMethods.GlobalLock(hglob), bytesInStream);
-                            var result = NativeMethods.GlobalUnlock(hglob);
-                            var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
-                            if (hr != 0) Marshal.ThrowExceptionForHR(hr);
-                            var uknown = new Guid("00000000-0000-0000-C000-000000000046");
-
-                            hr = NativeMethods.OleLoadFromStream(pstr, ref uknown, out data);
-                            if (hr != 0) Marshal.ThrowExceptionForHR(hr);
-                            if (data == null)
+                            if (!isNetObject)
                             {
-                                pstr.Seek(0, 0, IntPtr.Zero);//Position = 0
-                                TraceInformation("IPersistStream failed, trying IPersistStreamInit");
-                                data = OleLoadFromStream2(pstr, uknown);
+                                TraceInformation("Deser Com Object");
+                                var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE, new IntPtr(bytesInStream));
+                                Marshal.Copy(_memoryBuff, 0, NativeMethods.GlobalLock(hglob), bytesInStream);
+                                var result = NativeMethods.GlobalUnlock(hglob);
+                                var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
+                                if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+                                var uknown = new Guid("00000000-0000-0000-C000-000000000046");
+
+                                hr = NativeMethods.OleLoadFromStream(pstr, ref uknown, out data);
+                                if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+                                if (data == null)
+                                {
+                                    pstr.Seek(0, 0, IntPtr.Zero);//Position = 0
+                                    TraceInformation("IPersistStream failed, trying IPersistStreamInit");
+                                    data = OleLoadFromStream2(pstr, uknown);
+                                }
                             }
+                            else // it is a .NET serializable object
+                            {
+
+                                TraceInformation("deser .NET");
+                                var bFormatter = new BinaryFormatter
+                                {
+                                    TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded,
+                                    AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple
+                                };
+                                using (var mem = new MemoryStream(_memoryBuff, 0, bytesInStream))
+                                {
+                                    data = bFormatter.Deserialize(mem);
+                                }
+                                TraceInformation("DeSerializing {0}", TraceInfo.TraceInfo ? data.GetType().Name : null);
+
+                            }
+                            return data;
                         }
-                        else // it is a .NET serializable object
+                        else
                         {
-
-                            TraceInformation("deser .NET");
-                            var bFormatter = new BinaryFormatter
-                            {
-                                TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded,
-                                AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple
-                            };
-                            using (var mem = new MemoryStream(_memoryBuff, 0, bytesInStream))
-                            {
-                                data = bFormatter.Deserialize(mem);
-                            }
-                            TraceInformation("DeSerializing {0}", TraceInfo.TraceInfo ? data.GetType().Name : null);
-
+                            var byteBuff = new byte[bytesInStream];
+                            Array.Copy(_memoryBuff, byteBuff, bytesInStream);
+                            return byteBuff;
                         }
-                        return data;
                 }
             }
             throw new NotImplementedException(string.Format("this type VarEum = {0} cannot (yet?) be deserialized by CSessionManaged", vT));

@@ -1,8 +1,4 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using System;
-using System.Globalization;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -53,20 +49,7 @@ namespace ispsession.io
             return Task.FromResult(0);
         }
      
-        public string GetSessionID(HttpContext context)
-        {
-           
-            var db = CSessionDL.GetDatabase(_settings);
-            bool foundSession = false;
-         
-            foundSession = db.RedundantExists( _settings);
-            if (foundSession)
-            {
-                return _settings.AppKey;
-            }
-           
-            return null;
-        }
+        
 
        
 

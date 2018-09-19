@@ -21,11 +21,12 @@ namespace ispsession.io.core
             _manager = new ISPCacheManager(_options);
         }
         public async Task Invoke(HttpContext context)
-        {            
-           
-            // do the cookie stuff just once
+        {
+
+            // do Application initialisation just once. Otherwise, 
+            // when css extension or others are loaded, it will be reloaded again
             Func<bool> initialized = () => false;
-            Func<ISPCache, bool> tryEstablishSession = (i) => (new ISPCacheManager(context, _options)).TryEstablishSession(i);
+            Task<bool> tryEstablishApplication(ApplicationCache i) => (new ISPCacheManager(context, _options)).TryEstablishSession(i);
 
 
 #if !Demo
@@ -68,7 +69,7 @@ namespace ispsession.io.core
 
             var cacheFeature = new ISPCacheFeature
             {
-                Application = this._CacheStore.Create(_options)
+                Application = this._CacheStore.Create(_options, tryEstablishApplication)
             };
             var database = CSessionDL.GetDatabase(_options);
             context.Features.Set<ICacheFeature>(cacheFeature);

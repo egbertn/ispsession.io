@@ -112,9 +112,9 @@ namespace ispsession.io
             }
             // do the cookie stuff just once
             Func<bool> initialized =() => false;
-            Func<ISPSession, bool> tryEstablishSession = (i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
+            Task<bool> tryEstablishSession(ISPSession i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
 
-            
+
 #if !Demo
             if (initDone == false)
             {

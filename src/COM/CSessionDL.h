@@ -284,30 +284,6 @@ public:
 				mget << it->str() ;//should be string, always, its a key
 			}
 
-		/*	switch (repl.type())
-			{
-			
-			case reply::type_t::NIL:
-				result = S_FALSE;
-				m_blobLength = 0;
-				IsNULL = TRUE;
-			break;
-			case reply::type_t::STATUS:
-			case reply::type_t::_ERROR:
-				m_blobLength = 0;
-
-				logModule.Write(L"ApplicationGet failed because %s", s2ws(repl.str()).c_str());
-				result = E_FAIL;
-				break;
-			case reply::type_t::STRING:
-
-				int buf = 0x1000;
-				std::string str = repl.str();
-				m_blobLength = repl.strlen();
-				
-				
-				break;
-			}*/
 			auto srem = command("SREM");
 			srem << appkey;
 			auto hasGhostKeys = false;

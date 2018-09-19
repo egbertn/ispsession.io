@@ -16,7 +16,7 @@ namespace ispsession.io
 
         private readonly HttpContext _context;
         private readonly string _id;
-        
+
         private readonly SessionAppSettings _settings;
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         public ISPSessionIDManager(SessionAppSettings settings)
@@ -30,18 +30,18 @@ namespace ispsession.io
         /// So we don't know when or not to Session. The only reliable detection would be at Session set/get item/delete/clear etc
         /// which means, somebody needs us now. Other IIS requests, such as .js files or css thus will ignore the state.
         /// </summary>
-        internal bool TryEstablishSession(ISPSession i)
+        internal async Task<bool> TryEstablishSession(ISPSession i)
         {
             var ret = this._shouldEstablishSession |= !this._context.Response.HasStarted;
             if (ret)
             {
                 if (!i.IsNewSession)
                 {
-                    i.LoadAsync();
-                }            
+                    await i.LoadAsync();
+                }
             }
 
-            return ret;
+            return true;
         }
         public ISPSessionIDManager(HttpContext context, string id, SessionAppSettings settings)
         {
@@ -60,28 +60,28 @@ namespace ispsession.io
             return Task.FromResult(0);
         }
         private void SetCookie()
-        {         
-            if (Validate(_id)== false)
+        {
+            if (Validate(_id) == false)
             {
                 return;
             }
             var request = _context.Request;
-            
+
             StreamManager.TraceInformation("SetCookie {0}, {1}", _id, request.Path);
             var isHttps = request.IsHttps;
             var resp = this._context.Response;
             var opts = new CookieOptions()
             {
-                Domain = string.IsNullOrEmpty(this._settings.Domain) ? null : this._settings.Domain,               
+                Domain = string.IsNullOrEmpty(this._settings.Domain) ? null : this._settings.Domain,
                 Path = this._settings.Path ?? request.Path,
                 Secure = isHttps && _settings.CookieNoSSL == false ? true : false,
-                Expires =_settings.CookieExpires==0? default(DateTimeOffset?) : DateTime.UtcNow.AddMinutes(_settings.CookieExpires)
+                Expires = _settings.CookieExpires == 0 ? default(DateTimeOffset?) : DateTime.UtcNow.AddMinutes(_settings.CookieExpires)
             };
             //unfortunately, workaround, otherwise cookies get duplicated
             //resp.Cookies.Delete(this._settings.CookieName, opts);
-          
+
             resp.Cookies.Append(this._settings.CookieName, this._id, opts);
-            
+
             var headers = resp.Headers;
             headers["Cache-Control"] = "no-cache";
             headers["Pragma"] = "no-cache";
@@ -95,7 +95,7 @@ namespace ispsession.io
             if (_settings.SnifQueryStringFirst)
             {
                 var cookie = request.Query[_settings.CookieName];
-               
+
                 if (cookie.Count > 0)
                 {
                     cookieText = cookie[0];
@@ -103,13 +103,13 @@ namespace ispsession.io
                     {
                         foundGuidinURL = true;
                     }
-                    
+
                 }
             }
             string cookieValue = null;
-            var httpCookie =request.Cookies[_settings.CookieName];
+            var httpCookie = request.Cookies[_settings.CookieName];
 
-            if (httpCookie != null  && !foundGuidinURL)
+            if (httpCookie != null && !foundGuidinURL)
             {
                 cookieValue = httpCookie;
                 if (!Validate(cookieValue))
@@ -118,8 +118,8 @@ namespace ispsession.io
                     if (_settings.SnifQueryStringFirst == false)
                     {
                         var urlCookie = request.Query[_settings.CookieName];
-                        
-                        if (urlCookie.Count>0 && Validate(urlCookie[0]))
+
+                        if (urlCookie.Count > 0 && Validate(urlCookie[0]))
                         {
                             StreamManager.TraceInformation("GetSessionID found url guid {0}, {1}", urlCookie, request.Path);
                             cookieText = urlCookie;
@@ -177,13 +177,13 @@ namespace ispsession.io
         private static string GuidToHex(byte[] bytes)
         {
             var sb = new StringBuilder(32);
-            
+
             for (int x = 0; x <= 15; x++)
             {
                 sb.Append(bytes[x].ToString("X2"));
             }
             return sb.ToString();
-        }                
+        }
         public static bool Validate(string id)
         {
             int l;
@@ -200,8 +200,8 @@ namespace ispsession.io
                 }
             }
             return true;
-        }       
+        }
 
-        
+
     }
 }

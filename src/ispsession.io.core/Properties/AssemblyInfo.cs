@@ -4,8 +4,8 @@ using System.Reflection;
 
 [assembly: AssemblyCompany("ADC Cure")]
 [assembly: AssemblyProduct("ISPSession Asp.Net Core")]
-[assembly: AssemblyVersion("9.0.160")]
-[assembly: AssemblyFileVersion("9.0.0.160")]
+[assembly: AssemblyVersion("9.0.161")]
+[assembly: AssemblyFileVersion("9.0.0.161")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyTitle("ASP.NET Session Broker")]
 [assembly: AssemblyDescription("ASP.NET Session Broker Replacement Middleware for AspNetCore")]
@@ -14,4 +14,4 @@ using System.Reflection;
 #else
 [assembly: AssemblyConfiguration("Release")]
 #endif
-[assembly: AssemblyMetadata("at", "43311")] //july 2018
+[assembly: AssemblyMetadata("at", "43373")] //sept 2018

@@ -11,7 +11,7 @@ namespace ispsession.io
         private readonly SessionAppSettings _settings;
         private const string CannotInitiateSession = "Cannot Initiate Session now";
         private ISPSessionStateItemCollection2 _sessionItems;
-        private readonly Func<ISPSession, bool> _tryEstablish;
+        private readonly Func<ISPSession, Task<bool>> _tryEstablish;
         //TODO: parse this flag
         private readonly bool _isReadonly;
         private readonly object locker = new object();
@@ -23,7 +23,7 @@ namespace ispsession.io
         private bool _wasLoaded;
         //minutes
         private int _timeOut;
-        internal ISPSession(string sessionKey, Func<ISPSession, bool> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
+        internal ISPSession(string sessionKey, Func<ISPSession, Task< bool>> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
         {
             if (settings == null)
             {
@@ -71,11 +71,11 @@ namespace ispsession.io
 
             }
         }
-        private void CheckLoad()
+        private async Task CheckLoad()
         {
             if (!_wasLoaded)
             {
-                if (!_tryEstablish(this))
+                if (!await _tryEstablish(this))
                 {
                     throw new InvalidOperationException(CannotInitiateSession);
                 }
@@ -84,8 +84,9 @@ namespace ispsession.io
                     lock (locker)
                     {
                         _wasLoaded = true;
-                        LoadAsync().GetAwaiter().GetResult();
+                       
                     }
+                    await LoadAsync();
                 }
             }
         }
@@ -93,13 +94,13 @@ namespace ispsession.io
         {
             get
             {
-                CheckLoad();
+                CheckLoad().Wait();
                 return _sessionItems[name];
             }
 
             set
             {
-                CheckLoad();
+                CheckLoad().Wait();
                 _sessionItems[name] = value;
             }
         }
@@ -108,13 +109,13 @@ namespace ispsession.io
         {
             get
             {
-                CheckLoad();
+                CheckLoad().Wait();
                 return _sessionItems[index];
             }
 
             set
             {
-                CheckLoad();
+                CheckLoad().Wait();
                 _sessionItems[index] = value;
             }
         }
@@ -123,7 +124,7 @@ namespace ispsession.io
         {
             get
             {
-                CheckLoad();
+                CheckLoad().Wait();
                 return _sessionItems.Count;
             }
         }
@@ -164,7 +165,7 @@ namespace ispsession.io
         {
             get
             {
-                CheckLoad();
+                CheckLoad().Wait();
                 return _sessionItems.Keys;
             }
         }
@@ -205,7 +206,7 @@ namespace ispsession.io
 
         public void Abandon()
         {
-            CheckLoad();
+            CheckLoad().Wait();
             _isAbandoned = true;
             _isAbandoned = false;
             _sessionItems.Clear();
@@ -215,13 +216,13 @@ namespace ispsession.io
 
         public void Add(string name, object value)
         {
-            CheckLoad();
+            CheckLoad().Wait();
             _sessionItems[name] = value;
         }
 
         public void Clear()
         {
-            CheckLoad();
+            CheckLoad().Wait();
             _sessionItems.Clear();
         }
 
@@ -255,7 +256,7 @@ namespace ispsession.io
 
         public IEnumerator GetEnumerator()
         {
-            CheckLoad();
+            CheckLoad().Wait();
             return _sessionItems.GetEnumerator();
         }
 
@@ -271,31 +272,31 @@ namespace ispsession.io
 
         public void Remove(string key)
         {
-            CheckLoad();
+            CheckLoad().Wait();
             _sessionItems.Remove(key);
         }
 
         public void RemoveAll()
         {
-            CheckLoad();
+            CheckLoad().Wait();
             _sessionItems.Clear();
         }
 
         public void RemoveAt(int index)
         {
-            CheckLoad();
+            CheckLoad().Wait();
             _sessionItems.RemoveAt(index);
         }
 
         public void Set(string key, byte[] value)
         {
-            CheckLoad();
+            CheckLoad().Wait();
             _sessionItems[key] = value;
         }
 
         public bool TryGetValue(string key, out byte[] value)
         {
-            CheckLoad();
+            CheckLoad().Wait();
 
             value = null;
             if (_sessionItems[key] != null && _sessionItems[key].GetType() == typeof(byte[]))
@@ -308,7 +309,7 @@ namespace ispsession.io
 
         IEnumerator IISPSession.GetEnumerator()
         {
-            CheckLoad();
+            CheckLoad().Wait();
             return _sessionItems.GetEnumerator();
         }
         public bool Liquid

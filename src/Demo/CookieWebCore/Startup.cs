@@ -39,7 +39,7 @@ namespace CookieWebCore
             services.Configure<MailSettings>(Configuration.GetSection("mailinfo"));
 
             services.AddISPSession();
-
+          //  services.AddISPCache();
             services.AddMvc();
         }
 

@@ -35,10 +35,9 @@ namespace ispsession.io
             var ret = this._shouldEstablishSession |= !this._context.Response.HasStarted;
             if (ret)
             {
-                if (!i.IsNewSession)
-                {
-                    await i.LoadAsync();
-                }
+              
+                await i.LoadAsync();
+                
             }
 
             return true;

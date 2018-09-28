@@ -26,7 +26,7 @@ namespace ispsession.io
         /// So we don't know when or not to Session. The only reliable detection would be at Session set/get item/delete/clear etc
         /// which means, somebody needs us now. Other IIS requests, such as .js files or css thus will ignore the state.
         /// </summary>
-        internal async Task< bool> TryEstablishSession(ApplicationCache i)
+        internal async Task< bool> TryEstablishCache(ApplicationCache i)
         {
            
                 

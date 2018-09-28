@@ -26,7 +26,7 @@ namespace ispsession.io.core
             // do Application initialisation just once. Otherwise, 
             // when css extension or others are loaded, it will be reloaded again
             Func<bool> initialized = () => false;
-            Task<bool> tryEstablishApplication(ApplicationCache i) => (new ISPCacheManager(context, _options)).TryEstablishSession(i);
+            Task<bool> tryEstablishApplication(ApplicationCache i) => (new ISPCacheManager(context, _options)).TryEstablishCache(i);
 
 
 #if !Demo
@@ -102,7 +102,7 @@ namespace ispsession.io.core
     }
     public static class BuilderExtensions
     {
-        public static IApplicationBuilder UseISPSession(this IApplicationBuilder app)
+        public static IApplicationBuilder UseISPCache(this IApplicationBuilder app)
         {
             return app.UseMiddleware<ISPCacheMiddleWare>();
         }

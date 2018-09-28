@@ -75,7 +75,7 @@ namespace ispsession.io
                     if (string.IsNullOrEmpty(lic))
                     {
                         throw new Exception(
-                            "ISP Session requires a Appsetting such as <add key=\"License\" value=\"0245456556560418A91B161F23534007\" />");
+                            "ISP Session requires a Appsetting such as <add key=\"LicenseNET\" value=\"0245456556560418A91B161F23534007\" />");
                     }
                     Checked = StreamManager.LicentieCheck(StreamManager.HexToBytes(lic), license);
 #else

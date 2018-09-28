@@ -21,6 +21,7 @@ namespace ispsession.io
     // 
     public class StreamManager
     {
+        public const string VERSION = "NON_OPTIMIZED_VERSION";
 
         protected byte[] _memoryBuff;
         private int _memSize;
@@ -89,7 +90,7 @@ namespace ispsession.io
             }
         }
 
-#if OPT
+#if !Demo
         internal unsafe char ReadChar()
         {
             Str.Read(_memoryBuff, 0, sizeof(char));
@@ -107,7 +108,7 @@ namespace ispsession.io
 
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe short ReadInt16()
         {
             Str.Read(_memoryBuff, 0, sizeof(short));
@@ -124,7 +125,7 @@ namespace ispsession.io
             return BitConverter.ToInt16(_memoryBuff, 0);
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe void WriteInt16(short value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -139,7 +140,7 @@ namespace ispsession.io
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(short));
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe int ReadInt32()
         {
             Str.Read(_memoryBuff, 0, sizeof(int));
@@ -155,7 +156,7 @@ namespace ispsession.io
             return BitConverter.ToInt32(_memoryBuff, 0);
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe uint ReadUInt32()
         {
             Str.Read(_memoryBuff, 0, sizeof(uint));
@@ -172,7 +173,7 @@ namespace ispsession.io
             return BitConverter.ToUInt32(_memoryBuff, 0);
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe void WriteInt32(int value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -188,7 +189,7 @@ namespace ispsession.io
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(int));
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe void WriteUInt32(uint value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -247,7 +248,7 @@ namespace ispsession.io
                     Marshal.FreeHGlobal(ptPoit);
             }
         }
-#if OPT
+#if !Demo
         internal unsafe long ReadInt64()
         {
             Str.Read(_memoryBuff, 0, sizeof(long));
@@ -264,7 +265,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe ulong ReadUInt64()
         {
             Str.Read(_memoryBuff, 0, sizeof(ulong));
@@ -280,7 +281,7 @@ namespace ispsession.io
             return BitConverter.ToUInt64(_memoryBuff, 0);
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe void WriteInt64(long value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -295,7 +296,7 @@ namespace ispsession.io
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(long));
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe void WriteUInt64(ulong value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -310,7 +311,7 @@ namespace ispsession.io
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(ulong));
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe float ReadFloat()
         {
             Str.Read(_memoryBuff, 0, sizeof(float));
@@ -328,7 +329,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe void WriteFloat(float value)
         {
             fixed (byte* ptr = _memoryBuff)
@@ -344,7 +345,7 @@ namespace ispsession.io
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(float));
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe decimal ReadDecimal()
         {
             // we cannot use decimal.GetBits, since that would flip the structure and make it incompatible with VARIANT
@@ -373,7 +374,7 @@ namespace ispsession.io
         }
 #endif
 
-#if OPT
+#if !Demo
         internal unsafe void WriteDecimal(decimal value)
         {
             void* decPtr = &value;
@@ -434,7 +435,7 @@ namespace ispsession.io
         {
             WriteInt16(value ? (short)-1 : (short)0);
         }
-#if OPT
+#if !Demo
         internal unsafe double ReadDouble()
         {
             Str.Read(_memoryBuff, 0, sizeof(double));
@@ -451,7 +452,7 @@ namespace ispsession.io
             return BitConverter.ToDouble(_memoryBuff, 0);
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe void WriteDouble(double value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -466,7 +467,7 @@ namespace ispsession.io
             Str.Write(BitConverter.GetBytes(value), 0, sizeof(double));
         }
 #endif
-#if OPT
+#if !Demo
         internal unsafe void WriteChar(char value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -509,7 +510,7 @@ namespace ispsession.io
             //int done =  Encoding.UTF8.GetChars(_memoryBuff, 0, size, newstr, 0);
             //return new string(newstr);
         }
-#if OPT
+#if !Demo
         internal unsafe void WriteString(string value)
 #else
         internal void WriteString(string value)
@@ -519,13 +520,11 @@ namespace ispsession.io
             var byteSize = 0;
             if (wideSize > 0)
             {
-                // ReSharper disable once AssignNullToNotNullAttribute
                 byteSize = _encoding.GetByteCount(value);
                 //on array starting with string length
                 EnsureMemory(byteSize + sizeof(int));
-                // ReSharper disable once AssignNullToNotNullAttribute
                 _encoding.GetBytes(value, 0, wideSize, _memoryBuff, sizeof(int));
-#if OPT
+#if !Demo
                 fixed (byte* ptr =_memoryBuff)
                 {
                     *(int*)ptr = byteSize;
@@ -614,7 +613,7 @@ namespace ispsession.io
                     }
                     Str.Write(straightToStream ? (byte[])psa : _memoryBuff, 0, lMemSize);
                 }
-                else if (!isJagged && ((vT == VarEnum.VT_BSTR || vT == VarEnum.VT_DECIMAL) && lElements > 0))
+                else if (!isJagged && ((vT == VarEnum.VT_BSTR || vT == VarEnum.VT_DECIMAL || vT == VarEnum.VT_VARIANT) && lElements > 0))
                 {
                     var rgIndices = new int[cDims];
                     for (var x = 0; x < cDims; x++)
@@ -642,8 +641,7 @@ namespace ispsession.io
                                 case VarEnum.VT_DECIMAL:
                                     WriteValue(psa.GetValue(rgIndices), VarEnum.VT_DECIMAL);
                                     break;
-                            }
-                            
+                            }                            
                             rgIndices[dimPointer]++;
                             //end of loop
                             if (++findEl == lElements)
@@ -978,7 +976,7 @@ namespace ispsession.io
                     if (isJagged)
                     {
                         typeStr = ReadString(); //e.g. System.Int32[][] 
-                    }                    
+                    }
                 }
 
                 Type requestedType;
@@ -1034,7 +1032,7 @@ namespace ispsession.io
                     }
                     return psa;
                 }
-                if (!isJagged && ((vT == VarEnum.VT_BSTR || vT== VarEnum.VT_DECIMAL || vT == VarEnum.VT_VARIANT) && lElements > 0))
+                if (!isJagged && ((vT == VarEnum.VT_BSTR || vT == VarEnum.VT_DECIMAL || vT == VarEnum.VT_VARIANT) && lElements > 0))
                 {
                     var psaBound = new SAFEARRAYBOUND[cDims];
                     var rgIndices = new int[cDims];
@@ -1047,12 +1045,12 @@ namespace ispsession.io
                         psaBound[x].cElements = psaBound[x].cElements - (uint)psaBound[x].lLbound + 1;
                         rgIndices[x] = psaBound[x].lLbound;
                     }
-                    for (;;)//eternal loop, nice
+                    for (; ; )//eternal loop, nice
                     {
 
                         if (rgIndices[dimPointer] < lengths[dimPointer] + lowerbounds[dimPointer])
                         {
-                            switch(vT)
+                            switch (vT)
                             {
                                 case VarEnum.VT_VARIANT:
                                     var vT2 = (VarEnum)ReadInt16();
@@ -1065,7 +1063,7 @@ namespace ispsession.io
                                     psa.SetValue(ReadString(), rgIndices);
                                     break;
                             }
-                            
+
                             rgIndices[dimPointer]++;
                             if (++findEl == lElements)
                             {
@@ -1105,13 +1103,13 @@ namespace ispsession.io
                         psaBound[x].cElements = (uint)(psaBound[x].cElements - psaBound[x].lLbound + 1);
                         rgIndices[x] = psaBound[x].lLbound;
                     }
-                    for (;;)//eternal loop, nice
+                    for (; ; )//eternal loop, nice
                     {
 
                         if (rgIndices[dimPointer] < lengths[dimPointer] + lowerbounds[dimPointer])
                         {
                             vT = (VarEnum)ReadInt16();
-                            psa.SetValue(ReadValue(vT), rgIndices);                            
+                            psa.SetValue(ReadValue(vT), rgIndices);
                             rgIndices[dimPointer]++;
                             if (++findEl == lElements)
                             {
@@ -1199,9 +1197,9 @@ namespace ispsession.io
                             if (!isNetObject)
                             {
                                 TraceInformation("Deser Com Object");
-                                var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE, new IntPtr( bytesInStream));
-                                Marshal.Copy(_memoryBuff, 0, NativeMethods.GlobalLock( hglob), bytesInStream);
-                                var result =NativeMethods.GlobalUnlock(hglob);
+                                var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE, new IntPtr(bytesInStream));
+                                Marshal.Copy(_memoryBuff, 0, NativeMethods.GlobalLock(hglob), bytesInStream);
+                                var result = NativeMethods.GlobalUnlock(hglob);
                                 var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
                                 if (hr != 0) Marshal.ThrowExceptionForHR(hr);
                                 var uknown = new Guid("00000000-0000-0000-C000-000000000046");
@@ -1487,31 +1485,18 @@ namespace ispsession.io
                 return false;
             }
 
-            var nt4Netbiosname = NativeMethods.GetNetBiosName(); //uppercase
-            if (string.IsNullOrEmpty(nt4Netbiosname))
-            {
-                nt4Netbiosname = NativeMethods.GetNetBiosName(true); //lowercase often
-            }
-            var pdomInfo = NativeMethods.GetDomainInfo();
-            string cwName = null;
-            string workgroupname = null;
-            if (!string.IsNullOrEmpty(pdomInfo.DomainName))
-            {
-                cwName = pdomInfo.DomainName;
-            }
-            else
-            {
-                var joinInfo = NativeMethods.GetJoinedDomain();
-                workgroupname = string.IsNullOrEmpty(joinInfo.WorkGroup) ? joinInfo.Domain : joinInfo.WorkGroup;
-            }
-            TraceInformation("Names {0} {1}", nt4Netbiosname, cwName);
+            var nt4Netbiosname = Environment.MachineName; //uppercase
+            //Environment.UserDomain returns NetBios computername if within a workgroup or NT4 DomainName, which I don't want
+            var pdomInfo = Environment.GetEnvironmentVariable("USERDNSDOMAIN");
+            
+            TraceInformation("Names {0} {1}", nt4Netbiosname, pdomInfo);
             var lines = new List<string>(licensedfor.Split(new[] { licensedfor.IndexOf("\r\n", StringComparison.Ordinal) > 0 ? "\r\n" : " " }, StringSplitOptions.None));
             
             lines.Insert(0, ProductString);
-            var foundLicensedItem = Array.Exists(lines.ToArray(), x => x == nt4Netbiosname || x == workgroupname || x == cwName);
+            var foundLicensedItem = Array.Exists(lines.ToArray(), x => x == nt4Netbiosname || x == pdomInfo);
             if (!foundLicensedItem && (licenseType != 4 && licenseType != 25))
             {
-                TraceInformation("Could not find licensedItem {0} in allowed licensee {1}", cwName, licensedfor);
+                TraceInformation("Could not find licensedItem {0} in allowed licensee {1}", nt4Netbiosname, licensedfor);
                 return false;
 
             }

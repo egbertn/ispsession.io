@@ -52,7 +52,9 @@ namespace ispsession.io
             {
                 throw new HttpException("Ccession.LIC appSetting missing");
             }
-            LicKey = cfg.GetAppValue<string>(ispsession_io_pref + "License");
+            LicKey = cfg.GetAppValue<string>(ispsession_io_pref + "LicenseNET");
+            LicKeyCache = cfg.GetAppValue<string>(ispsession_io_pref + "CacheLicenseNET");
+            
 #if !DEMO
             if (string.IsNullOrEmpty(LicKey))
             {
@@ -105,6 +107,7 @@ namespace ispsession.io
         public string Lic;
         // [Description("License")]
         public string LicKey;
+        public string LicKeyCache;
         //redis datasource
         //   [Description("DataSource")]
         /// <summary>

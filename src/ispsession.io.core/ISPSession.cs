@@ -265,7 +265,7 @@ namespace ispsession.io
             if (_wasLoaded == false)
             {
                 this.InitItems(await CSessionDL.SessionGetAsync(_settings, this.SessionID));
-
+                _wasLoaded = true;
             }
            
         }

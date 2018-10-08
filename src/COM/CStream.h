@@ -34,17 +34,17 @@ public:
 
 	void Clear();
 private:
-	bool m_WasAssignedArray;
+	//bool m_WasAssignedArray;
 	//ULONG       m_iReadPos;     // Current index position for reading from the buffer.
 	ULARGE_INTEGER      m_iWritePos;    // Current index position for writing to the buffer.
 	
 	ULARGE_INTEGER		m_ulSize;		// length of the buffer
 	ULARGE_INTEGER		m_ulLength;     // Total assigned buffer length.
 	//ULONG		m_refCount;
-	bool		m_DidAlloc;
+	//bool		m_DidAlloc;
 	
-	CComHeapPtr<BYTE> m_alloc;
-
+	std::vector<BYTE> m_buf;
+	
 
 };
 OBJECT_ENTRY_NON_CREATEABLE_EX_AUTO(GUID_NULL, CStream)

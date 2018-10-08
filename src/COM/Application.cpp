@@ -800,8 +800,8 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 		//reconstruct the number of elements and size
 		lMemSize = 1;
 		//CTempBuffer<SAFEARRAYBOUND, 128, CComAllocator> safebound(cDims);
-		CComHeapPtr<SAFEARRAYBOUND> safebound;
-		safebound.Allocate(cDims);
+		std::vector<SAFEARRAYBOUND> safebound;
+		safebound.resize(cDims);
 		logModule.Write(L"reading array type=%d cDims %d", vtype, cDims);
 		//int bx=cDims;
 		for (LONG cx = 0; cx < cDims; cx++)// cDims - 1; cx != 0; cx--)
@@ -812,7 +812,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 			}
 			logModule.Write(L"lBound %d, cElements %d", safebound[cx].lLbound, safebound[cx].cElements);
 		}
-		auto psa = ::SafeArrayCreate(vtype, cDims, safebound);
+		auto psa = ::SafeArrayCreate(vtype, cDims, &safebound[0]);
 
 		if (psa == nullptr)
 		{
@@ -840,8 +840,10 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 		
 		else if ((vtype == VARENUM::VT_VARIANT || vtype == VT_BSTR || vtype == VT_DECIMAL) && lElements > 0)
 		{
-			CTempBuffer<SAFEARRAYBOUND> psaBound(cDims);
-			CTempBuffer<LONG> rgIndices(cDims);
+			std::vector<SAFEARRAYBOUND> psaBound;
+			psaBound.resize(cDims);
+			std::vector<LONG> rgIndices;
+			rgIndices.resize(cDims);
 
 			LONG dimPointer = 0; // next dimension will first be incremented
 			LONG findEl = 0, ubound, lbound;
@@ -865,7 +867,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 						case VT_DECIMAL:
 						case VT_VARIANT:
 							VARIANT * pVar;
-							hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
+							hr = ::SafeArrayPtrOfIndex(psa, &rgIndices[0], (void**)&pVar);
 							if (SUCCEEDED(hr))
 							{
 								VARTYPE vt2;
@@ -882,7 +884,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 							break;
 						case VT_BSTR:
 							BSTR * pBstr;
-							hr = ::SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pBstr);
+							hr = ::SafeArrayPtrOfIndex(psa, &rgIndices[0], (void**)&pBstr);
 							hr = ReadString(pStream, pBstr);
 							break;
 					}
@@ -1135,8 +1137,8 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 		// type readvalue won't jump to the array section
 		ElSize = ::SafeArrayGetElemsize(psa);
 		cDims = ::SafeArrayGetDim(psa);
-		CComHeapPtr<SAFEARRAYBOUND> psaBound;
-		psaBound.Allocate(cDims);
+		std::vector<SAFEARRAYBOUND> psaBound;
+		psaBound.resize(cDims);
 
 		ARRAY_DESCRIPTOR descriptor;
 		descriptor.type = vtype;
@@ -1232,8 +1234,8 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 			if (lElements > 0 && psa != nullptr)
 			{
 
-				CComHeapPtr<LONG> rgIndices;
-				rgIndices.Allocate(cDims);
+				std::vector<LONG> rgIndices;
+				rgIndices.resize(cDims);
 				::SafeArrayLock(psa);
 				for (LONG x = 0; x < cDims; x++)
 				{
@@ -1251,7 +1253,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 					{
 						VARIANT* pVar = nullptr;
 						//logModule.Write(L"Indices %d,%d,%d", rgIndices[0], rgIndices[1], rgIndices[2]);
-						hr = SafeArrayPtrOfIndex(psa, rgIndices, (void**)&pVar);
+						hr = SafeArrayPtrOfIndex(psa, &rgIndices[0], (void**)&pVar);
 						if (FAILED(hr))
 						{
 							logModule.Write(L"FATAL: SafeArrayPtrOfIndex failed %x", hr);

@@ -9,9 +9,6 @@ HRESULT CStream::FinalConstruct() throw()
 	m_ulSize.QuadPart =
 		m_iWritePos.QuadPart =
 		m_ulLength.QuadPart = 0;
-	//m_refCount = 0;
-	m_DidAlloc = false;
-	m_WasAssignedArray = false;
 	return S_OK;
 
 
@@ -40,16 +37,15 @@ STDMETHODIMP CStream::Read(void* pv, ULONG cb, ULONG *pcbRead) throw()
 	// Calculate bytes left and bytes to read.
 	auto cBytesLeft = m_ulSize.LowPart - m_iWritePos.LowPart;
 	ULONG cBytesRead = cb > cBytesLeft ? cBytesLeft : cb;
-	PBYTE m_pBuffer = m_alloc.m_pData;
+	
 	// If no more bytes to retrieve return S_FALSE.
 	if (cBytesLeft == 0)
 	{
 		return S_FALSE;
 	}
-
 	// Copy to users buffer the number of bytes requested or remaining
-	memcpy(pv, m_pBuffer + m_iWritePos.QuadPart, cBytesRead);
-	m_iWritePos.QuadPart += cBytesRead;
+	memcpy(pv, &m_buf[m_iWritePos.LowPart], cBytesRead);
+	m_iWritePos.LowPart += cBytesRead;
 
 	// Return bytes read to caller.
 	if (pcbRead != nullptr)
@@ -89,17 +85,10 @@ STDMETHODIMP CStream::Write(const void* pv, ULONG cb, ULONG *pcbWritten) throw()
 #ifdef logModule
 		logModule.Write(L"Stream Resize Write %d", m_ulLength);
 #endif
-		bool result = m_alloc.ReallocateBytes((size_t)m_ulLength.QuadPart);
-		// Check for out of memory situation.
-		if (result == false)
-		{
-			Clear();
-			return E_OUTOFMEMORY;
-		}
+		m_buf.resize((size_t)m_ulLength.QuadPart);
 	}
-	PBYTE m_pBuffer = m_alloc.m_pData;
 	// Copy callers memory to internal bufffer and update write position.
-	memcpy(m_pBuffer + m_iWritePos.QuadPart, pv, cb);
+	memcpy(&m_buf[ m_iWritePos.LowPart], pv, cb);
 	m_iWritePos.QuadPart += cb;
 
 	// Return bytes written to caller.
@@ -137,12 +126,8 @@ STDMETHODIMP CStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGE
 		{
 			m_ulLength = m_ulSize;
 			m_ulLength.QuadPart = MEMALIGN_32(m_iWritePos.QuadPart);
-			bool result = m_alloc.ReallocateBytes((size_t)m_ulLength.QuadPart);
-
-			if (result == false)
-			{
-				return E_OUTOFMEMORY;
-			}
+			m_buf.resize((size_t)m_ulLength.QuadPart);
+			
 
 		}		
 	}
@@ -158,17 +143,8 @@ STDMETHODIMP CStream::SetSize(ULARGE_INTEGER libNewSize)  throw()
 
 	ULARGE_INTEGER li;
 	li = libNewSize;
-	
 	m_ulLength.QuadPart = MEMALIGN_32(li.QuadPart);
-	bool result = m_alloc.m_pData == nullptr ? 
-		m_alloc.AllocateBytes((size_t)m_ulLength.QuadPart) :
-		m_alloc.ReallocateBytes((size_t)m_ulLength.QuadPart);
-	
-	if (result == false)
-	{
-		Clear();
-		return E_OUTOFMEMORY;
-	}	
+	m_buf.resize((size_t)m_ulLength.QuadPart);
 	m_ulSize = li;
 	if (m_iWritePos.QuadPart > li.QuadPart)
 	{
@@ -285,10 +261,11 @@ STDMETHODIMP CStream::Clone(IStream **) throw()
 // custom methods
 void CStream::Clear()  throw()
 {
-	if (m_WasAssignedArray == false)
-		m_alloc.Free();
-	else
-		m_alloc.Detach();
+	
+		//m_alloc.Free();
+		m_buf.clear();
+	/*else
+		m_alloc.Detach();*/
 	
 #ifdef logModule
 	logModule.Write(L"ClearStream");

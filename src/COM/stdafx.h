@@ -4,10 +4,10 @@
 
 #pragma once
 #include "message.h"
-//#define Demo
+#define Demo
 // defines for ISP Session tiny edition
 
-//#define EXPIREAT ( 43342) // ie: 30/08/2018
+#define EXPIREAT ( 43403) // ie: 30/10/2018
 #define MAXINSTANCES 1000
 #define STRICT
 #define UNICODE
@@ -48,7 +48,7 @@ using namespace redis3m;
 #include <atlsecurity.h>
 #include <atlsafe.h>
 
-#define ONEMINUTE  0.00069444444444444F
+constexpr auto ONEMINUTE = 0.00069444444444444F;
 
 #define CHECKHR2 if (FAILED(hr)) {/* ReportComError2(hr, location);*/ goto error; }
 #define CHECKHR if (FAILED(hr)) goto error;

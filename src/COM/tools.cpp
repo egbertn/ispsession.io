@@ -170,7 +170,7 @@ BSTR __stdcall GetModulePath() throw()
 //
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName = false) throw()
 {
-	return CComBSTR  ( _wgetenv (L"COMPUTERNAME")).Detach();
+	return ::SysAllocString(  ( _wgetenv (L"COMPUTERNAME")));
 }
 
 void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = NULL, int els = 0) throw()

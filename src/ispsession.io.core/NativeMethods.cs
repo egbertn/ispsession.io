@@ -247,7 +247,7 @@ namespace ispsession.io
           //  System.Net.Dns.GetHostName();
             return new DOMAIN_CONTROLLER_INFO
             {
-                DomainName = Environment.GetEnvironmentVariable("USERDNSDOMAIN"),
+                DomainName = Environment.GetEnvironmentVariable("USERDNSDOMAIN").ToLowerInvariant(),
                 DomainControllerName = Environment.GetEnvironmentVariable("LOGONSERVER"),
             };
           

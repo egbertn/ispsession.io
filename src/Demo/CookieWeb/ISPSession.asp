@@ -21,8 +21,34 @@ elseIf Err.Number <> 0 Then
 	'Response.End
 End If
 Set Cache = Server.CreateObject("NWCTools.CApplication")
-    
+    Cache("BigString") = String(1012, "a")
+    Cache("ByteString") = ChrB(66)
 Cache("count") = CLng(Cache("count") + 1)
+    'for xxx = 0 to 1000
+    'Cache("blaat" + CStr(xxx)) = Now()
+    'next
+    Dim singleDim()
+    Redim SingleDim ( 2)
+    SingleDim(1) = Now()
+    Cache("SingleDim") = SingleDim
+redim category_array(3,4)
+Dim zzz, yyy
+for yyy = 0 to 4
+for zzz=0 to 3
+category_array(zzz,yyy)= cstr(zzz) + "," + cstr(yyy)
+next 
+next
+
+
+
+Cache("category_array") = category_array
+Cache("boolval") = True
+Cache("EmptyVal") = Empty
+dim emptyArray()
+Cache("EmptyArray") = emptyArray
+Cache("LngVal") = Clng(10)
+Cache("IntVal") = Cint(12)
+Cache("NullVal") = Null
 'Cache.RemoveKey "count" 'bu
 if Err.Number = &H80020009 Or Err.Number = &HD Then
    Response.Write "Access to Redis is denied, Check your password, connection string or server status"
@@ -51,7 +77,7 @@ Private Sub Session_OnStart()
 	Session.ReEntrance=True
 	'otherwise the webapplication will lock too often
 	
-
+    Session("EmptyArr") = emptyArray
 	
 	
 End Sub

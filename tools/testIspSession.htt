@@ -1,0 +1,16 @@
+CLIENT 4 100
+	_AUTO_COOKIE on
+	_IGNORE_BODY on
+	_REQ piet.puk 80
+	__GET /cookieweb/default.asp HTTP/1.1
+	__Host: piet.puk
+	__Cookie: AUTO
+	__User-Agent: mozilla
+	__
+	_WAIT  
+	#_EXPECT . "200 OK"
+	#_EXPECT . "ISP Session"
+	_RAND 20 200 timeout
+	_SLEEP $timeout		  
+	
+END

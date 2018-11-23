@@ -5,18 +5,18 @@
 
 using namespace redis3m;
 
-uint64_t datetime::utc_now_in_seconds()
+uint64_t datetime::utc_now_in_seconds() noexcept(true)
 {
 #ifndef NO_BOOST
     boost::posix_time::ptime now = boost::posix_time::second_clock::universal_time();
     return ptime_in_seconds(now);
 #else
-    datetime::ptime now = std::chrono::time_point_cast<datetime::ptime::duration>(std::chrono::system_clock::now());
+    const datetime::ptime now = std::chrono::time_point_cast<datetime::ptime::duration>(std::chrono::system_clock::now());
     return ptime_in_seconds(now);
 #endif
 }
 
-uint64_t datetime::ptime_in_seconds(const datetime::ptime &time)
+uint64_t datetime::ptime_in_seconds(const datetime::ptime &time) noexcept(true)
 {
 #ifndef NO_BOOST
     static const boost::posix_time::ptime epoch(boost::gregorian::date(1970,1,1));
@@ -27,7 +27,7 @@ uint64_t datetime::ptime_in_seconds(const datetime::ptime &time)
 #endif
 }
 
-datetime::ptime datetime::now()
+datetime::ptime datetime::now() noexcept(true)
 {
 #ifndef NO_BOOST
     return boost::posix_time::second_clock::universal_time();

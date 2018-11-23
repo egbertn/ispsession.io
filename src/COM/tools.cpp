@@ -2,7 +2,8 @@
 #include "stdafx.h"
 #include <string>
 #include "tools.h"
-
+#include <LM.h>
+#include <DsGetDC.h>
 #include "CStream.h"
 #include "ConfigurationManager.h"
 //#include <sys/stat.h>
@@ -166,7 +167,25 @@ BSTR __stdcall GetModulePath() throw()
 
 	return licenseFile.Detach();
 }
-
+BSTR __stdcall GetDCDomain() noexcept(true)
+{
+	PWSTR wgname = nullptr;
+	NETSETUP_JOIN_STATUS status;
+	auto result = ::NetGetJoinInformation(nullptr, &wgname, &status);
+	if (result == NERR_Success && status == NETSETUP_JOIN_STATUS::NetSetupDomainName)
+	{
+		::NetApiBufferFree(wgname);
+		PDOMAIN_CONTROLLER_INFO pdomainInfo;
+		auto result1 = ::DsGetDcName(nullptr, nullptr, nullptr, nullptr, DS_DIRECTORY_SERVICE_PREFERRED | DS_RETURN_DNS_NAME | DS_BACKGROUND_ONLY, &pdomainInfo);
+		if (result1 == ERROR_SUCCESS)
+		{
+			BSTR retVal = SysAllocString(pdomainInfo->DomainName);
+			::NetApiBufferFree(pdomainInfo);
+			return retVal;
+		}
+	}
+	return nullptr;
+}
 //
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName = false) throw()
 {
@@ -638,11 +657,11 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
 	// the domain name or PC name
 	// prefer dns name, then NT4 Domain Name, then PC name.
 	
-	CComBSTR NT4NETBIOSNAME(_wgetenv(L"COMPUTERNAME"));
-	CComBSTR dnsDomain(_wgetenv(L"USERDNSDOMAIN"));
+	CComBSTR NT4NETBIOSNAME;
+	CComBSTR dnsDomain;
 	CComBSTR buf(strLicensedFor);
-
-
+	dnsDomain.Attach(GetDCDomain());
+	NT4NETBIOSNAME.Attach(GetNetBIOSName());
 	// split since this is a CR LF line separated text file (notepad format)
 	// our Control Number is and should be the last line!
 	// should be a hidden string!

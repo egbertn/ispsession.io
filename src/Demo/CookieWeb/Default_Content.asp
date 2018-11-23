@@ -36,6 +36,7 @@ Session("CountRefresh") = <%=Session("CountRefresh")%><br/>
  Cache("Count") = <%=Cache("count")%>
 <br/><%
 
+    Cache.ExpireKeyAt "Count", 2000
 dim a()
 redim driedim(1,1,1)
     driedim(0,0,0) = "aap"
@@ -74,6 +75,21 @@ We invite you to login at our website to see the secret section by clicking logi
 </div>
 <pre>
     <%
+		Response.Write "<br/>"
+	    Response.Write Cache("category_array")(3, 4)
+		Response.Write "<br/>"
+        Response.Write "Empty ? " & IsEmpty(Cache("EmptyVal")) & Cache("EmptyVal")
+        Response.Write "<br/>"
+        Response.Write  Cache("LngVal")
+        Response.Write "<br/>"
+        Response.Write "longstring ends with" + Right( Cache("BigString"), 10) & " " & Len(Cache("BigString"))
+        Response.Write "<br/>"
+        Response.WRite "ByteString=" & Chr(AscB(Cache("ByteString"))) & "  " & LenB(Cache("ByteString"))
+        Response.Write "<br/>"
+        Response.Write "SingleDim=" & Cache("SingleDim")(1)
+        Response.Write "<br/>"
+        Response.Write Cache("NullVal") & "Null=" & IsNull(Cache("NullVal"))
+        Response.Write "<br/>"
         Response.Write "Session Count Variables = "
         Response.Write Session.Contents.Count
 

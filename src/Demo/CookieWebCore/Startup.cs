@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using ispsession.io;
 using CookieWebCore.Models;
+using ispsession.io.core;
 
 namespace CookieWebCore
 {
@@ -37,6 +38,12 @@ namespace CookieWebCore
             // Add framework services.
             services.Configure<SessionAppSettings>(Configuration.GetSection("ispsession.io"));
             services.Configure<MailSettings>(Configuration.GetSection("mailinfo"));
+            //services.AddSession(options =>
+            //{
+            //    // Set a short timeout for easy testing.
+            //    options.IdleTimeout = TimeSpan.FromSeconds(10);
+            //    options.Cookie.HttpOnly = true;
+            //});
 
             services.AddISPSession();
           //  services.AddISPCache();
@@ -63,7 +70,7 @@ namespace CookieWebCore
 
             app.UseStaticFiles();
             app.UseISPSession();
-
+            app.UseISPCache();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

@@ -1487,7 +1487,7 @@ namespace ispsession.io
 
             var nt4Netbiosname = Environment.MachineName; //uppercase
             //Environment.UserDomain returns NetBios computername if within a workgroup or NT4 DomainName, which I don't want
-            var pdomInfo = Environment.GetEnvironmentVariable("USERDNSDOMAIN");
+            var pdomInfo = Environment.GetEnvironmentVariable("USERDNSDOMAIN").ToLowerInvariant();
             
             TraceInformation("Names {0} {1}", nt4Netbiosname, pdomInfo);
             var lines = new List<string>(licensedfor.Split(new[] { licensedfor.IndexOf("\r\n", StringComparison.Ordinal) > 0 ? "\r\n" : " " }, StringSplitOptions.None));

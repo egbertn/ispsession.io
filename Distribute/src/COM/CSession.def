@@ -1,0 +1,8 @@
+; CSession.def : Declares the module parameters.
+LIBRARY
+
+EXPORTS
+	DllGetClassObject       PRIVATE
+	DllCanUnloadNow         PRIVATE
+	DllRegisterServer		PRIVATE
+	DllUnregisterServer		PRIVATE

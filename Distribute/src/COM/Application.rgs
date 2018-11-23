@@ -1,0 +1,19 @@
+HKCR
+{
+	ForceRemove NWCTools.CApplication 
+	{
+		CLSID = s '{D64ABC73-3B0E-4E85-92CD-215B03CAC998}'		
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {D64ABC73-3B0E-4E85-92CD-215B03CAC998}
+		{
+			ProgID = s 'NWCTools.CApplication'
+			InprocServer32 = s '%MODULE%'
+			{
+				val ThreadingModel = s 'Both'
+			}
+			'TypeLib' = s '{A51465F8-E60A-4645-8DFE-F0F1DE91DC80}'
+		}
+	}
+}

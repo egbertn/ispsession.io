@@ -1,0 +1,181 @@
+// This file will be processed by the MIDL tool to
+// produce the type library (Temp2.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(4EB7D29B-2455-4B1F-84F5-0EFE5C5FEC07),
+	dual,
+	oleautomation,
+	pointer_default(unique)
+] 
+
+interface INWCVariantDictionary : IDispatch 
+{	[propget,id(0)] HRESULT  Item([in] VARIANT Key, [out,retval] VARIANT *pVal);
+	[propput,id(0)] HRESULT  Item([in] VARIANT Key, [in] VARIANT newVal);
+	[propputref,id(0),defaultcollelem] HRESULT  Item([in] VARIANT Key, [in] VARIANT newVal);
+	[propget] HRESULT  Key([in] VARIANT KeyIndex, [out,retval] VARIANT *pVal);
+	[propget] HRESULT  Count([out,retval] INT *pVal);
+	[id(-4),restricted] HRESULT  _NewEnum([out,retval] IUnknown **pVal);
+	HRESULT  Remove([in] VARIANT varKey);
+	HRESULT  RemoveAll();
+	[propget] HRESULT  Exists([in] VARIANT vKey, [out,retval] VARIANT_BOOL *pVal);
+	[propget] HRESULT  VarType([in] VARIANT vKey, [out, retval] SHORT *pVal);
+
+};
+
+[
+	object,
+	uuid(4a7deb90-b069-11d0-b373-00a0c90c2bd8),
+	dual,
+	oleautomation,
+	pointer_default(unique)
+]
+
+interface IVariantDictionary2 : IDispatch
+{
+	[propget, id(0)] HRESULT  Item([in] VARIANT Key, [out, retval] VARIANT *pVal);
+	[propput, id(0)] HRESULT  Item([in] VARIANT Key, [in] VARIANT newVal);
+	[propputref, id(0), defaultcollelem] HRESULT  Item([in] VARIANT Key, [in] VARIANT newVal);
+	[propget] HRESULT  Key([in] VARIANT KeyIndex, [out, retval] VARIANT *pVal);
+	[propget] HRESULT  Count([out, retval] INT *pVal);
+	[id(-4), restricted] HRESULT  _NewEnum([out, retval] IUnknown **pVal);
+	HRESULT  Remove([in] VARIANT varKey);
+	HRESULT  RemoveAll();
+};
+//[
+//	object,
+//	uuid(A0AD6FD9-E01A-4A0F-B002-492F5F05091C)
+//]
+//
+//interface ApplicationSerializer : IUnknown
+//{
+//	HRESULT SerializeKey()
+//};
+[
+	object,
+	uuid(837D618E-FBC5-49B5-AF23-21545FFCF97D),
+	dual,
+	oleautomation,
+	pointer_default(unique)
+]
+interface IApplicationCache : IDispatch
+{
+	[id(00000000), propget] HRESULT Value([in] BSTR Key, [out, retval] VARIANT* pvar);
+	[id(00000000), propput] HRESULT Value([in] BSTR Key,[in] VARIANT pvar);
+	[id(00000000), propputref] HRESULT Value([in] BSTR Key, [in] VARIANT pvar);
+	[propget] HRESULT  Key([in] INT KeyIndex, [out, retval] BSTR *pVal);
+	[propget, helpstring("one based offset index")] HRESULT  Count([out, retval] int *pVal);
+	[id(-4), restricted] HRESULT  _NewEnum([out, retval] IUnknown **pVal);
+	[helpstring("Removes specified key from dictionary")] HRESULT  Remove([in] BSTR Key);
+	[helpstring("Removes all keys from application. Caution")] HRESULT  RemoveAll();
+	[id(0x60020007), helpstring("locks specific key, when no argument given, locks the application")] HRESULT LockKey([in] BSTR Key);
+	[id(0x60020008), helpstring("Unlocks specific key, when no argument given, unlocks the application")] HRESULT UnlockKey([in] BSTR Key);
+	[id(0x60020009), helpstring("milliseconds due at which this key will expire")] HRESULT ExpireKeyAt([in] BSTR vKey, [in] INT at);
+	[id(0x6002000A), propget] HRESULT  Exists([in] BSTR Key, [out, retval] VARIANT_BOOL *pVal);
+	[id(0x6002000B), propget] HRESULT  KeyType([in] BSTR Key, [out, retval] SHORT *pVal);
+
+	//called internally by IIS when used with Server.CreateObject
+	[hidden] HRESULT OnStartPage([in] IUnknown* p);
+	[hidden] HRESULT OnEndPage();
+	// end IIS
+};
+
+
+
+[
+	object,
+	uuid(A84D5FFF-6EB4-4211-82E6-045C74F3CB6B),
+	dual,
+	oleautomation,
+	pointer_default(unique)
+
+] 
+interface INWCSession : IDispatch 
+{	
+
+
+	[propget] HRESULT  SessionID([out,retval] BSTR *pbstrRet);
+	[propget,id(0)] HRESULT  Value([in] BSTR vkey, [out,retval] VARIANT *pVal);
+	[propput,id(0)] HRESULT  Value([in] BSTR vkey, [in] VARIANT newVal);
+	[propputref,id(0)] HRESULT  Value([in] BSTR vkey, [in] VARIANT newVal);
+	[propget] HRESULT  TimeOut([out,retval] LONG *pVal);
+	[propput] HRESULT  TimeOut([in] LONG pVal);
+	HRESULT  Abandon();
+	[propget, hidden] HRESULT  CodePage([out, retval] LONG *pVal);
+	[propput, hidden] HRESULT  CodePage([in] LONG newVal);
+	[propget, hidden] HRESULT  LCID([out, retval] LONG *pVal);
+	[propput, hidden] HRESULT  LCID([in] LONG newVal);
+	[propget,hidden] HRESULT  StaticObjects([out,retval] INWCVariantDictionary **ppProperties);
+	[propget] HRESULT  Contents([out,retval] INWCVariantDictionary **pVal);
+
+	[propget] HRESULT  IsExpired([out,retval] VARIANT_BOOL *pVal);
+	[propget] HRESULT  IsNew([out,retval] VARIANT_BOOL *pVal);
+	[propget] HRESULT  LiquidCookie([out,retval] VARIANT_BOOL *pVal);
+	[propput] HRESULT  LiquidCookie([in] VARIANT_BOOL newVal);
+	[propget] HRESULT  ReEntrance([out,retval] VARIANT_BOOL *pVal);
+	[propput] HRESULT  ReEntrance([in] VARIANT_BOOL newVal);
+	[propget] HRESULT  URL([in] VARIANT strCheckA, [out,retval] VARIANT *pVal);
+
+	HRESULT  Execute([in] BSTR ToPage);
+	HRESULT  Transfer([in] BSTR ToPage);
+	[propget] HRESULT  CreateInstance([in] BSTR progid, [out,retval] IDispatch **pVal);
+	[propput] HRESULT  Readonly([in] VARIANT_BOOL newVal);
+	
+	
+	HRESULT Statistics([in, optional] VARIANT vAppKey, [in,optional] VARIANT vSessionID, [out, retval] INWCVariantDictionary** retVal);	
+	HRESULT EnsureURLCookie();	
+	[propget] 
+	HRESULT OldSessionID ([out, retval] BSTR *pVal);	
+	//called internally by IIS when used with Server.CreateObject
+	[hidden] HRESULT OnStartPage([in] IUnknown* p);
+	[hidden] HRESULT OnEndPage();
+	// end IIS
+
+
+};
+
+[ version(1.0), uuid(A51465F8-E60A-4645-8DFE-F0F1DE91DC80), helpstring("CSession 1.0 Type Library") ]
+library ISPCSession
+{
+	importlib("stdole2.tlb");
+
+	[
+		noncreatable,
+		aggregatable,
+		version(1.0),
+		uuid(94764678-7F98-4CD8-88E9-FA83D776135C),
+		helpstring("dictionary which stores key/value pairs.")
+	] 
+
+	coclass CVariantDictionary 
+	{
+		interface INWCVariantDictionary;
+	};
+	
+
+	[
+		aggregatable,
+		version(1.0),
+		uuid(D64ABC73-3B0E-4E85-92CD-215B03CAC996),		
+		helpstring("Classic ASP Session replacement")
+	] 
+
+	coclass NWCSession 
+	{
+		interface INWCSession;
+	};
+
+	[
+		aggregatable,
+		version(1.0),
+		uuid(D64ABC73-3B0E-4E85-92CD-215B03CAC998),
+		helpstring("Classic ASP Application replacement object")
+	]
+	coclass NWCApplication
+	{
+		interface IApplicationCache;
+	};
+}

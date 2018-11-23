@@ -245,3 +245,13 @@ ModelManifest.xml
 /setup/Demo/CookieWebCore/wwwroot/lib/jquery
 /setup/Demo/CookieWebCore/wwwroot/lib/bootstrap
 /src/site/
+/src/msvs/msi/RedisMsi
+/src/msvs/msi/RedisMsi.CustomActions
+/src/msvs/RedisCli
+/src/msvs/RedisCheckDump
+/src/msvs/RedisCheckAof
+/src/msvs/RedisBenchmark
+/src/msvs/Samples/MasterSlaveSentinelConf
+/src/msvs/setups
+/src/msvs/msi
+/src/msvs/ReleasePackagingTool

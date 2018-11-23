@@ -25,9 +25,9 @@ using time_duration = std::chrono::seconds;
 using seconds = std::chrono::seconds;
 #endif
 
-uint64_t utc_now_in_seconds();
-uint64_t ptime_in_seconds(const ptime& time);
-ptime now();
+uint64_t utc_now_in_seconds() noexcept;
+uint64_t ptime_in_seconds(const ptime& time) noexcept;
+ptime now()noexcept;
 
 }
 }

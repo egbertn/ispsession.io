@@ -1,23 +1,10 @@
-_LOOP 2000  
-    CLIENT 4
-    _AUTO_COOKIE on
-    _IGNORE_BODY on
-    _CALL DOIT
+CLIENT 
+	_REQ nos.nl SSL:443 
+	__GET / HTTP/1.1 
+	__Host: nos.nl
+	__User-Agent: mozilla
+	__ 
+	_EXPECT . "200 OK"
+	_WAIT 
 
-        _REQ localhost 80
-        __GET /cookieweb/default.aspx HTTP/1.1
-        __Host:  localhost
-        __Cookie: AUTO
-        __
-        _EXPECT . "200 OK"
-        #_EXPECT . "ISP Session"
-        #_RAND 20 200 timeout
-        #_SLEEP $timeout
-        _WAIT    
-    END
-_END LOOP
-
-
-BLOCK DOIT
-_SET timeout=10
 END

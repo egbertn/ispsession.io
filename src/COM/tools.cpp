@@ -167,7 +167,7 @@ BSTR __stdcall GetModulePath() throw()
 
 	return licenseFile.Detach();
 }
-BSTR __stdcall GetDCDomain() noexcept(true)
+BSTR __stdcall GetDCDomain() throw()
 {
 	PWSTR wgname = nullptr;
 	NETSETUP_JOIN_STATUS status;
@@ -189,7 +189,14 @@ BSTR __stdcall GetDCDomain() noexcept(true)
 //
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName = false) throw()
 {
-	return ::SysAllocString(  ( _wgetenv (L"COMPUTERNAME")));
+	DWORD realSize = MAX_COMPUTERNAME_LENGTH + 1;
+	CComBSTR retVal(realSize);
+	if (::GetComputerName(retVal.m_str, &realSize) != ERROR_SUCCESS)
+	{
+		retVal.SetLength(realSize);
+		return retVal.Detach();
+	}
+	return nullptr;
 }
 
 void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = NULL, int els = 0) throw()
@@ -282,20 +289,21 @@ STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm
 	CLSID clsd;
 
 	HRESULT hr = pPersistStmInit->GetClassID(&clsd);
+	
 	if (hr == S_OK)
-		hr = WriteClassStm(pStm, clsd);
+		pStm->Write(&clsd, sizeof(GUID), nullptr);
 	if (hr == S_OK)
 		hr = pPersistStmInit->Save(pStm, TRUE);
 	return hr;
 }
 
-STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj)
+STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj) throw()
 {
 	if (pStm == nullptr || ppvObj == nullptr) return E_INVALIDARG;
 
 	CLSID clsd;
 	CComPtr<IPersistStreamInit> pPersist;
-	HRESULT hr = ReadClassStm(pStm, &clsd);
+	HRESULT hr = pStm->Read( &clsd, sizeof(GUID), nullptr);
 	if (hr == S_OK)
 	{
 		hr = pPersist.CoCreateInstance(clsd, nullptr, CLSCTX_INPROC_SERVER | CLSCTX_INPROC_HANDLER | CLSCTX_NO_CODE_DOWNLOAD);

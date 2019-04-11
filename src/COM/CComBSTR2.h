@@ -2912,7 +2912,7 @@ _Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStre
 			}
 			if (spStream != NULL)
 				return OleSaveToStream(spStream, pStream);
-			return WriteClassStm(pStream, CLSID_NULL);
+			return pStream->Write(&CLSID_NULL, sizeof(GUID), nullptr);
 		}
 	case VT_UI1:
 	case VT_I1:

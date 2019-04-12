@@ -735,6 +735,7 @@ STDMETHODIMP NWCSession::put_LiquidCookie(VARIANT_BOOL newVal) throw()
 		if (blnLiquid == FALSE)
 		{
 			blnLiquid = TRUE;
+			oldGuid = guid;
 			NewID();
 			WriteCookie(strGUID);
 		}

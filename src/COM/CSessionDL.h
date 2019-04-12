@@ -443,14 +443,14 @@ public:
 			//old			
 			auto newKey = HexStringFromMemory((PUCHAR)guidNewPar, sizeof(GUID));
 			std::string newKeyAnsi;
-			newKey.reserve(sizeof(GUID) * 2 + 1);
-			newKey.append(sAppkey);
-			newKey.append(":");
-			newKey.append(newKey);		
+			newKeyAnsi.reserve(sizeof(GUID) * 2 + 1);
+			newKeyAnsi.append(sAppkey);
+			newKeyAnsi.append(":");
+			newKeyAnsi.append(newKey);
 			
-			auto reply = c->run(command("RENAME")(ansi)(newKey)); // http://www.redis.io/commands/rename
+			auto reply = c->run(command("RENAME")(ansi)(newKeyAnsi)); // http://www.redis.io/commands/rename
 			//re-use
-			ansi.assign(newKey);
+			ansi.assign(newKeyAnsi);
 		}
 		// in fact, is not dirty, set only Expire (ping the session)
 		if (pStream == nullptr)

@@ -26,6 +26,7 @@ std::string str_toupper(std::string s);
 
 
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName);
+BSTR __stdcall GetDCDomain();
 void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[], int els);
 //void __stdcall ReportComError(const DWORD win32err, PCWSTR msg=NULL);
 //void __stdcall ReportComError2(const HRESULT hr, PCWSTR msg = NULL);

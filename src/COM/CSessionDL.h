@@ -430,10 +430,8 @@ public:
 
 		auto sGuid = HexStringFromMemory(guid, sizeof(GUID));
 		std::string ansi;
-		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(sAppkey);
-		ansi.append(":");
-		ansi.append(sGuid);
+		ansi.reserve(sizeof(GUID) * 4 + 1);
+		ansi.append(sAppkey).append(":").append(sGuid);
 
 
 		auto c = pool->get();
@@ -442,15 +440,12 @@ public:
 		{
 			//old			
 			auto newKey = HexStringFromMemory((PUCHAR)guidNewPar, sizeof(GUID));
-			std::string newKeyAnsi;
-			newKeyAnsi.reserve(sizeof(GUID) * 2 + 1);
-			newKeyAnsi.append(sAppkey);
-			newKeyAnsi.append(":");
-			newKeyAnsi.append(newKey);
+			newKey.reserve(sizeof(GUID) * 4+ 1);
+			newKey.insert(0, ":").insert(0, sAppkey);
 			
-			auto reply = c->run(command("RENAME")(ansi)(newKeyAnsi)); // http://www.redis.io/commands/rename
+			auto reply = c->run(command("RENAME")(ansi)(newKey)); // http://www.redis.io/commands/rename
 			//re-use
-			ansi.assign(newKeyAnsi);
+			ansi.assign(newKey);
 		}
 		// in fact, is not dirty, set only Expire (ping the session)
 		if (pStream == nullptr)
@@ -518,10 +513,8 @@ public:
 		auto sAppkey = HexStringFromMemory(appKey, sizeof(GUID));
 		auto sGuid = HexStringFromMemory(guid, sizeof(GUID));
 		std::string ansi;
-		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(sAppkey);
-		ansi.append(":");
-		ansi.append(sGuid);
+		ansi.reserve(sizeof(GUID) * 4 + 1);
+		ansi.append(sAppkey).append(":").append(sGuid);
 		auto reply = c->run(command("EXPIRE")(ansi)("0")); // not sure if 0 means 'eternal' so look for milliseconds
 		pool->put(c);
 
@@ -537,10 +530,8 @@ public:
 		auto appkey = HexStringFromMemory((PBYTE)appKey, sizeof(GUID));
 		auto skey = HexStringFromMemory((PBYTE)guid, sizeof(GUID));
 		std::string ansi;
-		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(appkey);
-		ansi.append(":");
-		ansi.append(skey);
+		ansi.reserve(sizeof(GUID) * 4 + 1);
+		ansi.append(appkey).append(":").append(skey);
 
 		std::string buf;
 		PersistMetaData meta;
@@ -601,9 +592,9 @@ public:
 	{
 		auto appkey = HexStringFromMemory((PBYTE)&m_App_KeyPar, sizeof(GUID));
 		auto skey = HexStringFromMemory((PBYTE)&m_GUIDPar, sizeof(GUID));
-		std::string ansi = appkey + ":" + skey;
-		
-
+		std::string ansi;
+		ansi.reserve(sizeof(GUID) * 4 + 1);
+		ansi.append(appkey).append(":").append(skey);
 
 		auto conn = pool->get();
 		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get

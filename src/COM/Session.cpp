@@ -745,8 +745,8 @@ STDMETHODIMP NWCSession::put_LiquidCookie(VARIANT_BOOL newVal) throw()
 		if (blnLiquid == TRUE) 
 		{
 			blnLiquid = FALSE;
-			blnWasLiquid = TRUE;
-			if (m_OldSessionId.Length() > 0)
+			guid = oldGuid;
+			if (!m_OldSessionId.IsEmpty())
 			{
 				m_OldSessionId.CopyTo(&strGUID);
 				m_OldSessionId.Empty();
@@ -1044,7 +1044,7 @@ STDMETHODIMP NWCSession::PersistSession(void) throw()
 				lngTimeout, 
 				blnReEntrance, 
 				blnLiquid, 
-				blnLiquid == FALSE && blnWasLiquid == FALSE ? nullptr : &guid, 
+				blnLiquid == FALSE ? nullptr : &guid, 
 				pStream,
 				lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);
 		logModule.Write(L"CSessionDL.SessionSave timeOut (%d), reEntrance(%d), Liquid(%d), size(%d) time(%d), hr(%x)", lngTimeout, blnReEntrance, blnLiquid, lSize, totalRequestTimeMS, hr);
@@ -1408,7 +1408,7 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 STDMETHODIMP NWCSession::get_OldSessionID(BSTR *pVal) throw()
 {
 	*pVal = nullptr;
-	if (m_OldSessionId.Length() > 0)
+	if (!m_OldSessionId.IsEmpty())
 	{
 		if (bHashsessionID == TRUE)
 		{

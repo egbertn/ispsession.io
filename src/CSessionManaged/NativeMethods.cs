@@ -115,8 +115,7 @@ namespace ispsession.io
         internal static unsafe extern int SystemTimeToVariantTime( _SYSTEMTIME* lpSystemTime, double* OaDate);
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int ReadClassStm(IStream pStm, out Guid clsid);
-        [DllImport("ole32.dll", ExactSpelling = true)]
-        internal static extern int WriteClassStm(IStream pStm, [In] ref Guid clsid);
+
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int OleLoadFromStream(IStream pStorage, [In] ref Guid iid, [MarshalAs(UnmanagedType.IUnknown)] out object ppvObj);
         [DllImport("ole32.dll", ExactSpelling = true)]

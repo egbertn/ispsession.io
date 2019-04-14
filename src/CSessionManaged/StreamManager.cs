@@ -1365,7 +1365,7 @@ namespace ispsession.io
 
             var persist = (IPersist)pPersistStmInit;
             persist.GetClassID(out Guid clsd);
-            NativeMethods.WriteClassStm(pStm, ref clsd);
+            pStm.Write(clsd.ToByteArray(), 16, IntPtr.Zero);
             pPersistStmInit.Save(pStm, true);
 
             return true;

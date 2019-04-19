@@ -8,12 +8,12 @@ using System.Runtime.InteropServices;
 #else
 [assembly: AssemblyConfiguration("Release")]
 #endif
-[assembly: AssemblyMetadata("at", "43281")]
+[assembly: AssemblyMetadata("at", "43676")]
 [assembly: AssemblyCompany("ADC Cure")]
 [assembly: AssemblyProduct("ISP Session ASP.NET Classic")]
 [assembly: AssemblyVersion("8.5.5")]
 [assembly: AssemblyFileVersion("8.5.5.160")]
-[assembly: AssemblyCopyright("Copyright © ADC Cure 2001-2018")]
+[assembly: AssemblyCopyright("Copyright © ADC Cure 2001-2019")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]

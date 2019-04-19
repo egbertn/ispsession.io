@@ -7,7 +7,7 @@
     <authors>ADC Cure</authors>
     <owners>ADC Cure</owners>
 	 <tags>SessionState,Session, Application Cache</tags>
-    <licenseUrl>https://ispsession.io/license</licenseUrl>    
+    <license type="file">license\license.txt</license>    
     <iconUrl>https://ispsession.io/images/Platipus3_Transparant_small.png</iconUrl>
     <summary>
       Classic ASP.NET session state broker and ApplicationCache using Redis as a storage.
@@ -20,11 +20,15 @@ Uses Redis 2.8(+) as a backend storage server.</description>
     <releaseNotes>1.0.14 July 2018 release.
     The purchased assembly contains more memory optimizations, however, the demo performs well too.</releaseNotes>
 
-  <copyright>Copyright © 2001-2018 ADC Cure, Netherlands</copyright>
+  <copyright>Copyright © 2001-2019 ADC Cure, Netherlands</copyright>
+   
   <dependencies>
    <group targetFramework=".NETFramework4.5.2">
-        <dependency id="StackExchange.Redis.StrongName" version="1.1.608" />                
+        <dependency id="StackExchange.Redis.StrongName" version="1.2.6" />                
       </group>
       </dependencies>
   </metadata>
+  <files>
+    <file src="license\license.txt" target="license" />
+  </files>
 </package>

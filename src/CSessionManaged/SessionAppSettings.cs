@@ -55,7 +55,7 @@ namespace ispsession.io
             LicKey = cfg.GetAppValue<string>(ispsession_io_pref + "LicenseNET");
             LicKeyCache = cfg.GetAppValue<string>(ispsession_io_pref + "CacheLicenseNET");
             
-#if !DEMO
+#if !Demo
             if (string.IsNullOrEmpty(LicKey))
             {
                 throw new HttpException("License appSetting missing");

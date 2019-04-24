@@ -6,6 +6,37 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace ispsession.io.Interfaces
 {
+    //[ComImport, Guid("0c733a30-2a1c-11ce-ade5-00aa0044773d"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    //public unsafe interface ISequentialStream
+    //{
+    //    [PreserveSig]
+    //    uint Read([Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] pv, uint cb,  uint* pcbRead);
+    //    [PreserveSig]
+    //    uint Write([MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 1)] byte[] pv, uint cb,  uint* pcbWritten);
+
+    //}
+    //[ComImport, Guid("0000000c-0000-0000-C000-000000000046"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    //public unsafe interface IStream: ISequentialStream
+    //{
+    //    [PreserveSig]
+    //    uint Seek(long dlibMove, uint dwOrigin, long* plibNewPosition);
+    //    [PreserveSig]
+    //    uint SetSize(long libNewSize);
+    //    [PreserveSig]
+    //    uint CopyTo(IStream pstm, long cb, long* pcbRead,  long* pcbWritten);
+    //    [PreserveSig]
+    //    uint Commit(uint grfCommitFlags);
+    //    [PreserveSig]
+    //    uint Revert();
+    //    [PreserveSig]
+    //    uint LockRegion(long libOffset, long cb, uint dwLockType);
+    //    [PreserveSig]
+    //    uint UnlockRegion(long libOffset, long cb, uint dwLockType);
+    //    [PreserveSig]
+    //    uint Stat(out System.Runtime.InteropServices.ComTypes.STATSTG pstatstg, uint grfStatFlag);
+    //    [PreserveSig]
+    //    uint Clone(out IStream ppstm);
+    //}
 
     public interface IApplicationCache : IEnumerable<string>
     {

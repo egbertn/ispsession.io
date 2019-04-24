@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>ispsession.io</id>
-    <version>1.0.14</version>
+    <version>1.0.15</version>
     <title>Classic ASP.NET Session and Application State Broker</title>    
     <authors>ADC Cure</authors>
     <owners>ADC Cure</owners>
@@ -17,7 +17,8 @@
     <description>Provides Session State and Application Cache as a replacement for the built in state for classic ASP/classic ASP.NET and AspNetCore. 
 Enables interoperable Sessionstate between those three frameworks. 
 Uses Redis 2.8(+) as a backend storage server.</description>
-    <releaseNotes>1.0.14 July 2018 release.
+    <releaseNotes>1.0.15 April 2019 release.
+    Version 1.0.15 now runs without Windows (PInvoke) dependencies, so can be deployed in a Linux Environment too.
     The purchased assembly contains more memory optimizations, however, the demo performs well too.</releaseNotes>
 
   <copyright>Copyright © 2001-2019 ADC Cure, Netherlands</copyright>

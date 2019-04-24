@@ -1375,16 +1375,17 @@ namespace ispsession.io
         public static object OleLoadFromStream2(IStream pStm, Guid iidInterface)
         {
             if (pStm == null || iidInterface == null) throw new ArgumentNullException("pStm");
-
-            NativeMethods.ReadClassStm(pStm, out Guid clsd);
+            var bytes = new byte[16];
+            pStm.Read(bytes, 16, IntPtr.Zero);
+            var clsd = new Guid(bytes);
+           
             //var byteGuid = new byte[16];
             //pStm.Read(byteGuid, 16, IntPtr.Zero);
             //var clsd = new Guid(byteGuid);
             var typ = Type.GetTypeFromCLSID(clsd);
            // var typ = Marshal.GetTypeFromCLSID(clsd);
             var obj = Activator.CreateInstance(typ);
-            var pPersist = obj as IPersistStreamInit;
-            if (pPersist == null)
+            if (!(obj is IPersistStreamInit pPersist))
             {
                 pStm.Seek(0, 0, IntPtr.Zero); //STREAM_SEEK_CUR
                 return null;
@@ -1418,15 +1419,14 @@ namespace ispsession.io
             if (string.IsNullOrEmpty(value)) return 0;
             var bytes = _encoding.GetBytes(value);
             uint outp;
-            fixed (byte* ptr = bytes)
+            var hash = new byte[4];
+            var result = NativeMethods.HashData(bytes, bytes.Length, ref hash, sizeof(uint));
+            if (result != 0)
             {
-                var result = NativeMethods.HashData(ptr, bytes.Length, &outp, sizeof(uint));
-                if (result != 0)
-                {
-                    return 0;
+                return 0;
+            
             }
-            }
-
+            outp = BitConverter.ToUInt32(hash, 0);
             return outp;
         }
         internal bool LateObjectActivation { get; set; }
@@ -1486,14 +1486,20 @@ namespace ispsession.io
             }
 
             var nt4Netbiosname = Environment.MachineName; //uppercase
-            //Environment.UserDomain returns NetBios computername if within a workgroup or NT4 DomainName, which I don't want
-            var pdomInfo = Environment.GetEnvironmentVariable("USERDNSDOMAIN").ToLowerInvariant();
             
+            var pdomInfo = NativeMethods.GetDomainInfo();
+            string cwName = null;
+
+            if (!string.IsNullOrEmpty(pdomInfo.DomainName))
+            {
+                cwName = pdomInfo.DomainName;
+            }
+          
             TraceInformation("Names {0} {1}", nt4Netbiosname, pdomInfo);
             var lines = new List<string>(licensedfor.Split(new[] { licensedfor.IndexOf("\r\n", StringComparison.Ordinal) > 0 ? "\r\n" : " " }, StringSplitOptions.None));
             
             lines.Insert(0, ProductString);
-            var foundLicensedItem = Array.Exists(lines.ToArray(), x => x == nt4Netbiosname || x == pdomInfo);
+            var foundLicensedItem = Array.Exists(lines.ToArray(), x => x == nt4Netbiosname || x == cwName);
             if (!foundLicensedItem && (licenseType != 4 && licenseType != 25))
             {
                 TraceInformation("Could not find licensedItem {0} in allowed licensee {1}", nt4Netbiosname, licensedfor);

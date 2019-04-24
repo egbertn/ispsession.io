@@ -125,7 +125,7 @@ namespace ispsession.io
             if (Interlocked.Increment(ref _instanceCount) > StreamManager.Maxinstances)
             {
                 Thread.Sleep(500 * (_instanceCount - StreamManager.Maxinstances));
-                NativeMethods.OutputDebugStringW(string.Format("LICENSE ERROR max = {0} requested ={1} \r\n", StreamManager.Maxinstances, _instanceCount));
+                Trace.TraceInformation("LICENSE ERROR max = {0} requested ={1} \r\n", StreamManager.Maxinstances, _instanceCount);
                 ISPSessionModule.WriteToEventLog(new Exception(string.Format(LicenseSpace, _instanceCount, StreamManager.Maxinstances)), "instancing");
             }
             //if (DateTime.UtcNow.Second % 6 == 0)

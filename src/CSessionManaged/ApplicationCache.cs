@@ -114,9 +114,8 @@ namespace ispsession.io
             {
 
                 //   TraceInformation("Deser Com Object");
-                var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE,new IntPtr( bytesInStream));
-                Marshal.Copy(memoryBuff, 0, NativeMethods.GlobalLock( hglob), bytesInStream);
-                var size = NativeMethods.GlobalSize(hglob);
+                var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE, new IntPtr(bytesInStream));
+                Marshal.Copy(memoryBuff, 0, NativeMethods.GlobalLock(hglob), bytesInStream);
                 NativeMethods.GlobalUnlock(hglob);
                 var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
                 if (hr != 0) Marshal.ThrowExceptionForHR(hr);

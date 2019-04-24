@@ -33,7 +33,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;Demo</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -44,7 +44,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;Demo</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -87,10 +87,13 @@
     <Compile Include="Data.cs" />
     <Compile Include="PersistUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StreamWrapper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="license\license.txt" />
-    <Content Include="web.config.install.xdt" />
+    <Content Include="web.config.install.xdt">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="adccure.snk" />
     <Content Include="ISPSessionClassicAsp.nuspec">
       <SubType>Designer</SubType>

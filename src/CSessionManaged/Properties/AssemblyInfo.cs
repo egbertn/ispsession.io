@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 #else
 [assembly: AssemblyConfiguration("Release")]
 #endif
-[assembly: AssemblyMetadata("at", "43676")]
 [assembly: AssemblyCompany("ADC Cure")]
 [assembly: AssemblyProduct("ISP Session ASP.NET Classic")]
 [assembly: AssemblyVersion("8.5.5")]
@@ -18,5 +17,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 #if Demo
-[assembly: AssemblyMetadata("at", "43311")] //july 2018
+[assembly: AssemblyMetadata("at", "43616")] //may 2019
 #endif

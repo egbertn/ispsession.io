@@ -786,7 +786,7 @@ namespace ispsession.io
                         {
                             TraceInformation("Ser Com Object type {0}", TraceInfo.TraceInfo ? data.GetType().FullName : null);
                             int hr = NativeMethods.CreateStreamOnHGlobal(null, true, out IStream pstr);
-                            if (hr != 0)
+                            if (hr < 0)
                             {
                                 Marshal.ThrowExceptionForHR(hr);
                             }
@@ -794,7 +794,7 @@ namespace ispsession.io
                             {
                                 hr = NativeMethods.OleSaveToStream(persist, pstr);
                                 Marshal.ReleaseComObject(persist);
-                                if (hr != 0)
+                                if (hr < 0)
                                 {
                                     Marshal.ThrowExceptionForHR(hr);
                                 }
@@ -1201,11 +1201,11 @@ namespace ispsession.io
                                 Marshal.Copy(_memoryBuff, 0, NativeMethods.GlobalLock(hglob), bytesInStream);
                                 var result = NativeMethods.GlobalUnlock(hglob);
                                 var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
-                                if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+                                if (hr < 0) Marshal.ThrowExceptionForHR(hr);
                                 var uknown = new Guid("00000000-0000-0000-C000-000000000046");
 
                                 hr = NativeMethods.OleLoadFromStream(pstr, ref uknown, out data);
-                                if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+                                if (hr < 0) Marshal.ThrowExceptionForHR(hr);
                                 if (data == null)
                                 {
                                     pstr.Seek(0, 0, IntPtr.Zero);//Position = 0

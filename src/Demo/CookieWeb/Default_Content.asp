@@ -5,6 +5,11 @@
 'Session.Contents.CaseSensitive = True
 Response.Write TypeName(Session("CountRefresh"))
 Session("CountRefresh") = Session("CountRefresh") + 1
+If Clng(Session("CountRefresh")) > 3 Then
+	Session.LiquidCookie = True
+Else	
+	Session.LiquidCookie = False
+End If
 If Clng(Session("CountRefresh")) > 10 Then 	
 	Session.Abandon
 End If

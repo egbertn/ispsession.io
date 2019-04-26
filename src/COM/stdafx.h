@@ -4,10 +4,10 @@
 
 #pragma once
 #include "message.h"
-//#define Demo
+#define Demo
 // defines for ISP Session tiny edition
 
-//#define EXPIREAT ( 43403) // ie: 30/10/2018
+#define EXPIREAT ( 43585+30) // ie: 31/may/2019
 #define MAXINSTANCES 1000
 #define STRICT
 #define UNICODE
@@ -25,8 +25,10 @@
 // turn on to get full tracing in the Debug window
 
 #include <atlbase.h> 
+#include "tools.h"
 #include "CComBStr2.h"
 #include <atlcom.h>
+
 //#include <atlsync.h>
 
 

@@ -1,3 +1,5 @@
+8.2.0.166
+	Fixes the LiquidCookie feature.
 8.2.0.162
 	Fixes a crash after using Cache.ExpireKeyAt. The expired key, was not
 	handled when getting the member keys after using MGET

@@ -1175,11 +1175,11 @@ namespace ispsession.io
                                 Marshal.Copy(_memoryBuff, 0, NativeMethods.GlobalLock(hglob), bytesInStream);
                                 var result = NativeMethods.GlobalUnlock(hglob);
                                 var hr = NativeMethods.CreateStreamOnHGlobal(hglob, true, out IStream pstr);
-                                if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+                                if (hr < 0) Marshal.ThrowExceptionForHR(hr);
                                 var uknown = new Guid("00000000-0000-0000-C000-000000000046");
 
                                 hr = NativeMethods.OleLoadFromStream(pstr, ref uknown, out data);
-                                if (hr != 0) Marshal.ThrowExceptionForHR(hr);
+                                if (hr < 0) Marshal.ThrowExceptionForHR(hr);
                                 if (data == null)
                                 {
                                     pstr.Seek(0, 0, IntPtr.Zero);//Position = 0
@@ -1344,7 +1344,7 @@ namespace ispsession.io
 
             var persist = (IPersist)pPersistStmInit;
             persist.GetClassID(out Guid clsd);
-            NativeMethods.WriteClassStm(pStm, ref clsd);
+            pStm.Write(clsd.ToByteArray(), 16, IntPtr.Zero);
             pPersistStmInit.Save(pStm, true);
 
             return true;
@@ -1355,7 +1355,12 @@ namespace ispsession.io
         {
             if (pStm == null || iidInterface == null) throw new ArgumentNullException("pStm");
 
-            NativeMethods.ReadClassStm(pStm, out Guid clsd);
+            var bt = new byte[16];
+
+            pStm.Read(bt, 0, IntPtr.Zero);
+            var clsd = new Guid(bt);
+            bt = null;
+
             var typ = Marshal.GetTypeFromCLSID(clsd);
             var obj = Activator.CreateInstance(typ);
             if (obj as IPersistStreamInit == null)
@@ -1458,21 +1463,17 @@ namespace ispsession.io
             return value;
         }
 #if !Demo
-        public unsafe static uint GetHashCode2(string value)
+        public  static uint GetHashCode2(string value)
         {
             if (string.IsNullOrEmpty(value)) return 0;
             var bytes = _encoding.GetBytes(value);
-            uint outp;
-            fixed (byte* ptr = bytes)
+            var hash = new byte[4];
+            var result = NativeMethods.HashData(bytes, bytes.Length, ref hash, hash.Length);
+            if (result != 0)
             {
-                var result = NativeMethods.HashData(ptr, bytes.Length, (void*)&outp, 4);
-                if (result != 0)
-                {
-                    return 0;
-                }
+                return 0;
             }
-
-            return outp;
+            return BitConverter.ToUInt32(hash, 0);
         }
 
         /// <summary>LicentieCheck

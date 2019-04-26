@@ -118,7 +118,7 @@ STDMETHODIMP CStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGE
 		break;
 	default:
 		return STG_E_INVALIDFUNCTION;
-		break;
+		
 	}
 	if (dwOrigin != STREAM_SEEK_END)
 	{	
@@ -127,8 +127,6 @@ STDMETHODIMP CStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGE
 			m_ulLength = m_ulSize;
 			m_ulLength.QuadPart = MEMALIGN_32(m_iWritePos.QuadPart);
 			m_buf.resize((size_t)m_ulLength.QuadPart);
-			
-
 		}		
 	}
 	if (plibNewPosition != nullptr)

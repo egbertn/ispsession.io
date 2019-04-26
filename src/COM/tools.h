@@ -61,3 +61,4 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 void __stdcall FreeString(BSTR * theString);
 bool __stdcall LicentieCheck(GUID *licence, BSTR licenseContents);
 STDMETHODIMP ISequentialStream_Copy( ISequentialStream* iface, ISequentialStream* pstm, ULARGE_INTEGER cb, ULARGE_INTEGER* pcbRead, ULARGE_INTEGER* pcbWritten);
+HRESULT __stdcall HashData2(const unsigned char* lpSrc, DWORD nSrcLen, unsigned char *lpDest, DWORD nDestLen);

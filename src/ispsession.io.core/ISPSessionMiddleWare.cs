@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -142,7 +143,7 @@ namespace ispsession.io
             if (Interlocked.Increment(ref _instanceCount) > StreamManager.Maxinstances)
             {
                 Thread.Sleep(500 * (_instanceCount - StreamManager.Maxinstances));
-                NativeMethods.OutputDebugStringW(string.Format(StreamManager.MessageString3, StreamManager.Maxinstances, _instanceCount));                
+                Trace.TraceInformation(StreamManager.MessageString3, StreamManager.Maxinstances, _instanceCount);                
             }
 #else
             var exp = double.Parse(StreamManager.GetMetaData("at"));

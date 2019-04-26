@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System;
+using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace ispsession.io.core
@@ -13,6 +15,11 @@ namespace ispsession.io.core
         private readonly CacheAppSettings _options;
         private readonly IISPCacheStore _CacheStore;
         private ISPCacheManager _manager;
+        private static int _instanceCount;
+        private static readonly object locker = new object();
+        private static bool initDone;
+        private static bool Checked;
+
         public ISPCacheMiddleWare(RequestDelegate next, IISPCacheStore _CacheStore, IOptions<CacheAppSettings> options)
         {
             _next = next;
@@ -56,7 +63,7 @@ namespace ispsession.io.core
             if (Interlocked.Increment(ref _instanceCount) > StreamManager.Maxinstances)
             {
                 Thread.Sleep(500 * (_instanceCount - StreamManager.Maxinstances));
-                NativeMethods.OutputDebugStringW(string.Format(StreamManager.MessageString3, StreamManager.Maxinstances, _instanceCount));                
+                Trace.TraceInformation(StreamManager.MessageString3, StreamManager.Maxinstances, _instanceCount);                
             }
 #else
             var exp = double.Parse(StreamManager.GetMetaData("at"));

@@ -9,6 +9,7 @@
     refresh = Request.QueryString("ajaxRefresh")
     If refresh = "1" Then
     Session("CountRefresh") = Session("CountRefresh") + 1
+	
 End If  %>
 
 <p>

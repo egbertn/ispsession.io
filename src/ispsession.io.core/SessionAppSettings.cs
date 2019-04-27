@@ -66,7 +66,7 @@ namespace ispsession.io.core
         
         
         //domains and such
-        public string Lic { get; set; }
+        public IEnumerable<string> Lic { get; set; }
        
         public string LicKeyCore { get; set; }
        

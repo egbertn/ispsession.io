@@ -122,7 +122,7 @@ namespace ispsession.io.core
                 lock (locker)
                 {
                     initDone = true;
-                    string license = _options.Lic;
+                    string license = string.Join("\r\n", _options.Lic);
                     var lic = _options.LicKeyCore;
                     if (string.IsNullOrEmpty(license))
                     {

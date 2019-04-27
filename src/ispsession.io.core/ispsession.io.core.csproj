@@ -58,7 +58,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefineConstants>TRACE;NETCOREAPP2_0;RELEASE;Demo</DefineConstants>
+    <DefineConstants>TRACE;NETCOREAPP2_0;RELEASE</DefineConstants>
   </PropertyGroup>
 
   <Target Name="PostcompileScript" AfterTargets="Build" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">

@@ -4,7 +4,8 @@ At the time of writing, Nuget 3.x does not support automating steps below.
 
 -----------------
 
-1. Open your project.json file and add this section. These are defaults that are fine for the demo.
+
+1. Open your appsettings.json file and add this section. These are defaults that are fine for the demo.
 
 
  "ispsession.io": {
@@ -20,20 +21,31 @@ At the time of writing, Nuget 3.x does not support automating steps below.
     "SessionTimeout": 30,
     "HASH_SESSIONID": false, // for classic asp, some use Session.SessionId to be numeric
     "Compress": false,
-    "Lic": "mydomain.local",
+    "Lic": ["mydomain.local"],
     "EnableLogging": 0,
     "LicKeyCore": "F01FB5D0BCA6CE4C8CC773916F281C32",
 	"CacheLicKeyCore": "F01FB5D0BCA6CE4C8CC773916F281C32",
     "DatabaseConnection": "localhost",
 	"DataBase": -1
   },
+  "ispcache.io": {
+    "AppKey": "F01FB5D0BCA6CE4C8CC773916F281C32",
+    "License": "F01FB5D0BCA6CE4C8CC773916F281C32",
+    "LicenseDomains": [ "domain.local" ],
+    "DatabaseConnection": "localhost",
+    "Database": -1,
+    "EnableLogging": 0
+  }
 
   2. Open Startup.cs
   public void ConfigureServices(IServiceCollection services)
 {
     //other code omitted
     services.Configure<SessionAppSettings>(Configuration.GetSection("ispsession.io"));
+	services.Configure<CacheAppSettings>(Configuration.GetSection("ispcache.io"));
+
     services.AddISPSession();
+	services.AddISPCache();
 }
 
 public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
@@ -41,33 +53,25 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
 	//other code omitted for simplicity
 	app.UseISPSession(); //make sure to use before UseMvc();
 	
-	//code below might be different in your case
-    app.UseMvc(routes =>
+	app.UseISPCache();
+
+
+	// must be AFTER UseMvc Initialize your Caching stuff
+	app.Run(async context =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Default}/{id?}");
+                await Task.CompletedTask; //fake
+                if (!context.ApplicationCache().KeyExists("SomeCache"))
+                {
+                    context.ApplicationCache()["SomeCache"] = new SomeCacheClass() { SomeDate = DateTimeOffset.Now, SomeString = "Some fancy string" };
+                }
             });
+
 }
 
-3. Add or modify your base controller
-(Namespace omitted)
-    
-	public class BaseController: Controller
-    {
-        protected IISPSession Session
-        {
-            get
-            {
-                var features = HttpContext.Features.Get<IISPSEssionFeature>();
-                if (features != null)
-                {
-                    return ((ISPSessionFeature)features).Session;
-                }
-                throw new Exception("ISP SEssion Feature not found");
-            }
-        }
-    }
+You now can use the following 2 extensions to access the features
+var Cache = HttpContext.ApplicationCache();
+And 
+var Session = HttpContext.Session();
 
 Now you're good to go! 
 Happy testing.

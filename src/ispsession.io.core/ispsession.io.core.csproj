@@ -8,7 +8,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <AssemblyName>ispsession.io.core</AssemblyName>
     <PackageId>ispsession.io.core</PackageId>
-    <PackageTags>Session;SessionState</PackageTags>
+    <PackageTags>Session;SessionState;Application Cache</PackageTags>
     <PackageReleaseNotes>1.0.19 finally releases (4/27/2019) the ISP Cache feature, compatible with ASP.NET (.NetFramework). 
 1.0.15 adds target to netcoreapp (netstandard1x is obsolete). Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The purchased assembly, contains extra optimizations, however, the demo performs very well too.</PackageReleaseNotes>
     <PackageIconUrl>https://ispsession.io/images/Platipus3_Transparant_small.png</PackageIconUrl>
@@ -23,7 +23,8 @@
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.19</Version>
+    <Version>1.0.21</Version>
+    <PackageProjectUrl>https://github.com/egbertn/DemoIspSessionCore</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
@@ -58,7 +59,7 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DefineConstants>TRACE;NETCOREAPP2_0;RELEASE</DefineConstants>
+    <DefineConstants>TRACE;NETCOREAPP2_0;RELEASE;Demo</DefineConstants>
   </PropertyGroup>
 
   <Target Name="PostcompileScript" AfterTargets="Build" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">

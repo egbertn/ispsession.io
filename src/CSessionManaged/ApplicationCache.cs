@@ -268,7 +268,7 @@ namespace ispsession.io
             var key = util.ReadString();
             var vt = (VarEnum)util.ReadInt16();
             var m = new ElementModel() {  Value = util.ReadValue(vt) };
-            if (vt == VarEnum.VT_DISPATCH || vt == VarEnum.VT_UNKNOWN)
+            if (vt == VarEnum.VT_DISPATCH || vt == VarEnum.VT_UNKNOWN || (vt== VarEnum.VT_VARIANT && m.Value is byte[])) //VT_VARIANT is serialized .NET Object
             {
                 m.IsSerialized = true;
             }

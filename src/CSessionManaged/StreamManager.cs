@@ -1231,8 +1231,10 @@ namespace ispsession.io
                         }
                         else
                         {
-                            var byteBuff = new byte[bytesInStream];
-                            Array.Copy(_memoryBuff, byteBuff, bytesInStream);
+                            var byteBuff = new byte[bytesInStream + 2];
+                            byteBuff[0] = 99;
+                            byteBuff[1] = 55;
+                            Array.Copy(_memoryBuff, 0, byteBuff, 2,bytesInStream);
                             return byteBuff;
                         }
                 }

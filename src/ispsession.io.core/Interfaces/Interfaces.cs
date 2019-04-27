@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace ispsession.io
+namespace ispsession.io.core.Interfaces
 {
     /// <summary>
     /// Definition for interface IPersist.

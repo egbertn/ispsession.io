@@ -13,25 +13,47 @@ namespace ispsession.io
 {
     public class ApplicationCache : IApplicationCache, IKeySerializer
     {
-        private readonly IDictionary<string, ElementModel> _dictionary;
+        private const string CannotInitiateSession = "Cannot Initiate Cache now";
+        private IDictionary<string, ElementModel> _dictionary;
         private readonly HashSet<string> _removed;
-        private CacheAppSettings settings;
-
-        public ApplicationCache()
+        private CacheAppSettings _settings;
+        private readonly Func<ApplicationCache, Task<bool>> _tryEstablish;
+        //becomes true if application is not new but requested, loaded as late as possible!
+        private bool _wasLoaded;
+        private readonly object locker = new object();
+        private DateTimeOffset _initStart;
+        public ApplicationCache(CacheAppSettings settings, Func<ApplicationCache, Task<bool>> tryEstablish)
         {
             _removed = new HashSet<string>();
             _dictionary = new Dictionary<string, ElementModel>();
+            _tryEstablish = tryEstablish ?? throw new ArgumentNullException(nameof(tryEstablish));
+            this._settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
-        public ApplicationCache(CacheAppSettings settings)
+        private async Task CheckLoad()
         {
-            this.settings = settings;
+            if (!_wasLoaded)
+            {
+                if (!await _tryEstablish(this))
+                {
+                    throw new InvalidOperationException(CannotInitiateSession);
+                }
+
+                lock (locker)
+                {
+                    _wasLoaded = true;
+
+                }
+               
+
+            }
         }
 
         public object this[string key]
         {
             get
             {
+                CheckLoad().Wait();
                 if (!_dictionary.ContainsKey(key))
                 {
                     return null;
@@ -47,6 +69,7 @@ namespace ispsession.io
             }
             set
             {
+                CheckLoad().Wait();
                 var element = new ElementModel() { Value = value };
                 if (!_dictionary.ContainsKey(key))
                 {
@@ -60,17 +83,27 @@ namespace ispsession.io
             }
         }
 
-        internal Task LoadAsync()
+        internal async Task LoadAsync()
         {
-            return Task.CompletedTask;
+            if (_wasLoaded == false)
+            {
+                _wasLoaded = true;
+                _initStart = DateTimeOffset.Now;
+                await CSessionDL.ApplicationGet(_settings, this);
+            }
         }
 
+        public async Task CommitAsync()
+        {
+            await CSessionDL.ApplicationSave(_settings, this, DateTimeOffset.Now - _initStart);
+        }
+
+       
 
         /// <summary>
         /// the number of items in the application
         /// </summary>
-        public int Count => _dictionary.Count;
-
+        public int Count { get { CheckLoad().Wait(); return _dictionary.Count; } }
 
         /// <summary>
         /// Sets an existing key to expire given in milliseconds
@@ -80,6 +113,7 @@ namespace ispsession.io
         /// <exception cref="KeyNotFoundException"/>
         public void ExpireKeyAt(string key, int at)
         {
+            CheckLoad().Wait();
             if (!_dictionary.ContainsKey(key))
             {
                 throw new KeyNotFoundException($"requested key {key} does not exist");
@@ -89,6 +123,7 @@ namespace ispsession.io
 
         public bool KeyExists(string key)
         {
+            CheckLoad().Wait();
             return _dictionary.ContainsKey(key);
         }
         /// <summary>
@@ -99,6 +134,7 @@ namespace ispsession.io
         /// <exception cref="InvalidOperationException"/>
         public Type KeyType(string key)
         {
+            CheckLoad().Wait();
             if (!_dictionary.ContainsKey(key))
             {
                 throw new KeyNotFoundException($"requested key {key} does not exist");
@@ -172,6 +208,7 @@ namespace ispsession.io
         /// <exception cref="NotImplementedException"/>
         public bool LockKey(string key)
         {
+
             throw new NotImplementedException("Redlock is not yet implemented in this version");
             //return false;
         }
@@ -180,6 +217,8 @@ namespace ispsession.io
         /// </summary>
         public void RemoveAll()
         {
+            CheckLoad().Wait();
+
             foreach (var k in _dictionary.Keys)
             {
                 if (!_removed.Contains(k))
@@ -196,6 +235,8 @@ namespace ispsession.io
         /// <exception cref="KeyNotFoundException"/>
         public void RemoveKey(string key)
         {
+            CheckLoad().Wait();
+
             if (!_dictionary.ContainsKey(key))
             {
                 throw new KeyNotFoundException($"requested key {key} does not exist");
@@ -219,6 +260,8 @@ namespace ispsession.io
         /// <returns></returns>
         public IEnumerator GetEnumerator()
         {
+            CheckLoad().Wait();
+
             return _dictionary.Keys.GetEnumerator();
         }
         /// <summary>
@@ -227,9 +270,11 @@ namespace ispsession.io
         /// <returns></returns>
         IEnumerator<string> IEnumerable<string>.GetEnumerator()
         {
+            CheckLoad().Wait();
+
             return _dictionary.Keys.GetEnumerator();
         }
-
+        #region IKeySerializer
         void IKeySerializer.KeyStates(
             out IList<string> changedKeys, 
             out IList<string> newKeys, 
@@ -285,16 +330,14 @@ namespace ispsession.io
             var key = util.ReadString();
             var vt = (VarEnum)util.ReadInt16();
             var m = new ElementModel() {  Value = util.ReadValue(vt) };
-            if (vt == VarEnum.VT_DISPATCH || vt == VarEnum.VT_UNKNOWN)
+            if (vt == VarEnum.VT_DISPATCH || vt == VarEnum.VT_UNKNOWN || (vt == VarEnum.VT_VARIANT && m.Value is byte[]))
             {
                 m.IsSerialized = true;
             }
             _dictionary[key] = m;
         }
-      
-        public Task CommitAsync()
-        {
-            throw new NotImplementedException();
-        }
+        #endregion
+
+       
     }
 }

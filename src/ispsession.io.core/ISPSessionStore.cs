@@ -1,9 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using ispsession.io.core.Interfaces;
+﻿using System;
 using System.Threading.Tasks;
+using ispsession.io.core.Interfaces;
 
-namespace ispsession.io.Store
+namespace ispsession.io.core
 {
     public class ISPSessionStore : IISPSessionStore
     {

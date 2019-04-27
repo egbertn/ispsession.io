@@ -1,7 +1,7 @@
 ﻿using ispsession.io.core.Interfaces;
 
 
-namespace ispsession.io
+namespace ispsession.io.core.Interfaces
 {
     public interface ICacheFeature
     {

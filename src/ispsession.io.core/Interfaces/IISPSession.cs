@@ -1,7 +1,7 @@
 ﻿
 using System.Collections;
 
-namespace ispsession.io
+namespace ispsession.io.core.Interfaces
 {
     public interface IISPSession: Microsoft.AspNetCore.Http.ISession
     {

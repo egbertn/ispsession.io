@@ -1,13 +1,15 @@
-﻿namespace ispsession.io
+﻿using System.Collections.Generic;
+
+namespace ispsession.io.core
 {
     public class CacheAppSettings
     {
         public string AppKey { get; set; }
+        // actual hexadecimal form of license
+        public string License { get; set; }
         //domains and such
-        public string Lic { get; set; }
+        public IEnumerable<string> LicenseDomains { get; set; }
 
-        public string LicKeyCore { get; set; }
-       
         //redis datasource
 
         /// <summary>

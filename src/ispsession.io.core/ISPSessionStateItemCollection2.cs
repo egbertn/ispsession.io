@@ -2,7 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace ispsession.io
+namespace ispsession.io.core
 {
     public class ISPSessionStateItemCollection2
     {

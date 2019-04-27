@@ -1,15 +1,15 @@
-﻿using ispsession.io.core.Interfaces;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 //using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using System;
-using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
-
-
-namespace ispsession.io
+using ispsession.io.core.Interfaces;
+#if !Demo
+using System.Threading;
+using System.Diagnostics;
+#endif
+namespace ispsession.io.core
 {
     internal sealed class ISPSessionStateItemCollection
     {
@@ -159,7 +159,6 @@ namespace ispsession.io
                 Session = this._sessionStore.Create(text2, tryEstablishSession, isNewSessionKey, _options),
              
             };
-            var database = CSessionDL.GetDatabase(_options);
             context.Features.Set<IISPSEssionFeature>(sessionFeature);
             context.Features.Set<Microsoft.AspNetCore.Http.Features.ISessionFeature>(sessionFeature);//make HttpContext.Session happy
             await _next(context);
@@ -187,8 +186,21 @@ namespace ispsession.io
         }
 
     }
-    public static class BuilderExtensions
+    public static partial class BuilderExtensions
     {
+
+        /// <summary>
+        /// returns the Session feature from Context.
+        /// </summary>
+        public static IISPSession Session(this HttpContext context)
+        {
+            var features = context.Features.Get<IISPSEssionFeature>();
+            if (features != null)
+            {
+                return ((ISPSessionFeature)features).Session;
+            }
+            return null;
+        }
         public static IApplicationBuilder UseISPSession(this IApplicationBuilder app)
         {
             return app.UseMiddleware<ISPSessionMiddleWare>();

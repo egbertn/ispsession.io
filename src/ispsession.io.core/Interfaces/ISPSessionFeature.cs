@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace ispsession.io
+namespace ispsession.io.core.Interfaces
 {
     public interface IISPSEssionFeature: ISessionFeature
     {

@@ -3,8 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using ispsession.io.core.Interfaces;
 
-namespace ispsession.io
+namespace ispsession.io.core
 {
     public class ISPSession : IISPSession
     {

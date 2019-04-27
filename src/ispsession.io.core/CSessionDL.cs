@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ispsession.io
+namespace ispsession.io.core
 {
     /// <summary>
     /// All Redis commands and connection management is here
@@ -52,10 +52,11 @@ namespace ispsession.io
                 return conn.Value;
             }
         }
-        internal static async Task ApplicationGet(IDatabase database, string appKey, IKeySerializer pDictionary)
+        internal static async Task ApplicationGet(CacheAppSettings settings, IKeySerializer pDictionary)
         {
-            var appkey = appKey.ToUpperInvariant();
-            var keymembers = await database.SetMembersAsync(appkey);
+            var appKey = settings.AppKey.ToUpperInvariant();
+            var database = SafeConn.GetDatabase(settings.DataBase);
+            var keymembers = await database.SetMembersAsync(appKey);
             var keyCount = keymembers.Length;
             if (keyCount > 0)
             {
@@ -71,11 +72,11 @@ namespace ispsession.io
 
         }
 
-        internal static async Task ApplicationSave(IDatabase database,
-                                                string appKey, IKeySerializer pDictionary,
+        internal static async Task ApplicationSave(CacheAppSettings settings, IKeySerializer pDictionary,
                                                 TimeSpan totalRequestTime)
         {
-            var appkey = appKey.ToUpperInvariant();
+            var appkey = settings.AppKey.ToUpperInvariant();
+            var database = SafeConn.GetDatabase(settings.DataBase);
             var appkeyPrefix = appkey + ":";
             var setKey = (RedisKey)appkey;
 

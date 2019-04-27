@@ -4,13 +4,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Globalization;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
-
+using ispsession.io.core.Interfaces;
 using System.Reflection;
 
-namespace ispsession.io
+namespace ispsession.io.core
 {
     
 
@@ -1207,8 +1206,10 @@ namespace ispsession.io
                         }
                         else
                         {
-                            var byteBuff = new byte[bytesInStream];
-                            Array.Copy(_memoryBuff, byteBuff, bytesInStream);
+                            var byteBuff = new byte[bytesInStream + 2];
+                            byteBuff[0] = 99;
+                            byteBuff[1] = 55;
+                            Array.Copy(_memoryBuff, 0, byteBuff, 2, bytesInStream);
                             return byteBuff;
                         }
                 }

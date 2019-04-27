@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using ispsession.io.core.Interfaces;
 
-namespace ispsession.io
+namespace ispsession.io.core
 {
     internal sealed class MemHandle : SafeHandle
     {

@@ -8,7 +8,7 @@ namespace ispsession.io.core
     {
         public IApplicationCache Create(CacheAppSettings settings, Func<ApplicationCache, Task<bool>> tryEstablishSession)
         {
-            var appCache = new ApplicationCache(settings);
+            var appCache = new ApplicationCache(settings, tryEstablishSession);
 
             return appCache;
         }

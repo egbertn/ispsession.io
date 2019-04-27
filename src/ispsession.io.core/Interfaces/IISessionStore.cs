@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace ispsession.io
+namespace ispsession.io.core.Interfaces
 {
     public interface IISPSessionStore
     {

@@ -6,7 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ispsession.io
+namespace ispsession.io.core
 {
     /// <summary>
     /// required to replace the compatible session cookie for ISP Session both managed and unmanaged

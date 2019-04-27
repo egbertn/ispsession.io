@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
  * Some useful docs type mapping from Ole to .NET
  http://technet.microsoft.com/en-us/video/2x07fbw8(v=vs.60).aspx
  */
-namespace ispsession.io
+namespace ispsession.io.core
 {
     public sealed class PersistUtil : StreamManager
     {

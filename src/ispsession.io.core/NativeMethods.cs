@@ -118,50 +118,7 @@ namespace ispsession.io.core
         [DllImport("ole32.dll", ExactSpelling = true)]
         internal static extern int CreateStreamOnHGlobal(SafeHandle hGlobal, bool fDeleteOnRelease,
            out IStream ppstm);
-        //internal unsafe static double ToOaDate(DateTime value)
-        //{
-        //    _SYSTEMTIME st;
-
-        //    st.wYear = (short)value.Year;
-        //    st.wMonth = (short)value.Month;
-        //    st.wDay = (short)value.Day;
-        //    st.wHour = (short)value.Hour;
-        //    st.wMinute = (short)value.Minute;
-        //    st.wMilliseconds = (short)value.Millisecond;
-            
-        //    double d;
-        //    SystemTimeToVariantTime(&st, &d);
-        //    return d;
-        //}
-        //internal unsafe static DateTime FromOADate(double d)
-        //{
-        //    _SYSTEMTIME st ;
-        //    VariantTimeToSystemTime(d, &st);
-        //    return  new DateTime(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wMilliseconds);
-        ////}
-        //internal unsafe static long ToOACurrency(this decimal value)
-        //{
-        //    tagDECIMAL ll;
-        //    tagVARIANT theDec;
-        //    Buffer.MemoryCopy(&value, &ll, sizeof(decimal), sizeof(decimal));
-        //    ll.wReserved = (ushort)VarEnum.VT_DECIMAL;
-        //    VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short)VarEnum.VT_CY);
-        //    return theDec.llVal;
-        //}
-        //internal unsafe static decimal FromOACurrency(long i64)
-        //{
-        //    tagDECIMAL theDec;
-        //    //fake it to be a CUR
-        //    tagVARIANT ll;
-        //    ll.vt = VarEnum.VT_CY;
-        //    ll.llVal = i64;
-        //    VariantChangeTypeEx(&theDec, &ll, 1033, 0, (short) VarEnum.VT_DECIMAL);
-        //    //decimal retVal;
-        //    //theDec.wReserved = 0;
-        //   // Buffer.MemoryCopy(&theDec, &retVal, sizeof(decimal), sizeof(decimal));            
-        //    return new decimal(theDec.Lo32, theDec.Mid32, theDec.Hi32, theDec.sign == 0x80, theDec.scale);
-
-        //}
+      
         const int ErrorSuccess = 0;
         internal sealed class JoinInformation
         {

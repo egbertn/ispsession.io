@@ -9,7 +9,8 @@
     <AssemblyName>ispsession.io.core</AssemblyName>
     <PackageId>ispsession.io.core</PackageId>
     <PackageTags>Session;SessionState</PackageTags>
-    <PackageReleaseNotes>1.0.15 adds target to netcoreapp (netstandard1x is obsolete). Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The purchased assembly, contains extra optimizations, however, the demo performs very well too.</PackageReleaseNotes>
+    <PackageReleaseNotes>1.0.19 finally releases (4/27/2019) the ISP Cache feature, compatible with ASP.NET (.NetFramework). 
+1.0.15 adds target to netcoreapp (netstandard1x is obsolete). Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The purchased assembly, contains extra optimizations, however, the demo performs very well too.</PackageReleaseNotes>
     <PackageIconUrl>https://ispsession.io/images/Platipus3_Transparant_small.png</PackageIconUrl>
     <PackageLicenseUrl>https://ispsession.io/license</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -22,7 +23,7 @@
     <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
     <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.0.18</Version>
+    <Version>1.0.19</Version>
   </PropertyGroup>
 
   <ItemGroup>

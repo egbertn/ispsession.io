@@ -2,11 +2,11 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>ispsession.io</id>
-    <version>1.0.22</version>
-    <title>Classic ASP.NET Session and Application State Broker</title>    
+    <version>1.0.24</version>
+    <title>ASP.NET Session and Application State Broker</title>    
     <authors>ADC Cure</authors>
     <owners>ADC Cure</owners>
-	 <tags>SessionState,Session, Application Cache</tags>
+	 <tags>SessionState;ApplicationCache;Statebroker</tags>
     <license type="file">license\license.txt</license>    
     <iconUrl>https://ispsession.io/images/Platipus3_Transparant_small.png</iconUrl>
     <summary>
@@ -25,7 +25,7 @@ Uses Redis 2.8(+) as a backend storage server.</description>
      </releaseNotes>
 
   <copyright>Copyright © 2001-2019 ADC Cure, Netherlands</copyright>
-   
+  <projectUrl>https://github.com/egbertn/DemoISPSessionOnNet</projectUrl>
   <dependencies>
    <group targetFramework=".NETFramework4.5.2">
         <dependency id="StackExchange.Redis.StrongName" version="1.2.6" />                

@@ -8,7 +8,7 @@ namespace ispsession.io
     public class ISPApplicationModule : IHttpModule
     {
         private static readonly object locker = new object();
-        private const string ItemContextKey = "_ISPApplicationCache";
+        internal const string ItemContextKey = "_ISPApplicationCache";
         private static SessionAppSettings _appSettings;
         private DateTimeOffset _startTime;
         private static void EnsureAppSettings()
@@ -52,8 +52,8 @@ namespace ispsession.io
                 }
                 var appInstance = new ApplicationCache();
                 _startTime = DateTimeOffset.UtcNow;
-                var db = CSessionDL.SafeConn.GetDatabase(_appSettings.DataBase);
-                CSessionDL.ApplicationGet(db, _appSettings.AppKey, appInstance);
+               
+                CSessionDL.ApplicationGet( _appSettings, appInstance);
 
                 context.Items[ItemContextKey] = appInstance;
 
@@ -63,8 +63,8 @@ namespace ispsession.io
         {
             var context = ((HttpApplication)source).Context;
             var appInstance = (ApplicationCache)context.Items[ItemContextKey];
-            var db = CSessionDL.SafeConn.GetDatabase(_appSettings.DataBase);
-            CSessionDL.ApplicationSave(db, _appSettings.AppKey, appInstance, DateTimeOffset.UtcNow - _startTime);
+          
+            CSessionDL.ApplicationSave(_appSettings, appInstance, DateTimeOffset.UtcNow - _startTime);
         }
     }
 }

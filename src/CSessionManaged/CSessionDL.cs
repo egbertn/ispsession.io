@@ -17,9 +17,10 @@ namespace ispsession.io
     /// </summary>
     internal static class CSessionDL
     {
-        internal static void ApplicationGet(IDatabase database, string appKey, IKeySerializer pDictionary)
+        internal static void ApplicationGet(SessionAppSettings settings, IKeySerializer pDictionary)
         {
-            var appkey = appKey.ToUpperInvariant() ;
+            var database = SafeConn.GetDatabase(settings.DataBase);
+            var appkey = settings.AppKey.ToUpperInvariant() ;
             var keymembers = database.SetMembers(appkey);
             var keyCount = keymembers.Length;
             if (keyCount > 0)
@@ -36,11 +37,11 @@ namespace ispsession.io
 
         }
 
-        internal static void ApplicationSave(IDatabase database,
-                                                string appKey, IKeySerializer pDictionary,                                        
+        internal static void ApplicationSave(SessionAppSettings settings, IKeySerializer pDictionary,                                        
                                                 TimeSpan totalRequestTime)
         {
-            var appkey = appKey.ToUpperInvariant();
+            var database = SafeConn.GetDatabase(settings.DataBase);
+            var appkey = settings.AppKey.ToUpperInvariant();
             var appkeyPrefix = appkey + ":";
             var setKey = (RedisKey)appkey;
 

@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 using System;
-using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +14,6 @@ namespace ispsession.io.core
 
         private readonly HttpContext _context;
         private readonly string _id;
-
         private readonly SessionAppSettings _settings;
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         public ISPSessionIDManager(SessionAppSettings settings)
@@ -33,7 +30,7 @@ namespace ispsession.io.core
         internal async Task<bool> TryEstablishSession(ISPSession i)
         {
             var ret = this._shouldEstablishSession |= !this._context.Response.HasStarted;
-            if (ret)
+            if (ret && i.IsNewSession == false)
             {
               
                 await i.LoadAsync();
@@ -47,16 +44,18 @@ namespace ispsession.io.core
             _settings = settings;
             _context = context;
             _id = id;
+          
             context.Response.OnStarting(OnStartingCallback, this);
         }
         private static Task OnStartingCallback(object state)
         {
             var sessionEstablisher = (ISPSessionIDManager)state;
-            if (sessionEstablisher._shouldEstablishSession)
+            if (sessionEstablisher._shouldEstablishSession )
             {
                 sessionEstablisher.SetCookie();
-            }
-            return Task.FromResult(0);
+                
+            } 
+            return Task.CompletedTask;
         }
         private void SetCookie()
         {
@@ -86,7 +85,7 @@ namespace ispsession.io.core
             headers["Pragma"] = "no-cache";
             headers["Expires"] = "-1";
         }
-        public string GetSessionID(HttpContext context)
+        public async Task< string> GetSessionIDAsync(HttpContext context)
         {
             string cookieText = null;
             bool foundGuidinURL = false;
@@ -136,7 +135,7 @@ namespace ispsession.io.core
             if (foundGuidinURL)
             {
 
-                foundSession = db.RedundantExists(cookieText, _settings);
+                foundSession = await db.RedundantExistsAsync(cookieText, _settings);
                 if (foundSession)
                 {
                     return cookieText;
@@ -153,7 +152,7 @@ namespace ispsession.io.core
                 return null;
             }
 
-            foundSession = db.RedundantExists(cookieValue, _settings);
+            foundSession = await db.RedundantExistsAsync(cookieValue, _settings);
             if (foundSession)
             {
                 return cookieValue;

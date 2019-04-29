@@ -24,7 +24,7 @@ namespace ispsession.io.core
         private bool _wasLoaded;
         //minutes
         private int _timeOut;
-        internal ISPSession(string sessionKey, Func<ISPSession, Task< bool>> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
+        internal ISPSession(string sessionKey, string oldSessionKey, Func<ISPSession, Task< bool>> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
         {
             if (settings == null)
             {
@@ -47,10 +47,10 @@ namespace ispsession.io.core
             _timeOut = _settings.SessionTimeout;
             _liquid = _settings.Liquid;
             _reEntrance = _settings.ReEntrance;
-            _sessionItems = new ISPSessionStateItemCollection2() { SessionID = sessionKey };
+            _sessionItems = new ISPSessionStateItemCollection2() { SessionID = sessionKey, OldSessionID = oldSessionKey };
         }
 
-        private void InitItems(ISPSessionStateItemCollection items)
+        private void InitItems(ISPSessionStateItemCollection items, string sessionId, string oldSessionId)
         {
             lock (locker)
             {
@@ -66,9 +66,12 @@ namespace ispsession.io.core
                 }
                 _wasLoaded = true;
                 this._sessionItems = items.Items;
+                this._sessionItems.SessionID = sessionId;
+                this._sessionItems.OldSessionID = oldSessionId; //ahum
                 this._sessionItems.IsNew = _isNew;
                 this._sessionItems.Timeout = _timeOut;
                 this._sessionItems.IsReadOnly = _isReadonly;
+              
 
             }
         }
@@ -87,7 +90,7 @@ namespace ispsession.io.core
                         _wasLoaded = true;
                        
                     }
-                    await LoadAsync();
+                   // await LoadAsync();
                 }
             }
         }
@@ -171,19 +174,6 @@ namespace ispsession.io.core
             }
         }
 
-        public int LCID
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
         public string SessionID
         {
             get
@@ -212,7 +202,7 @@ namespace ispsession.io.core
             _isAbandoned = false;
             _sessionItems.Clear();
 
-            CSessionDL.SessionRemove(_settings, SessionID);
+         
         }
 
         public void Add(string name, object value)
@@ -237,8 +227,7 @@ namespace ispsession.io.core
             }
             if (_isAbandoned)
             {
-                _sessionItems.Clear();//make sure
-                                      //TODO: Expire?
+                await CSessionDL.SessionRemoveAsync(_settings, SessionID);
                 return ;
             }
 
@@ -265,7 +254,9 @@ namespace ispsession.io.core
         {
             if (_wasLoaded == false)
             {
-                this.InitItems(await CSessionDL.SessionGetAsync(_settings, this.SessionID));
+                this.InitItems(await CSessionDL.SessionGetAsync(_settings,  _sessionItems.OldSessionID), 
+                    _sessionItems.SessionID, _sessionItems.OldSessionID);
+                
                 _wasLoaded = true;
             }
            

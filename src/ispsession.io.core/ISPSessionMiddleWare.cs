@@ -105,15 +105,21 @@ namespace ispsession.io.core
 
             var isNewSessionKey = false;
              
-            var text2 = _manager.GetSessionID(context);
-            if (text2 == null || _options.Liquid)
+            var oldSession = await _manager.GetSessionIDAsync(context);
+            var text2 = default(string);
+            if (oldSession == null || _options.Liquid)
             {
                 text2 = _manager.CreateSessionID(context);
-                isNewSessionKey = true;              
+                isNewSessionKey = (oldSession == null);  //when liquid, it is not new            
+            }
+            else
+            {
+                text2 = oldSession;
             }
             // do the cookie stuff just once
             Func<bool> initialized =() => false;
-            Task<bool> tryEstablishSession(ISPSession i) => (new ISPSessionIDManager(context, text2, _options)).TryEstablishSession(i);
+            Task<bool> tryEstablishSession(ISPSession i) => (new ISPSessionIDManager(context, text2, 
+                _options)).TryEstablishSession(i);
 
 
 #if !Demo
@@ -156,7 +162,7 @@ namespace ispsession.io.core
             
             var sessionFeature = new ISPSessionFeature
             {
-                Session = this._sessionStore.Create(text2, tryEstablishSession, isNewSessionKey, _options),
+                Session = this._sessionStore.Create(text2, oldSession, tryEstablishSession, isNewSessionKey, _options),
              
             };
             context.Features.Set<IISPSEssionFeature>(sessionFeature);

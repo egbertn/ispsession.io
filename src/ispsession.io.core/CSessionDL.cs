@@ -16,11 +16,11 @@ namespace ispsession.io.core
     /// </summary>
     internal static class CSessionDL
     {
-        private static readonly object lockker = new object();
+        private static readonly object locker = new object();
         private static string[] EndPoint;
         private static void setEndPoint(string endP)
         {
-            lock(lockker)
+            lock(locker)
             {                
                 EndPoint = endP.Split(',');
             }
@@ -45,7 +45,7 @@ namespace ispsession.io.core
         private static readonly Lazy<ConnectionMultiplexer> conn = new Lazy<ConnectionMultiplexer>(
             () => ConnectionMultiplexer.Connect(configOptions.Value));
 
-        internal static ConnectionMultiplexer SafeConn
+        private static ConnectionMultiplexer SafeConn
         {
             get
             {
@@ -111,7 +111,7 @@ namespace ispsession.io.core
                 {
                     foreach (var key in expireKeys)
                     {
-                        database.KeyExpire(key.Item1, TimeSpan.FromMilliseconds(key.Item2), CommandFlags.FireAndForget);
+                        await database.KeyExpireAsync(key.Item1, TimeSpan.FromMilliseconds(key.Item2), CommandFlags.FireAndForget);
                     }
                 }
                await transaction.ExecuteAsync(CommandFlags.FireAndForget);
@@ -127,13 +127,13 @@ namespace ispsession.io.core
             setEndPoint(settings.DatabaseConnection);
             return SafeConn.GetDatabase(settings.DataBase);
         }
-        internal static bool RedundantExists(this IDatabase db, string cookie, SessionAppSettings settings)
+        internal static async Task<bool> RedundantExistsAsync(this IDatabase db, string cookie, SessionAppSettings settings)
         {
             for (var x = 0; x < 3; x++)
             {
                 try
                 {
-                    return db.KeyExists(settings.GetKey(cookie));
+                    return await db.KeyExistsAsync(settings.GetKey(cookie)); //async has problems
                 }
                 catch (TimeoutException) //shit happens sometimes
                 {
@@ -144,26 +144,10 @@ namespace ispsession.io.core
             }
             return false; //ok
         }
-        internal static bool RedundantExists(this IDatabase db,  CacheAppSettings settings)
-        {
-            for (var x = 0; x < 3; x++)
-            {
-                try
-                {
-                    return db.KeyExists(settings.AppKey);
-                }
-                catch (TimeoutException) //shit happens sometimes
-                {
-                    Thread.Sleep(400);
-                    continue;
-                }
-                catch { throw; }
-            }
-            return false; //ok
-        }
+      
         internal static string GetKey(this SessionAppSettings id, string SessionId)
         {
-            return string.Format("{0}:{1}", id.AppKey, SessionId);
+            return $"{id.AppKey}:{SessionId}";
         }
         /// <summary>
         /// 
@@ -175,9 +159,13 @@ namespace ispsession.io.core
             var db = CSessionDL.GetDatabase(settings);
             var key = settings.GetKey(SessionId);
             var ms = default(Stream);
+            if (string.IsNullOrEmpty(SessionId))
+            {
+                throw new ArgumentNullException(nameof(SessionId));
+            }
             try
             {
-                var data = await db.StringGetAsync(key); ;
+                var data = await db.StringGetAsync(key);
                 if (data.IsNull)
                 {
                     return null;// session not found
@@ -206,7 +194,7 @@ namespace ispsession.io.core
                     Meta = meta,
                     Items = PersistUtil.LocalLoad(ms),
                 };
-                retVal.Items.SessionID = SessionId;
+              
                 return retVal;
 
             }
@@ -216,6 +204,7 @@ namespace ispsession.io.core
                 var cloned = settings.Clone();
                 cloned.Compress = false;
                 var retVal = await SessionGetAsync(cloned, SessionId);
+                retVal.Items.SessionID = SessionId;
                 return retVal;
             }
             catch (Exception ex)
@@ -250,6 +239,11 @@ namespace ispsession.io.core
             var db = CSessionDL.GetDatabase(settings);
             var key = settings.GetKey(state.SessionID);
             //todo, if readonly, only set expiration
+            if (!string.IsNullOrEmpty(state.OldSessionID) && !state.SessionID.Equals(state.OldSessionID))
+            {
+                await db.KeyRenameAsync(settings.GetKey(state.OldSessionID), key, When.Always, CommandFlags.FireAndForget);
+
+            }
             try
             {
                 if (state.IsReadOnly || !state.Dirty)
@@ -271,16 +265,13 @@ namespace ispsession.io.core
 
         }
 
-        internal static void SessionRemove(SessionAppSettings settings, string sessionId)
+        internal static async Task SessionRemoveAsync(SessionAppSettings settings, string sessionId)
         {
             var db = CSessionDL.GetDatabase(settings);
             var key = settings.GetKey(sessionId);
             try
             {
-                if (db.KeyExists(key))
-                {
-                    db.KeyDelete(key, CommandFlags.FireAndForget);
-                }
+                await db.KeyDeleteAsync(key, CommandFlags.FireAndForget);                
             }
             catch (Exception ex)
             {
@@ -347,22 +338,6 @@ namespace ispsession.io.core
             {
                 if (ptr != IntPtr.Zero)
                     Marshal.FreeHGlobal(ptr);
-            }
-        }
-
-        internal static void SessionInsert(SessionAppSettings settings, string sessionID, PersistMetaData meta)
-        {
-            IDatabase db = CSessionDL.GetDatabase(settings);
-            var key = settings.GetKey(sessionID);
-            var contents = meta.ToByteArray();
-            var ts = TimeSpan.FromMinutes(meta.Expires);
-            try
-            {
-                db.StringSet(key, contents, ts, When.Always, CommandFlags.FireAndForget);
-            }
-            catch (Exception ex)
-            {
-                StreamManager.TraceError("Fatal SessionInsert {0}", ex);
             }
         }
     }

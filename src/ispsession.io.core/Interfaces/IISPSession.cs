@@ -14,7 +14,6 @@ namespace ispsession.io.core.Interfaces
 
         bool IsNewSession { get; }        
         bool IsReadOnly { get; }      
-        int LCID { get; set; }
                
         string SessionID { get; }
        

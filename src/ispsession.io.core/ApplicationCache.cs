@@ -17,16 +17,19 @@ namespace ispsession.io
         private IDictionary<string, ElementModel> _dictionary;
         private readonly HashSet<string> _removed;
         private CacheAppSettings _settings;
-        private readonly Func<ApplicationCache, Task<bool>> _tryEstablish;
         //becomes true if application is not new but requested, loaded as late as possible!
         private bool _wasLoaded;
         private readonly object locker = new object();
         private DateTimeOffset _initStart;
-        public ApplicationCache(CacheAppSettings settings, Func<ApplicationCache, Task<bool>> tryEstablish)
+        public ApplicationCache(CacheAppSettings settings)
         {
             _removed = new HashSet<string>();
             _dictionary = new Dictionary<string, ElementModel>();
-            _tryEstablish = tryEstablish ?? throw new ArgumentNullException(nameof(tryEstablish));
+            if ((settings.EnableLogging & 3) == 3)
+            {
+                StreamManager.TraceInfo.TraceInfo = true;
+                StreamManager.TraceInfo.TraceError = true;
+            }
             this._settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
@@ -34,7 +37,7 @@ namespace ispsession.io
         {
             if (!_wasLoaded)
             {
-                if (!await _tryEstablish(this))
+                if (!await LoadAsync())
                 {
                     throw new InvalidOperationException(CannotInitiateSession);
                 }
@@ -83,14 +86,16 @@ namespace ispsession.io
             }
         }
 
-        internal async Task LoadAsync()
+        internal async Task<bool> LoadAsync()
         {
             if (_wasLoaded == false)
             {
                 _wasLoaded = true;
                 _initStart = DateTimeOffset.Now;
                 await CSessionDL.ApplicationGet(_settings, this);
+                return true;
             }
+            return false;
         }
 
         public async Task CommitAsync()

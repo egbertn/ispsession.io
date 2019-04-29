@@ -54,17 +54,15 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerF
 	app.UseISPSession(); //make sure to use before UseMvc();
 	
 	app.UseISPCache();
-
-
-	// must be AFTER UseMvc Initialize your Caching stuff
-	app.Run(async context =>
-            {
-                await Task.CompletedTask; //fake
-                if (!context.ApplicationCache().KeyExists("SomeCache"))
-                {
-                    context.ApplicationCache()["SomeCache"] = new SomeCacheClass() { SomeDate = DateTimeOffset.Now, SomeString = "Some fancy string" };
-                }
-            });
+	app.Use(async (context, next) =>
+	{
+		if (!context.ApplicationCache().KeyExists("SomeCache")) // just an idea Use any variable you want
+		{
+			context.ApplicationCache()["SomeCache"] = new SomeCacheClass() { SomeDate = DateTimeOffset.Now, SomeString = "Some fancy string" };
+		}
+		await next();
+	});
+	// section before UseMvc();
 
 }
 

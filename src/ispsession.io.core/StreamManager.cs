@@ -1568,15 +1568,4 @@ namespace ispsession.io.core
         public bool TraceError { get; set; }
         
     }
-    //public sealed class DBNull
-    //{
-    //    public static DBNull Value
-    //    {
-    //        get
-    //        {
-    //            return new DBNull();
-
-    //        }
-    //    }
-    //}
 }

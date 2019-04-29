@@ -203,6 +203,7 @@ namespace ispsession.io.core
         public bool IsNew { get; set; }
         public int Timeout { get; set; }
         public string SessionID { get; set; }
+        public string OldSessionID { get; set; }
         
     }
 }

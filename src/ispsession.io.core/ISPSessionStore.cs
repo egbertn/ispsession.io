@@ -19,7 +19,7 @@ namespace ispsession.io.core
             //this._loggerFactory = loggerFactory;
         }
 
-        public IISPSession Create(string sessionKey, Func<ISPSession, Task<bool>> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
+        public IISPSession Create(string sessionKey, string oldSessionKey, Func<ISPSession, Task<bool>> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
         {
             if (string.IsNullOrEmpty(sessionKey))
             {
@@ -33,7 +33,7 @@ namespace ispsession.io.core
             {
                 throw new ArgumentOutOfRangeException(nameof(settings.SessionTimeout), "SessionTimeout is zero or negative, which is not supported");
             }
-            return new ISPSession(sessionKey, tryEstablish,  isNewSessionKey, settings);
+            return new ISPSession(sessionKey, oldSessionKey, tryEstablish,  isNewSessionKey, settings);
         }
 
      

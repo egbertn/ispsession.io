@@ -18,7 +18,7 @@ namespace ispsession.io.core
         private readonly RequestDelegate _next;
         private readonly CacheAppSettings _options;
         private readonly IISPCacheStore _cacheStore;
-        private ISPCacheManager _manager;
+        
         private static int _instanceCount;
         private static readonly object locker = new object();
 #if !Demo
@@ -30,7 +30,7 @@ namespace ispsession.io.core
             _next = next;
             this._options = options.Value;
             this._cacheStore = _CacheStore;
-            _manager = new ISPCacheManager(_options);
+         
         }
         public async Task Invoke(HttpContext context)
         {
@@ -38,7 +38,7 @@ namespace ispsession.io.core
             // do Application initialisation just once. Otherwise, 
             // when css extension or others are loaded, it will be reloaded again
             Func<bool> initialized = () => false;
-            Task<bool> tryEstablishApplication(ApplicationCache i) => (new ISPCacheManager(context, _options)).TryEstablishCache(i);
+           // Task<bool> tryEstablishApplication(ApplicationCache i) = (i) => false;
 
 
 #if !Demo
@@ -81,7 +81,7 @@ namespace ispsession.io.core
 
             var cacheFeature = new ISPCacheFeature
             {
-                Application = this._cacheStore.Create(_options, tryEstablishApplication)
+                Application = this._cacheStore.Create(_options)
             };
 
             context.Features.Set<ICacheFeature>(cacheFeature);
@@ -100,7 +100,7 @@ namespace ispsession.io.core
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceError("Application.CommitAsync failed with {0}", ex);
+                    StreamManager.TraceError("Application.CommitAsync failed with {0}", ex);
                     //this._logger.ErrorClosingTheSession(var_9_257);
                 }
             }

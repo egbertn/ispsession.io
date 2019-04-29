@@ -6,9 +6,9 @@ namespace ispsession.io.core
 {
     public class ISPCacheStore: IISPCacheStore
     {
-        public IApplicationCache Create(CacheAppSettings settings, Func<ApplicationCache, Task<bool>> tryEstablishSession)
+        public IApplicationCache Create(CacheAppSettings settings)
         {
-            var appCache = new ApplicationCache(settings, tryEstablishSession);
+            var appCache = new ApplicationCache(settings);
 
             return appCache;
         }

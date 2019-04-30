@@ -5,7 +5,7 @@ namespace ispsession.io.core.Interfaces
 {
     public interface IISPSessionStore
     {
-        IISPSession Create(string sessionKey, string oldSessionKey,
+        IISPSession Create(string sessionKey, 
             Func<ISPSession, Task<bool>> tryEstablish, bool isNewSessionKey, SessionAppSettings settings);
     }
 }

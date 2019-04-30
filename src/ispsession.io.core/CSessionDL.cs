@@ -149,11 +149,6 @@ namespace ispsession.io.core
         {
             return $"{id.AppKey}:{SessionId}";
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="SessionId">assumption SessionId is valid</param>
         internal static async Task< ISPSessionStateItemCollection> SessionGetAsync(SessionAppSettings settings, string SessionId)
         {
             var db = CSessionDL.GetDatabase(settings);
@@ -204,7 +199,7 @@ namespace ispsession.io.core
                 var cloned = settings.Clone();
                 cloned.Compress = false;
                 var retVal = await SessionGetAsync(cloned, SessionId);
-                retVal.Items.SessionID = SessionId;
+                
                 return retVal;
             }
             catch (Exception ex)
@@ -223,7 +218,7 @@ namespace ispsession.io.core
         /// <summary>
         /// saves session and settings. If readonly, will only set expiration
         /// </summary>        
-        internal static async Task SessionSave(SessionAppSettings settings, ISPSessionStateItemCollection2 state, PersistMetaData meta) //, 
+        internal static async Task SessionSave(SessionAppSettings settings, ISPSessionStateItemCollection2 state, PersistMetaData meta, string sessionId, string oldSessionId) //, 
         {
 
             var contents = PersistUtil.LocalContents(state, out int zLen, settings.Compress);
@@ -234,14 +229,14 @@ namespace ispsession.io.core
             var tinybuf = meta.ToByteArray();
             Array.Copy(tinybuf, 0, contents, 0, meta.SizeofMeta);
 
-            var ts = TimeSpan.FromMinutes(state.Timeout == 0 ? settings.SessionTimeout : state.Timeout);
+            var ts = TimeSpan.FromMinutes(meta.Expires );
 
             var db = CSessionDL.GetDatabase(settings);
-            var key = settings.GetKey(state.SessionID);
+            var key = settings.GetKey(sessionId);
             //todo, if readonly, only set expiration
-            if (!string.IsNullOrEmpty(state.OldSessionID) && !state.SessionID.Equals(state.OldSessionID))
+            if (!string.IsNullOrEmpty(oldSessionId) && !sessionId.Equals(oldSessionId))
             {
-                await db.KeyRenameAsync(settings.GetKey(state.OldSessionID), key, When.Always, CommandFlags.FireAndForget);
+                await db.KeyRenameAsync(settings.GetKey(oldSessionId), key, When.Always, CommandFlags.FireAndForget);
 
             }
             try

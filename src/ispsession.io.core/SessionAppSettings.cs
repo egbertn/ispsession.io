@@ -54,14 +54,14 @@ namespace ispsession.io.core
         public int CookieExpires { get; set; }
 
         //defaults to 30 minutes
-        public int SessionTimeout { get; set; }
+        public int? SessionTimeout { get; set; }
 
-        public bool Liquid { get; set; }
+        public bool? Liquid { get; set; }
         /// <summary>
         /// Difference with ISP Sesssion classic 
         /// Because this setting with .NET is RegenerateExpiredSessionId(true/false)
         /// </summary>
-        public bool ReEntrance { get; set; }
+        public bool? ReEntrance { get; set; }
         public bool Compress { get; set; }
         
         

@@ -16,70 +16,7 @@ namespace ispsession.io.core
         internal PersistMetaData Meta;
         internal ISPSessionStateItemCollection2 Items;
     }
-    //internal static class CookieProtection
-    //{
-    //    internal static string Protect(IDataProtector protector, string data)
-    //    {
-    //        if (protector == null)
-    //        {
-    //            throw new ArgumentNullException("protector");
-    //        }
-    //        if (string.IsNullOrEmpty(data))
-    //        {
-    //            return data;
-    //        }
-    //        byte[] bytes = Encoding.UTF8.GetBytes(data);
-    //        return Convert.ToBase64String(protector.Protect(bytes)).TrimEnd('=');
-    //    }
 
-    //    internal static string Unprotect(IDataProtector protector, string protectedText)
-    //    {
-    //        string result;
-    //        try
-    //        {
-    //            if (string.IsNullOrEmpty(protectedText))
-    //            {
-    //                result = string.Empty;
-    //            }
-    //            else
-    //            {
-    //                byte[] array = Convert.FromBase64String(Pad(protectedText));
-    //                if (array == null)
-    //                {
-    //                    result = string.Empty;
-    //                }
-    //                else
-    //                {
-    //                    byte[] array2 = protector.Unprotect(array);
-    //                    if (array2 == null)
-    //                    {
-    //                        result = string.Empty;
-    //                    }
-    //                    else
-    //                    {
-    //                        result = Encoding.UTF8.GetString(array2);
-    //                    }
-    //                }
-    //            }
-    //        }
-    //        catch (Exception exception)
-    //        {
-    //           // logger.ErrorUnprotectingSessionCookie(exception);
-    //            result = string.Empty;
-    //        }
-    //        return result;
-    //    }
-
-    //    private static string Pad(string text)
-    //    {
-    //        int num = 3 - (text.Length + 3) % 4;
-    //        if (num == 0)
-    //        {
-    //            return text;
-    //        }
-    //        return text + new string('=', num);
-    //    }
-    //}
    
     public class ISPSessionMiddleWare
     {    
@@ -105,17 +42,14 @@ namespace ispsession.io.core
 
             var isNewSessionKey = false;
              
-            var oldSession = await _manager.GetSessionIDAsync(context);
-            var text2 = default(string);
-            if (oldSession == null || _options.Liquid)
+            var text2 = await _manager.GetSessionIDAsync(context);
+           
+            if (text2 == null )
             {
                 text2 = _manager.CreateSessionID(context);
-                isNewSessionKey = (oldSession == null);  //when liquid, it is not new            
+                isNewSessionKey = (text2 == null);  //when liquid, it is not new            
             }
-            else
-            {
-                text2 = oldSession;
-            }
+           
             // do the cookie stuff just once
             Func<bool> initialized =() => false;
             Task<bool> tryEstablishSession(ISPSession i) => (new ISPSessionIDManager(context, text2, 
@@ -162,7 +96,7 @@ namespace ispsession.io.core
             
             var sessionFeature = new ISPSessionFeature
             {
-                Session = this._sessionStore.Create(text2, oldSession, tryEstablishSession, isNewSessionKey, _options),
+                Session = this._sessionStore.Create(text2, tryEstablishSession, isNewSessionKey, _options),
              
             };
             context.Features.Set<IISPSEssionFeature>(sessionFeature);

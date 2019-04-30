@@ -4,10 +4,11 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using ispsession.io.core.Interfaces;
+using Microsoft.AspNetCore.Http;
 
 namespace ispsession.io.core
 {
-    public class ISPSession : IISPSession
+    public sealed class ISPSession : IISPSession
     {
         private readonly SessionAppSettings _settings;
         private const string CannotInitiateSession = "Cannot Initiate Session now";
@@ -16,7 +17,6 @@ namespace ispsession.io.core
         //TODO: parse this flag
         private readonly bool _isReadonly;
         private readonly object locker = new object();
-        private bool _isNew;
         private bool _liquid;
         private bool _reEntrance;
         private bool _isAbandoned;
@@ -24,7 +24,7 @@ namespace ispsession.io.core
         private bool _wasLoaded;
         //minutes
         private int _timeOut;
-        internal ISPSession(string sessionKey, string oldSessionKey, Func<ISPSession, Task< bool>> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
+        internal ISPSession(string sessionKey,  Func<ISPSession, Task< bool>> tryEstablish, bool isNewSessionKey, SessionAppSettings settings)
         {
             if (settings == null)
             {
@@ -40,17 +40,31 @@ namespace ispsession.io.core
                 StreamManager.TraceInfo.TraceInfo = true;
                 StreamManager.TraceInfo.TraceError = true;
             }
-
             _tryEstablish = tryEstablish ?? throw new ArgumentNullException(nameof(tryEstablish));
             _settings = settings;
-            _isNew = isNewSessionKey;
-            _timeOut = _settings.SessionTimeout;
-            _liquid = _settings.Liquid;
-            _reEntrance = _settings.ReEntrance;
-            _sessionItems = new ISPSessionStateItemCollection2() { SessionID = sessionKey, OldSessionID = oldSessionKey };
+            IsNewSession = isNewSessionKey;
+            if (_settings.SessionTimeout != null)
+            {
+                _timeOut = _settings.SessionTimeout.Value;
+            }
+            else
+            {
+                _timeOut = 30;//minutes
+            }
+            if (_settings.Liquid != null)
+            {
+                _liquid = _settings.Liquid.Value;
+            }
+            if (_settings.ReEntrance != null)
+            {
+                _reEntrance = _settings.ReEntrance.Value;
+            }
+            this.SessionID = sessionKey;
+           
+            _sessionItems = new ISPSessionStateItemCollection2() ;
         }
 
-        private void InitItems(ISPSessionStateItemCollection items, string sessionId, string oldSessionId)
+        private void InitItems(ISPSessionStateItemCollection items)
         {
             lock (locker)
             {
@@ -60,19 +74,19 @@ namespace ispsession.io.core
                 // when the session is abandoned, we must deal with it as if new
                 if (items == null)
                 {
-                    _isNew = true;
+                    IsNewSession = true;
 
                     return;
                 }
                 _wasLoaded = true;
                 this._sessionItems = items.Items;
-                this._sessionItems.SessionID = sessionId;
-                this._sessionItems.OldSessionID = oldSessionId; //ahum
-                this._sessionItems.IsNew = _isNew;
-                this._sessionItems.Timeout = _timeOut;
                 this._sessionItems.IsReadOnly = _isReadonly;
-              
+                this._sessionItems.Dirty = false;
+                this.Liquid = items.Meta.Liquid == -1;
+                this.Timeout = items.Meta.Expires ;
 
+                this.ReEntrance = items.Meta.ReEntrance == -1;
+               
             }
         }
         private async Task CheckLoad()
@@ -137,7 +151,7 @@ namespace ispsession.io.core
         {
             get
             {
-                return _sessionItems.SessionID;
+                return SessionID;
             }
         }
 
@@ -149,13 +163,8 @@ namespace ispsession.io.core
             }
         }
 
-        public bool IsNewSession
-        {
-            get
-            {
-                return _isNew;
-            }
-        }
+        public bool IsNewSession { get; set; }
+      
 
         public bool IsReadOnly
         {
@@ -174,13 +183,9 @@ namespace ispsession.io.core
             }
         }
 
-        public string SessionID
-        {
-            get
-            {
-                return _sessionItems.SessionID;
-            }
-        }
+        public string SessionID { get; set; }
+       
+        public string OldSessionID { get; set; }
 
         public int Timeout
         {
@@ -239,7 +244,7 @@ namespace ispsession.io.core
                     Liquid = _liquid ? (short)-1 : (short)0,
                     ReEntrance = _reEntrance ? (short)-1 : (short)0,
                     LastUpdated = new DBTIMESTAMP()
-                });
+                }, SessionID, OldSessionID);
             //});
 
         }
@@ -254,9 +259,11 @@ namespace ispsession.io.core
         {
             if (_wasLoaded == false)
             {
-                this.InitItems(await CSessionDL.SessionGetAsync(_settings,  _sessionItems.OldSessionID), 
-                    _sessionItems.SessionID, _sessionItems.OldSessionID);
-                
+                this.InitItems(await CSessionDL.SessionGetAsync(_settings, SessionID));
+                if (this.Liquid)
+                {
+                    await _tryEstablish(this);
+                }
                 _wasLoaded = true;
             }
            
@@ -315,8 +322,8 @@ namespace ispsession.io.core
         /// </summary>
         public bool ReEntrance
         {
-            get { return _liquid; }
-            set { _liquid = value; }
+            get { return _reEntrance; }
+            set { _reEntrance = value; }
         }
         //
         // Summary:

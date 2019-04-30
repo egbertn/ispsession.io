@@ -38,7 +38,6 @@ namespace ispsession.io.core
             // do Application initialisation just once. Otherwise, 
             // when css extension or others are loaded, it will be reloaded again
             Func<bool> initialized = () => false;
-           // Task<bool> tryEstablishApplication(ApplicationCache i) = (i) => false;
 
 
 #if !Demo

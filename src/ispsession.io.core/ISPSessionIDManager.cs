@@ -13,7 +13,7 @@ namespace ispsession.io.core
     {
 
         private readonly HttpContext _context;
-        private readonly string _id;
+        private  string _id;
         private readonly SessionAppSettings _settings;
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
         public ISPSessionIDManager(SessionAppSettings settings)
@@ -34,6 +34,12 @@ namespace ispsession.io.core
             {
               
                 await i.LoadAsync();
+                if (i.Liquid)
+                {
+                    i.OldSessionID = i.SessionID;
+                    var newSessionID = CreateSessionID(_context);
+                    this._id =  i.SessionID = newSessionID;                     
+                }
                 
             }
 
@@ -49,10 +55,10 @@ namespace ispsession.io.core
         }
         private static Task OnStartingCallback(object state)
         {
-            var sessionEstablisher = (ISPSessionIDManager)state;
-            if (sessionEstablisher._shouldEstablishSession )
+            var sessionIdManager = (ISPSessionIDManager)state;
+            if (sessionIdManager._shouldEstablishSession )
             {
-                sessionEstablisher.SetCookie();
+                sessionIdManager.SetCookie();
                 
             } 
             return Task.CompletedTask;
@@ -157,7 +163,7 @@ namespace ispsession.io.core
             {
                 return cookieValue;
             }
-            else if (_settings.ReEntrance && !string.IsNullOrEmpty(cookieValue))
+            else if (_settings.ReEntrance ==true && !string.IsNullOrEmpty(cookieValue))
             {
                 StreamManager.TraceInformation("GetSessionID revived session cookie guid {0}", cookieValue);
                 return cookieValue;

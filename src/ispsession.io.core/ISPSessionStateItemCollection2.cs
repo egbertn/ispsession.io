@@ -100,23 +100,8 @@ namespace ispsession.io.core
             }
         }
 
-        private bool _dirty;
-        public bool Dirty
-        {
-            get
-            {
-                return _dirty;
-            }
-            private set
-            {
-                if (_dirty == false && value)
-                {
-                    StreamManager.TraceInformation("SEtting Session ID {0} dirty", this.SessionID);
-                }
-                _dirty = value;
-                
-            }
-        }
+        public bool Dirty { get; set; }
+      
 
             
      
@@ -201,9 +186,8 @@ namespace ispsession.io.core
         }
         public bool IsReadOnly { get; set; }
         public bool IsNew { get; set; }
-        public int Timeout { get; set; }
-        public string SessionID { get; set; }
-        public string OldSessionID { get; set; }
+        //public string SessionID { get; set; }
+        //public string OldSessionID { get; set; }
         
     }
 }

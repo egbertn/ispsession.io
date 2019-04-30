@@ -38,7 +38,7 @@ namespace ispsession.io
             CookieExpires = cfg.GetAppValue(ispsession_io_pref + "CookieExpires", 0);
             CookieName = cfg.GetAppValue(ispsession_io_pref + "CookieName", "GUID");
             SessionTimeout = cfg.GetAppValue(ispsession_io_pref + "SessionTimeout", 30);
-            Liquid = cfg.GetAppValue(ispsession_io_pref + "LiquidSession", false);
+            Liquid = cfg.GetAppValue(ispsession_io_pref + "Liquid", false);
             ReEntrance = cfg.GetAppValue(ispsession_io_pref + "ReEntrance", false);
             Compress = cfg.GetAppValue(ispsession_io_pref + "Compress", false);           
             // do not try to parse apx/mvc pages to find the EnableSessionState Meta Tag
@@ -62,7 +62,7 @@ namespace ispsession.io
             }
 #endif
             DatabaseConnection = cfg.GetAppValue(ispsession_io_pref + "DataSource", "localhost:6379");
-            StreamManager.TraceInformation(@"Cookie ({0}), AppKey({1}), Path({2}), 
+            Diagnostics.TraceInformation(@"Cookie ({0}), AppKey({1}), Path({2}), 
                                     Domain({3}), SnifQ({4}), CookieNoSSL({5}), 
                                     CookieExpires({6}), SessionTimeout({7}), Liquid({8}), 
                                     ReEntrance({9}), Compress({10}) , 

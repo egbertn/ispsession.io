@@ -13,11 +13,12 @@ namespace ispsession.io
     {
         internal PersistMetaData Meta;
         internal SessionStateItemCollection Items;
+      
     }
     internal sealed class ISPHttpSessionStateContainer : HttpSessionStateContainer
     {
         internal ISPHttpSessionStateContainer(
-            string id, ISessionStateItemCollection sessionItems,
+            string id, string oldSessionId, ISessionStateItemCollection sessionItems,
             HttpStaticObjectsCollection staticObjects,
             int timeout,
             bool newSession,
@@ -26,9 +27,10 @@ namespace ispsession.io
             bool isReadonly) :
             base(id, sessionItems, staticObjects, timeout, newSession, cookieMode, mode, isReadonly)
         {
-
+            this.oldSessionId = oldSessionId;
         }
         internal DateTime StartedAt = DateTime.UtcNow;
+        public string oldSessionId { get; set; }
     }
     //since Module is loaded once, you can consider the member variables static
     // so do not use static stuff, it complicates more than it fixes
@@ -104,7 +106,7 @@ namespace ispsession.io
             }
             catch (SecurityException)
             {
-                StreamManager.TraceError("ISP Sesssion cannot write to EventLog with the current security context {0}", Thread.CurrentPrincipal.Identity.Name);
+                Diagnostics.TraceError("ISP Sesssion cannot write to EventLog with the current security context {0}", Thread.CurrentPrincipal.Identity.Name);
             }
 
         }
@@ -134,7 +136,7 @@ namespace ispsession.io
             //}
             bool isNew = false;
             string sessionID;
-
+            string oldSessionID = null;
             sessionID = _sessionIDManager.GetSessionID(context);
 
             ISPSessionStateItemCollection sessionItems = null;
@@ -159,6 +161,7 @@ namespace ispsession.io
          
             if (_appSettings.Liquid || sessionID == null)
             {
+                oldSessionID = sessionID;
                 sessionID = _sessionIDManager.CreateSessionID(context);
 
                 //if (redirected)
@@ -191,7 +194,7 @@ namespace ispsession.io
             }
             else
             {
-                StreamManager.TraceInformation("CSessionDL.SessionGet expires({0}), reentrance({1}), liquid({2}), size({3})",
+                Diagnostics.TraceInformation("CSessionDL.SessionGet expires({0}), reentrance({1}), liquid({2}), size({3})",
                     sessionItems.Meta.Expires,
                     sessionItems.Meta.ReEntrance,
                     sessionItems.Meta.Liquid,
@@ -199,6 +202,7 @@ namespace ispsession.io
             }
             SessionStateUtility.AddHttpSessionStateToContext(context,
                              new ISPHttpSessionStateContainer(sessionID,
+                                                            oldSessionID,
                                                           sessionItems.Items,
                                                           SessionStateUtility.GetSessionStaticObjects(context),
                                                           sessionItems.Meta.Expires,
@@ -243,11 +247,11 @@ namespace ispsession.io
                 return;//no business here
             }
             Interlocked.Decrement(ref _instanceCount);
-            StreamManager.TraceInformation(UninitString, _instanceCount);
+            Diagnostics.TraceInformation(UninitString, _instanceCount);
 
             // Read the session state from the context
             var stateProvider = (ISPHttpSessionStateContainer)SessionStateUtility.GetHttpSessionStateFromContext(context);
-
+            var oldSessionId = stateProvider.oldSessionId;
             var sessionID = stateProvider.SessionID;
 
             if (stateProvider.IsAbandoned)
@@ -266,9 +270,9 @@ namespace ispsession.io
                     ReEntrance = _appSettings.ReEntrance,
                     Liquid = _appSettings.Liquid
                 };
-                CSessionDL.SessionSave(_appSettings, stateProvider, ref meta);
+                CSessionDL.SessionSave(_appSettings, stateProvider, oldSessionId, ref meta);
                 var spentTime = (DateTime.UtcNow - stateProvider.StartedAt).TotalMilliseconds;
-                StreamManager.TraceInformation("CSessionDL.SessionSave timeOut ({0}), reEntrance({1}), Liquid({2}), size({3}) time({4})",
+                Diagnostics.TraceInformation("CSessionDL.SessionSave timeOut ({0}), reEntrance({1}), Liquid({2}), size({3}) time({4})",
                     meta.Expires, meta.ReEntrance, meta.Liquid, meta.ZLen, Math.Ceiling(spentTime));
 
             }

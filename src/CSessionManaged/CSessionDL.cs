@@ -49,6 +49,7 @@ namespace ispsession.io
             if (newKeys.Count > 0 || changedKeys.Count > 0 || removedKeys.Count > 0 || expireKeys.Count > 0)
             {
                 var transaction = database.CreateTransaction();
+
                 if (newKeys.Count > 0)
                 {
                     database.SetAdd(setKey, newKeys.Select(s => (RedisValue)(appkeyPrefix + s.ToUpperInvariant())).ToArray(), CommandFlags.FireAndForget);
@@ -196,7 +197,7 @@ namespace ispsession.io
             }
             catch(Exception ex)
             {
-                StreamManager.TraceError("Fatal SessionGet {0}", ex);
+                Diagnostics.TraceError("Fatal SessionGet {0}", ex);
                 throw ex;
             }
             finally
@@ -210,7 +211,7 @@ namespace ispsession.io
         /// <summary>
         /// saves session and settings. If readonly, will only set expiration
         /// </summary>        
-        internal static void SessionSave(SessionAppSettings settings, IHttpSessionState state, ref PersistMetaData meta) //, 
+        internal static void SessionSave(SessionAppSettings settings, IHttpSessionState state, string oldSessionId, ref PersistMetaData meta) //, 
         {
             int zLen = 0;
 
@@ -219,7 +220,7 @@ namespace ispsession.io
             meta.ZLen = zLen;
             if (zLen == 0 && !state.IsReadOnly)
             {
-                StreamManager.TraceError("SessionSave session should not be zero in length");
+                Diagnostics.TraceError("SessionSave session should not be zero in length");
             }         
             Array.Resize(ref contents, contLen + meta.SizeofMeta);
             Array.Copy(contents, 0, contents, meta.SizeofMeta, contLen);
@@ -231,6 +232,10 @@ namespace ispsession.io
             var db = CSessionDL.SafeConn.GetDatabase(settings.DataBase);
             var key = settings.GetKey(state.SessionID);
             //todo, if readonly, only set expiration
+            if (!string.IsNullOrEmpty(oldSessionId) && state.SessionID.Equals(oldSessionId) == false)
+            {
+                db.KeyRename(settings.GetKey(oldSessionId), key, When.Always, CommandFlags.FireAndForget);
+            }
             try
             {
                 if (state.IsReadOnly)
@@ -244,7 +249,7 @@ namespace ispsession.io
             }
             catch (Exception ex)
             {
-                StreamManager.TraceError("Fatal SessionSave {0}", ex);
+                Diagnostics.TraceError("Fatal SessionSave {0}", ex);
             }
 
         }
@@ -262,7 +267,7 @@ namespace ispsession.io
             }
             catch (Exception ex)
             {
-                StreamManager.TraceError("Fatal SessionRemove {0}", ex);
+                Diagnostics.TraceError("Fatal SessionRemove {0}", ex);
             }
         }
 
@@ -340,7 +345,7 @@ namespace ispsession.io
             }
             catch(Exception ex)
             {
-                StreamManager.TraceError("Fatal SessionInsert {0}", ex);
+                Diagnostics.TraceError("Fatal SessionInsert {0}", ex);
             }
         }
     }

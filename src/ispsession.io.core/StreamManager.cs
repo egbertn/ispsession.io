@@ -61,40 +61,6 @@ namespace ispsession.io.core
         internal static int Maxinstances = 1000;
         
         internal static readonly Encoding _encoding = Encoding.UTF8;
-        internal static void TraceError(string message, params object[] args)
-        {
-            if (TraceInfo.TraceError)
-            {
-                //TraceLevel.Info=3
-                //var fmt = string.Format(message, args);
-                //NativeMethods.OutputDebugStringW(fmt);                
-                var fmt = $"Error {DateTime.UtcNow} {System.Threading.Thread.CurrentThread.ManagedThreadId} {string.Format(message, args)}";
-                Debug.WriteLine(fmt);
-            }
-        }
-        internal static void TraceInformation(string message, params object[] args)
-        {
-            if (TraceInfo.TraceInfo)
-            {
-                //var fmt = string.Format(message, args);
-                //NativeMethods.OutputDebugStringW(fmt);
-                var fmt = $"Information {DateTime.UtcNow} {System.Threading.Thread.CurrentThread.ManagedThreadId} {string.Format(message, args)}";
-                Debug.WriteLine(fmt);
-            }
-        }
-        //internal static void TraceInformation(StreamWriter log, string message)
-        //{
-        //    if (TraceInfo.TraceInfo)
-        //    {
-        //        log.Flush();
-        //        log.BaseStream.Position = 0;
-        //        var reader = new StreamReader(log.BaseStream, Encoding.UTF8);
-        //        while (!reader.EndOfStream)
-        //        {
-        //            Trace.TraceInformation("Loginfo {0}", reader.ReadLine());
-        //        }
-        //    }
-        //}
 
 
 #if !Demo
@@ -516,7 +482,7 @@ namespace ispsession.io.core
             Str.Read(_memoryBuff, 0, size);
             // int wideSize = _encoding.GetCharCount(_memoryBuff, 0, size);
             //var newstr = new char[wideSize];
-            TraceInformation("ReadString bytesize={0}", size);
+            Diagnostics.TraceInformation("ReadString bytesize={0}", size);
 
             return _encoding.GetString(_memoryBuff, 0, size);
             // fails because of a bug in .NET?
@@ -555,7 +521,7 @@ namespace ispsession.io.core
             {
                 WriteInt32(0);
             }
-            TraceInformation("WriteString size={0}, bytesize={1}", wideSize, byteSize);
+            Diagnostics.TraceInformation("WriteString size={0}, bytesize={1}", wideSize, byteSize);
         }
 
 
@@ -578,7 +544,7 @@ namespace ispsession.io.core
                 Type elementType;
                 var isJagged = (elementType = objType.GetElementType()).IsArray;
 
-                TraceInformation("writing array type={0}, cDims {1}, ElSize {2}", vT, cDims, ElSize);
+                Diagnostics.TraceInformation("writing array type={0}, cDims {1}, ElSize {2}", vT, cDims, ElSize);
                 WriteStruct(descriptor);
 
                 vT ^= VarEnum.VT_ARRAY;
@@ -792,13 +758,13 @@ namespace ispsession.io.core
                         {
                             WriteInt32(bts.Length);//first the length of the blob
                             Str.Write(bts, 0, bts.Length);//second the blob itself
-                            TraceInformation("COM object written bytesize={0} already serialized", bts.Length);
+                            Diagnostics.TraceInformation("COM object written bytesize={0} already serialized", bts.Length);
                             break;
                         }
                         bool isComObject = Marshal.IsComObject(data) && vT != VarEnum.VT_ERROR;
                         if (isComObject)
                         {
-                            TraceInformation("Ser Com Object type {0}", TraceInfo.TraceInfo ? data.GetType().FullName : null);
+                            Diagnostics.TraceInformation("Ser Com Object type {0}", TraceInfo.TraceInfo ? data.GetType().FullName : null);
                             int hr = NativeMethods.CreateStreamOnHGlobal(null, true, out IStream pstr);
                             if (hr != 0)
                             {
@@ -826,7 +792,7 @@ namespace ispsession.io.core
                                 else
                                 {
                                     WriteInt32(0);
-                                    TraceInformation("COM object NOT written");
+                                    Diagnostics.TraceInformation("COM object NOT written");
                                     break;//dont continue
                                 }
                             }
@@ -841,7 +807,7 @@ namespace ispsession.io.core
                             pstr = null;
                             WriteInt32(streamLen);//first the length of the blob
                             Str.Write(_memoryBuff, 0, streamLen);//second the blob itself
-                            TraceInformation("COM object written bytesize={0}", streamLen);
+                            Diagnostics.TraceInformation("COM object written bytesize={0}", streamLen);
                         }
 
                         else if (data.GetType().IsSerializable)
@@ -862,7 +828,7 @@ namespace ispsession.io.core
                                 Str.WriteByte(99);
                                 Str.WriteByte(55);
                                 serializedObject.WriteTo(Str);
-                                TraceInformation(".NET object written bytesize={0}, name={1}", streamLen, TraceInfo.TraceInfo ? data.GetType().Name : null);
+                                Diagnostics.TraceInformation(".NET object written bytesize={0}, name={1}", streamLen, TraceInfo.TraceInfo ? data.GetType().Name : null);
                             }
                         }
 
@@ -960,7 +926,7 @@ namespace ispsession.io.core
                     throw new TypeLoadException(string.Format("this Type cannot not be instantiated {0}", typeStr), ex);
                 }
 
-                TraceInformation("reading array type={0}, cDims {1}, ElSize {2}", requestedType, cDims, elSize);
+                Diagnostics.TraceInformation("reading array type={0}, cDims {1}, ElSize {2}", requestedType, cDims, elSize);
                 if (cDims == 0)
                 {
                     
@@ -1169,7 +1135,7 @@ namespace ispsession.io.core
                         {
                             if (!isNetObject)
                             {
-                                TraceInformation("Deser Com Object");
+                                Diagnostics.TraceInformation("Deser Com Object");
                                 var hglob = NativeMethods.GlobalAlloc(NativeMethods.AllocFlags.GMEM_MOVABLE, new IntPtr(bytesInStream));
                                 Marshal.Copy(_memoryBuff, 0, NativeMethods.GlobalLock(hglob), bytesInStream);
                                 var result = NativeMethods.GlobalUnlock(hglob);
@@ -1182,14 +1148,14 @@ namespace ispsession.io.core
                                 if (data == null)
                                 {
                                     pstr.Seek(0, 0, IntPtr.Zero);//Position = 0
-                                    TraceInformation("IPersistStream failed, trying IPersistStreamInit");
+                                    Diagnostics.TraceInformation("IPersistStream failed, trying IPersistStreamInit");
                                     data = OleLoadFromStream2(pstr, uknown);
                                 }
                             }
                             else // it is a .NET serializable object
                             {
 
-                                TraceInformation("deser .NET");
+                                Diagnostics.TraceInformation("deser .NET");
                                 var bFormatter = new BinaryFormatter
                                 {
                                     TypeFormat = System.Runtime.Serialization.Formatters.FormatterTypeStyle.TypesWhenNeeded,
@@ -1199,7 +1165,7 @@ namespace ispsession.io.core
                                 {
                                     data = bFormatter.Deserialize(mem);
                                 }
-                                TraceInformation("DeSerializing {0}", TraceInfo.TraceInfo ? data.GetType().Name : null);
+                                Diagnostics.TraceInformation("DeSerializing {0}", TraceInfo.TraceInfo ? data.GetType().Name : null);
 
                             }
                             return data;
@@ -1519,14 +1485,14 @@ namespace ispsession.io.core
                 var joinInfo = NativeMethods.GetJoinedDomain();
                 workgroupname = string.IsNullOrEmpty(joinInfo.WorkGroup) ? joinInfo.Domain : joinInfo.WorkGroup;
             }
-            TraceInformation("Names {0} {1}", nt4Netbiosname, cwName);
+            Diagnostics.TraceInformation("Names {0} {1}", nt4Netbiosname, cwName);
             var lines = new List<string>(licensedfor.Split(new[] { licensedfor.IndexOf("\r\n", StringComparison.Ordinal) > 0 ? "\r\n" : " " }, StringSplitOptions.None));
 
             lines.Insert(0, ProductString);
             var foundLicensedItem = lines.Exists(x => x == nt4Netbiosname || x == workgroupname || x == cwName);
             if (!foundLicensedItem && (licenseType != 4 && licenseType != 29))
             {
-                TraceInformation("Could not find licensedItem {0} in allowed licensee {1}", cwName, licensedfor);
+                Diagnostics.TraceInformation("Could not find licensedItem {0} in allowed licensee {1}", cwName, licensedfor);
                 return false;
 
             }
@@ -1534,7 +1500,7 @@ namespace ispsession.io.core
             var hashcode = GetHashCode2(licensedfor);
             var checkCode = BitConverter.ToUInt32(license, 1);
             var checkCode2 = BitConverter.ToUInt32(license, 5);
-            TraceInformation("given license {0} calculated license {1} license hash {2}", checkCode, hashcode, checkCode2);
+            Diagnostics.TraceInformation("given license {0} calculated license {1} license hash {2}", checkCode, hashcode, checkCode2);
             switch (licenseType)
             {
                 case 27:
@@ -1553,19 +1519,5 @@ namespace ispsession.io.core
         }
 #endif
     }
-    public sealed class TraceSwitch
-    {
-        private readonly string name;
-        private readonly string description;
-        public TraceSwitch(string name, string description)
-        {
-
-            this.name = name;
-            this.description = description;
-        }
-        public bool TraceInfo { get; set; }
-        
-        public bool TraceError { get; set; }
-        
-    }
+   
 }

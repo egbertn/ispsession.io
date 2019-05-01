@@ -71,7 +71,7 @@ namespace ispsession.io.core
             }
             var request = _context.Request;
 
-            StreamManager.TraceInformation("SetCookie {0}, {1}", _id, request.Path);
+            Diagnostics.TraceInformation("SetCookie {0}, {1}", _id, request.Path);
             var isHttps = request.IsHttps;
             var resp = this._context.Response;
             var opts = new CookieOptions()
@@ -125,7 +125,7 @@ namespace ispsession.io.core
 
                         if (urlCookie.Count > 0 && Validate(urlCookie[0]))
                         {
-                            StreamManager.TraceInformation("GetSessionID found url guid {0}, {1}", urlCookie, request.Path);
+                            Diagnostics.TraceInformation("GetSessionID found url guid {0}, {1}", urlCookie, request.Path);
                             cookieText = urlCookie;
                             foundGuidinURL = true;
                         }
@@ -133,7 +133,7 @@ namespace ispsession.io.core
                 }
                 else
                 {
-                    StreamManager.TraceInformation("GetSessionID found cookie guid {0}, {1}", cookieValue, request.Path);
+                    Diagnostics.TraceInformation("GetSessionID found cookie guid {0}, {1}", cookieValue, request.Path);
                 }
             }
             var db = CSessionDL.GetDatabase(_settings);
@@ -148,7 +148,7 @@ namespace ispsession.io.core
                 }
                 else if (_settings.ReEntrance == true && !string.IsNullOrEmpty(cookieText)) //allow to ressurrect a session id, however, the data is gone
                 {
-                    StreamManager.TraceInformation("GetSessionID revived session url guid {0}, {1}", cookieText, request.Path);
+                    Diagnostics.TraceInformation("GetSessionID revived session url guid {0}, {1}", cookieText, request.Path);
                     return cookieText;
                 }
                 return null;
@@ -165,7 +165,7 @@ namespace ispsession.io.core
             }
             else if (_settings.ReEntrance ==true && !string.IsNullOrEmpty(cookieValue))
             {
-                StreamManager.TraceInformation("GetSessionID revived session cookie guid {0}", cookieValue);
+                Diagnostics.TraceInformation("GetSessionID revived session cookie guid {0}", cookieValue);
                 return cookieValue;
             }
             return null;

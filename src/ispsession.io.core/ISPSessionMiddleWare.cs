@@ -126,7 +126,7 @@ namespace ispsession.io.core
         }
 
     }
-    public static partial class BuilderExtensions
+    public static partial class Extensions
     {
 
         /// <summary>

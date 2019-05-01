@@ -26,7 +26,7 @@ namespace ispsession.io.core
 
 
             var itemCount = items.Count;
-            TraceInformation("LocalContents keycount={0}", itemCount);
+            Diagnostics.TraceInformation("LocalContents keycount={0}", itemCount);
             persistUtil.WriteProperty("Els", itemCount);
 
             // we must write it orderdered,  in order that ISP Session 6.0
@@ -116,7 +116,7 @@ namespace ispsession.io.core
             var vType = ConvertTypeToVtEnum(data);
             WriteInt16((short)vType);
             WriteValue(data, vType);
-            TraceInformation("WriteProperty {0}, type={1}", propName, vType);
+            Diagnostics.TraceInformation("WriteProperty {0}, type={1}", propName, vType);
             var curPos = Str.Position;
             Str.Position = keepPointer;
             WriteInt32((int)curPos);
@@ -133,7 +133,7 @@ namespace ispsession.io.core
             var vT = (VarEnum)ReadInt16();
             data = ReadValue(vT);
             System.Diagnostics.Contracts.Contract.Assert(Str.Position == nextPosition);
-            TraceInformation("ReadProperty {0} type {1}", keyName, vT);
+            Diagnostics.TraceInformation("ReadProperty {0} type {1}", keyName, vT);
             return keyName;
         }
 

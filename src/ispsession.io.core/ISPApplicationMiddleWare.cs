@@ -99,7 +99,7 @@ namespace ispsession.io.core
                 }
                 catch (Exception ex)
                 {
-                    StreamManager.TraceError("Application.CommitAsync failed with {0}", ex);
+                    Diagnostics.TraceError("Application.CommitAsync failed with {0}", ex);
                     //this._logger.ErrorClosingTheSession(var_9_257);
                 }
             }
@@ -110,7 +110,7 @@ namespace ispsession.io.core
         }
 
     }
-    public static partial class BuilderExtensions
+    public static partial class Extensions
     {
         /// <summary>
         /// returns the Application feature from Context.

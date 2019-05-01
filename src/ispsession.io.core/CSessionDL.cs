@@ -204,7 +204,7 @@ namespace ispsession.io.core
             }
             catch (Exception ex)
             {
-                StreamManager.TraceError("Fatal SessionGet {0}", ex);
+                Diagnostics.TraceError("Fatal SessionGet {0}", ex);
                 throw ex;
             }
             finally
@@ -255,7 +255,7 @@ namespace ispsession.io.core
             }
             catch (Exception ex)
             {
-                StreamManager.TraceError("Fatal SessionSave {0}", ex);
+                Diagnostics.TraceError("Fatal SessionSave {0}", ex);
             }
 
         }
@@ -270,7 +270,7 @@ namespace ispsession.io.core
             }
             catch (Exception ex)
             {
-                StreamManager.TraceError("Fatal SessionRemove {0}", ex);
+                Diagnostics.TraceError("Fatal SessionRemove {0}", ex);
             }
         }
 

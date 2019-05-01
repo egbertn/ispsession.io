@@ -109,6 +109,7 @@ namespace ispsession.io
         public long int64;
     }
     //ms depcrecated this stuff
+#if !NETCOREAPP2_1 && !NETCOREAPP2_2 && !NETCOREAPP3_0
     internal enum VarEnum:short
     {
         VT_EMPTY = 0,
@@ -156,6 +157,7 @@ namespace ispsession.io
         VT_ARRAY = 8192,
         VT_BYREF = 16384
     }
+#endif
     /// <summary>
     /// TODO: add more stuff, .NET has deprecated
     /// </summary>

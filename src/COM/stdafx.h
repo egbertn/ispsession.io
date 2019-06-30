@@ -7,7 +7,7 @@
 #define Demo
 // defines for ISP Session tiny edition
 
-#define EXPIREAT ( 43585+30) // ie: 31/may/2019
+#define EXPIREAT ( 43676) // ie: 31/may/2019
 #define MAXINSTANCES 1000
 #define STRICT
 #define UNICODE

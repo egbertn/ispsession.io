@@ -10,27 +10,56 @@
 //TODO: consider optimistic locking http://www.redis.io/topics/transactions
 
 // will be called if from asp Server.CreateObject is used
-STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) throw()
+STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) noexcept
 {
 
 	HRESULT hr = aspsvc->QueryInterface(&m_pictx);
 	if (FAILED(hr))
 	{
 		this->Error(L"Could not get ASP Scripting context", this->GetObjectCLSID(), hr);
+		this->bErrState = TRUE;
 		return hr;
 	}
-	if (FAILED(m_pictx->get_Request(&m_piRequest))) return E_FAIL;
-	if (FAILED(m_pictx->get_Response(&m_piResponse))) return E_FAIL;
-	if (FAILED(m_pictx->get_Server(&m_piServer))) return E_FAIL;
-	hr = ReadConfigFromWebConfig();
-	logModule.Write(L"OnStartPage");
+	if (FAILED(m_pictx->get_Request(&m_piRequest))) hr = E_FAIL;
+	if (FAILED(m_pictx->get_Response(&m_piResponse))) hr = E_FAIL;
+	if (FAILED(m_pictx->get_Server(&m_piServer))) hr =E_FAIL;
 	if (FAILED(hr))
 	{
+		this->Error(L"Could not get Request, Response or Server pointer", this->GetObjectCLSID(), hr);
+		this->bErrState = TRUE;
 		return hr;
 	}
+	try {
+		hr = ReadConfigFromWebConfig();
+		if (FAILED(hr))
+		{
+			logModule.Write(L"OnStartPage failed on config %x", hr);
+			this->bErrState = TRUE;
+			return hr;
+		}
+	}
+	catch (...)
+	{
+		logModule.Write(L"ReadConfigFromWebConfig failed");
+		Error(L"ReadConfigFromWebConfig", this->GetObjectCLSID(), E_FAIL);
+		this->bErrState = TRUE;
+		return E_FAIL;
+	}
+
+	
+	logModule.Write(L"OnStartPage");
 
 	m_OnStartPageCalled = true;
-	hr = Initialize();
+	try {
+		hr = Initialize();
+	}
+	
+	catch (...) {
+		logModule.Write(L"Initialize failed");
+		Error(L"Initialize failed", this->GetObjectCLSID(), E_FAIL);
+		this->bErrState = TRUE;
+		return E_FAIL;
+	}
 	if (hr == S_OK)
 	{
 		InvokeOnStartPage();
@@ -38,6 +67,7 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) throw()
 	if (hr == S_FALSE) 
 	{
 		m_piResponse->Write(CComVariant(L"Redis Server is not running."));
+		this->bErrState = TRUE;
 		hr = E_FAIL;
 	}
 #ifndef Demo
@@ -80,14 +110,22 @@ STDMETHODIMP_( void) NWCSession::InvokeOnStartPage() throw()
 		v.Clear();
 	}	
 }
-STDMETHODIMP NWCSession::OnEndPage() throw()
+STDMETHODIMP NWCSession::OnEndPage() noexcept
 {
-	HRESULT hr = PersistSession();
-	logModule.Write(L"OnEndPage");
-	return hr;
+	try {
+
+		HRESULT hr = PersistSession();
+		return hr;
+	}
+	catch (...)
+	{
+		logModule.Write(L"OnEndPage unexpected");
+		return E_FAIL;
+	}
+	
 }
 
-STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
+STDMETHODIMP NWCSession::ReadConfigFromWebConfig() 
 {
 	HRESULT hr = S_OK;
 	CComBSTR retVal, configFile(L"/web.Config");
@@ -308,7 +346,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig() throw()
 
 	return hr;
 }
-STDMETHODIMP NWCSession::Initialize() throw()
+STDMETHODIMP NWCSession::Initialize() 
 {
 	HRESULT hr = S_OK;
 	CComVariant vitem;
@@ -413,9 +451,16 @@ STDMETHODIMP NWCSession::Initialize() throw()
 	
 	// if it *is* nullptr it should be done using put_SessionID () = "02003 etc"	
 	if (SUCCEEDED(hr))
-	{	logModule.Write(L"trying localInit");
-		hr = localInit();
-		logModule.Write(L"localinit %x", hr);
+	{	logModule.Write(L"trying dbInit");
+		try {
+			hr = dbInit();
+		}
+		catch (...)
+		{
+			logModule.Write(L"dbInit %x", E_FAIL);
+			hr = E_FAIL;
+		}
+		logModule.Write(L"dbInit %x", hr);
 	}
 
 	error:
@@ -546,7 +591,7 @@ STDMETHODIMP NWCSession::Execute(BSTR ToPage) throw()
 	if (SUCCEEDED(hr))
 		hr = m_piServer->Execute( ToPage);
     //re read the session. It might have been changed in the just executed stuff
-    hr = localInit();
+    hr = dbInit();
 
 	blnLiquid = saveliquid;
 	return hr;
@@ -568,7 +613,7 @@ STDMETHODIMP NWCSession::Transfer(BSTR ToPage) throw()
 	{
 		hr = m_piServer->Transfer (ToPage);
 		if (SUCCEEDED(hr)) 
-			hr = localInit();
+			hr = dbInit();
 	}
 
 	blnLiquid = saveliquid;
@@ -844,7 +889,7 @@ STDMETHODIMP NWCSession::put_Readonly(VARIANT_BOOL newVal)  throw()
 
 
 // Inits database
-STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
+STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) 
 {
     if (bErrState == TRUE) return E_FAIL;
 	
@@ -859,8 +904,19 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::localInit(void) throw()
 	CpSessionGet pgetSession;
 	for(;;)
 	{
-		hr = pgetSession.OpenRowset(pool, btAppKey, guid);
-	
+		try {
+			hr = pgetSession.OpenRowset(pool, btAppKey, guid);
+		}
+		catch (LPCWSTR ex)
+		{
+			logModule.Write(L"db: pgetSession.OpenRowset(g_dc) %s, %x", ex, E_FAIL);
+			return E_FAIL;
+		}
+		catch (...)
+		{
+			logModule.Write(L"db: pgetSession.OpenRowset(g_dc) undefined, %x", E_FAIL);
+			return E_FAIL;
+		}
 		if (FAILED(hr))
 		{
 			logModule.Write(L"db: pgetSession.OpenRowset(g_dc) %x", hr);
@@ -1010,7 +1066,7 @@ STDMETHODIMP NWCSession::NewID(void) throw()
 	return hr;
 }
 
-STDMETHODIMP NWCSession::PersistSession(void) throw()
+STDMETHODIMP NWCSession::PersistSession(void) noexcept
 {
 	if (blnPersistDoneByOnEndPage == TRUE)
 	{

@@ -9,21 +9,21 @@ class ConfigurationManager
 {
 private:
 	static const int DELAYTICKS = 1000;
-	std::map<CComBSTR, CComBSTR> _map;
+	std::map<wstring, wstring> _map;
 	time_t _ftLastCheck;
 	CComPtr<IXmlReader> _xmlReader;
 	CComPtr<IMalloc> _malloc;
-	HRESULT CheckTimeOut();
+	HRESULT CheckTimeOut() noexcept;
 	//ansi version!
 	CComBSTR _szFilePath;
 	
-	void Init();
+	void Init() noexcept;
 
 public:
-	ConfigurationManager();
-	ConfigurationManager(const BSTR configFile);
-	std::wstring& AppSettings(const std::wstring key, PCWSTR defaultValue = nullptr);
-	BSTR AppSettings(const BSTR key, PCWSTR defaultValue = nullptr);
-	time_t GetFileTime();
-	~ConfigurationManager();
+	ConfigurationManager() noexcept;
+	ConfigurationManager(const BSTR configFile) noexcept;
+	std::wstring AppSettings(const std::wstring key, PCWSTR defaultValue = nullptr) noexcept;
+	BSTR AppSettings(const BSTR key, PCWSTR defaultValue = nullptr) noexcept;
+	time_t GetFileTime() noexcept;
+	~ConfigurationManager() noexcept;
 };

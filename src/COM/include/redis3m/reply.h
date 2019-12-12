@@ -80,10 +80,10 @@ public:
         }
     }
 
-private:
+
     reply(redisReply *reply);
     reply();
-
+private:
     type_t _type;
     std::string _str;
 	int _strlen;

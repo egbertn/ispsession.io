@@ -178,7 +178,7 @@ public:
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail SADD %s", s2ws(reply.str()).c_str());
+					logModule.Write(L"A: fail SADD %s", s2ws(reply.str()).c_str());
 				}
 			}
 			if (removedKeys.size() > 0)
@@ -198,13 +198,13 @@ public:
 				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail DEL %s", s2ws(reply.str()).c_str());
+					logModule.Write(L"A: fail DEL %s", s2ws(reply.str()).c_str());
 				}
 				reply = conn->run(srem);
 				hr = reply.type() == reply::type_t::STATUS && reply.str() == "QUEUED" ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail SREM %s", s2ws(reply.str()).c_str());
+					logModule.Write(L"A: fail SREM %s", s2ws(reply.str()).c_str());
 				}
 			}
 
@@ -227,7 +227,7 @@ public:
 				hr = reply.type() == reply::type_t::STATUS && (reply.str() == "QUEUED") ? S_OK : E_FAIL;
 				if (FAILED(hr))
 				{
-					logModule.Write(L"fail MSET %s", s2ws(reply.str()).c_str());
+					logModule.Write(L"A: fail MSET %s", s2ws(reply.str()).c_str());
 				}
 			}
 			
@@ -238,12 +238,12 @@ public:
 					//ms instead of EXPIRE seconds
 					appkeyPrefix.resize(appkeyLen);
 					appkeyPrefix.append(str_toupper( expireKeys[expireKey].first));
-					logModule.Write(L"Setting %s expired at %d ms", s2ws(expireKeys[expireKey].first).c_str(), expireKeys[expireKey].second);
+					logModule.Write(L"A: Setting %s expires at %d ms", s2ws(expireKeys[expireKey].first).c_str(), expireKeys[expireKey].second);
 					auto exp = command("PEXPIRE") << appkeyPrefix << expireKeys[expireKey].second;
 					reply = conn->run(exp);
 					if (reply.type() == reply::type_t::_ERROR)
 					{
-						logModule.Write(L"fail PEXPIRE %s", s2ws(reply.str()).c_str());
+						logModule.Write(L"A: fail PEXPIRE %s", s2ws(reply.str()).c_str());
 					}
 				}
 			}
@@ -314,7 +314,7 @@ public:
 			}
 			else
 			{
-				logModule.Write(L"ApplicationGet: corrupt state for %s", appkey);
+				logModule.Write(L"A: ApplicationGet: corrupt state for %s", appkey);
 			}
 		}
 		
@@ -433,8 +433,15 @@ public:
 		ansi.reserve(sizeof(GUID) * 2 + 1);
 		ansi.append(sAppkey).append(":").append(sGuid);
 
-
-		auto c = pool->get();
+		std::shared_ptr<redis3m::connection> c;
+		try {
+			c = pool->get();
+		}
+		catch (...)
+		{
+			logModule.Write(L"SessionSave could not get connection");
+			return E_FAIL;
+		}
 		//newguid? Then rename the key
 		if (guidNewPar != nullptr)
 		{
@@ -456,7 +463,7 @@ public:
 			auto localHR = reply.type() == reply::type_t::INTEGER && reply.integer();
 			if (localHR != 1)
 			{
-				logModule.Write(L"A session Key was attempted to expire, but it does not seem to exist, %s, %x", s2ws( ansi).c_str(), localHR);
+				logModule.Write(L"Session Key to be expired does not to exist, %s, %x", s2ws( ansi).c_str(), localHR);
 			}
 		}
 		else
@@ -588,23 +595,35 @@ class CpSessionGet:
 public:
 	//Gets the session returns S_FALSE if the session is empty
 	HRESULT __stdcall OpenRowset(const simple_pool::ptr_t &pool,
-		const GUID& m_App_KeyPar, const GUID& m_GUIDPar) throw()
+		const GUID& m_App_KeyPar, const GUID& m_GUIDPar) 
 	{
 		auto appkey = HexStringFromMemory((PBYTE)&m_App_KeyPar, sizeof(GUID));
 		auto skey = HexStringFromMemory((PBYTE)&m_GUIDPar, sizeof(GUID));
 		std::string ansi;
 		ansi.reserve(sizeof(GUID) * 2 + 1);
 		ansi.append(appkey).append(":").append(skey);
-
-		auto conn = pool->get();
+		std::shared_ptr<redis3m::connection> conn;
+		try {
+			conn = pool->get();
+		}
+		catch (...)
+		{
+			throw L"Could not get connection from pool";
+		}
 		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
 		{ 
 			
 			return E_ACCESSDENIED;
 		}
-		auto repl = conn->run(command("GET")(ansi));
-
-	
+		reply repl ;
+		try {
+			
+			repl = conn->run(command("GET")(ansi));
+		}
+		catch (...)
+		{
+			throw L"Could not get session";
+		}
 		auto result = S_OK;
 		switch (repl.type())
 		{		

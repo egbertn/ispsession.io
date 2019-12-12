@@ -11,7 +11,7 @@
 #include <atlsync.h>
 namespace redis3m
 {
-	static std::set<connection::ptr_t> connections;
+	static std::vector<connection::ptr_t> connections;
 	static ATL::CCriticalSection _access_mutex;
 	static ATL::CHandle _timer;
 	static ATL::CHandle _threadHandle;

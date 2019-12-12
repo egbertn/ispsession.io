@@ -189,17 +189,17 @@ public:
 private:	
 	// non TLB exposed methods
 	// Inits database
-	STDMETHOD(localInit)();
+	STDMETHOD(dbInit)();
 	
-	STDMETHOD(PersistSession)();
+	STDMETHOD(PersistSession)() noexcept;
 	// creates a new GUID and writes cookie, if possible
 	STDMETHOD( NewID)();
 	
 	STDMETHOD( WriteCookie)(BSTR cookie);
 	STDMETHOD( NewGuid)(GUID * guid);
 	
-	STDMETHOD( OnStartPage)(IUnknown* pctx);
-	STDMETHOD( OnEndPage)();
+	STDMETHOD( OnStartPage)(IUnknown* pctx) noexcept;
+	STDMETHOD( OnEndPage)() noexcept;
 
 
 	STDMETHOD_(void,InvokeOnStartPage)(void);

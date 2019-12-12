@@ -186,7 +186,7 @@ STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 	else
 	{
 		hr = pos->second.val.CopyTo(pVal);
-		if (hr != S_OK) logModule.Write(L"VariantCopy %x", hr);
+		if (hr != S_OK) logModule.Write(L"A: VariantCopy %x", hr);
 	}
 	if (FAILED(hr))
 	{
@@ -226,7 +226,7 @@ STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal) throw()
 		v.IsNew = TRUE;
 		
 		//add it with an empty value and find it again
-		logModule.Write(L"add key %s", key);
+		logModule.Write(L"A: add key %s", key);
 
 		_dictionary.insert(pair<CComBSTR, ElementModel>(key, v)); //element is copied by value, so a VariantCopy is done
 		pos = _dictionary.find(key);
@@ -271,7 +271,7 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 		Error(L"Key may not be empty or null", this->GetObjectCLSID(), E_INVALIDARG);
 		return E_INVALIDARG;
 	}
-	logModule.Write(L"putref_Item %s", key);
+	logModule.Write(L"A: putref_Item %s", key);
 	VARTYPE origType = newVal.vt;
 
 	if ((origType & VT_DISPATCH) == VT_DISPATCH || (origType & VT_UNKNOWN) == VT_UNKNOWN)
@@ -281,7 +281,7 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 		if ((origType & (VT_VARIANT | VT_BYREF)) == (VT_BYREF | VT_VARIANT))
 		{
 			vDeref = *newVal.pvarVal;
-			logModule.Write(L"putref_Item dereffed object variant");
+			logModule.Write(L"a: putref_Item dereffed object variant");
 			vDeref.vt = origType & ~VT_BYREF;
 		}
 		else
@@ -290,7 +290,7 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 
 		if (pos == _dictionary.end())
 		{
-			logModule.Write(L"add key %s", key);
+			logModule.Write(L"a: add key %s", key);
 			ElementModel v;
 			_dictionary.insert(pair<CComBSTR, ElementModel>(key, v));
 
@@ -318,14 +318,14 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 		if (FAILED(hr))
 		{
 			Error(L"Object does not support IPersistStream", GetObjectCLSID(), hr);
-			logModule.Write(L"Object does not support IPersistStream");
+			logModule.Write(L"A: Object does not support IPersistStream");
 		}
 	}
 	else //putref should receive an object reference/instance
 	{
 		hr = E_INVALIDARG;
 		Error(L"This variable is not an object", GetObjectCLSID(), hr);
-		logModule.Write(L"putref_Item not VT_DISPATCH or VT_UNKNOWN but %d", origType);
+		logModule.Write(L"A: putref_Item not VT_DISPATCH or VT_UNKNOWN but %d", origType);
 	}
 	return hr;
 }
@@ -457,7 +457,7 @@ STDMETHODIMP CApplication::Remove(BSTR Key) throw()
 			_removed.push_back(k);
 			
 		}
-		logModule.Write(L"remove key %s", Key);		
+		logModule.Write(L"A: remove key %s", Key);		
 	}
 	
 	return hr;
@@ -523,7 +523,7 @@ STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
 		pos->second.ExpireAt = ms;
 		//avoid duplicates the vector is not a unique dictionary
 		
-		logModule.Write(L"remove key %s", Key);
+		logModule.Write(L"A: remove key %s", Key);
 	}
 	return hr;
 }
@@ -556,7 +556,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
 		{
 			break;
 		}
-		logModule.Write(L"logic %s, phys %s", configFile.m_str, retVal);
+		logModule.Write(L"A: logic %s, phys %s", configFile.m_str, retVal);
 		//avoid going beyond the root of this IIS website
 		if (CComBSTR::Compare(retVal, root, true, false, false) == 0)
 		{
@@ -580,7 +580,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
 	}
 	if (exists == FALSE || FAILED(hr))
 	{
-		logModule.Write(L"searched web.Config up to: (%s) none found %x", retVal.m_str, hr);
+		logModule.Write(L"A: searched web.Config up to: (%s) none found %x", retVal.m_str, hr);
 		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
 	}
 	ConfigurationManager config(retVal);
@@ -697,7 +697,7 @@ STDMETHODIMP CApplication::ReadString(IStream* pStream, BSTR *retval) throw()
 		if (lTempSize == 0)
 		{
 			::SysReAllocStringLen(retval, nullptr, (UINT)0);
-			logModule.Write(L"ReadString empty");
+			logModule.Write(L"A: ReadString empty");
 		}
 		else if (lTempSize > 0)
 		{
@@ -721,11 +721,11 @@ STDMETHODIMP CApplication::ReadString(IStream* pStream, BSTR *retval) throw()
 						hr = E_OUTOFMEMORY;
 				}
 				
-				logModule.Write(L"ReadString %d, %d, %x", lTempSize, writtenbytes, hr);
+				logModule.Write(L"A: ReadString %d, %d, %x", lTempSize, writtenbytes, hr);
 			} //enough memory
 			else
 			{
-				logModule.Write(L"ReadString failed %x", hr);
+				logModule.Write(L"A: ReadString failed %x", hr);
 			}
 		}
 
@@ -775,7 +775,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 			// now we have a problem
 			if (!BogusVariantType.StartsWith(L"System.Object"))
 			{
-				logModule.Write(L"FATAL: Cannot support .NET typed arrays %s", BogusVariantType);
+				logModule.Write(L"A FATAL: Cannot support .NET typed arrays %s", BogusVariantType);
 				return E_INVALIDARG;
 			}
 		}
@@ -792,7 +792,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 		}
 		if (ElSize == 0 || cDims == 0)
 		{
-			logModule.Write(L"Array is empty");
+			logModule.Write(L"A: Array is empty");
 			goto exit;
 		}
 
@@ -802,7 +802,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 		//CTempBuffer<SAFEARRAYBOUND, 128, CComAllocator> safebound(cDims);
 		std::vector<SAFEARRAYBOUND> safebound;
 		safebound.resize(cDims);
-		logModule.Write(L"reading array type=%d cDims %d", vtype, cDims);
+		logModule.Write(L"A: Reading array type=%d cDims %d", vtype, cDims);
 		//int bx=cDims;
 		for (LONG cx = 0; cx < cDims; cx++)// cDims - 1; cx != 0; cx--)
 		{
@@ -810,7 +810,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 			{
 				lMemSize *= safebound[cx].cElements;
 			}
-			logModule.Write(L"lBound %d, cElements %d", safebound[cx].lLbound, safebound[cx].cElements);
+			logModule.Write(L"A: lBound %d, cElements %d", safebound[cx].lLbound, safebound[cx].cElements);
 		}
 		auto psa = ::SafeArrayCreate(vtype, cDims, &safebound[0]);
 
@@ -822,7 +822,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 		lMemSize *= ElSize;
 		STATSTG stat = { 0 };
 		pStream->Stat(&stat, STATFLAG_NONAME);
-		logModule.Write(L"array memsize %d els %d, istream size %d", lMemSize, lElements, stat.cbSize);
+		logModule.Write(L"A: array memsize %d els %d, istream size %d", lMemSize, lElements, stat.cbSize);
 		if (
 			(vtype == VT_UI1) || (vtype == VT_I2) || (vtype == VT_I4) || (vtype == VT_R4) || (vtype == VT_R8)
 			|| (vtype == VT_CY) || (vtype == VT_DATE)
@@ -918,7 +918,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 			}
 			logModule.set_Logging(backup);
 			::SafeArrayUnlock(psa);
-			logModule.Write(L"VT_VARIANT array elements %d %x", findEl, hr);
+			logModule.Write(L"A: VT_VARIANT array elements %d %x", findEl, hr);
 		}
 
 		TheValue->parray = psa;
@@ -988,7 +988,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 			hr = E_INVALIDARG;
 		}
 	exit:
-		logModule.Write(L"Done variant type=%d, size=%d", vtype, cBytes);
+		logModule.Write(L"A: Done variant type=%d, size=%d", vtype, cBytes);
 		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL)
 			pStream->Read(&TheValue->bVal, cBytes, nullptr);
 	}
@@ -1062,7 +1062,7 @@ STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var) throw()
 		hr = l_pIStr->Seek(dbMove, STREAM_SEEK_CUR, nullptr);
 		hr = OleLoadFromStream2(l_pIStr, IID_IUnknown, (void**)&var.val.punkVal);
 	}
-	logModule.Write(L"ConvertVStreamToObject%s %x", doPersist2 ? L"2" : L"", hr);
+	logModule.Write(L"A: ConvertVStreamToObject%s %x", doPersist2 ? L"2" : L"", hr);
 	var.IsSerialized= FALSE; //don't deserialize next time
 	
 	
@@ -1095,7 +1095,7 @@ STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var) throw()
 		{
 			hr = ::OleSaveToStream(pPersist, pStream);
 		}
-		logModule.Write(L"OleSaveToStream%s %x", noPersist2 ? L"2" : L"", hr);
+		logModule.Write(L"A: OleSaveToStream%s %x", noPersist2 ? L"2" : L"", hr);
 		if (hr == S_OK)
 		{
 			var.punkVal->Release();//release object instance
@@ -1165,7 +1165,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 		//and never get at this execution point
 		lMemSize = 1;
 		//if (cDims > 1) DebugBreak();
-		logModule.Write(L"writing array type=%d, cDims %d, ElSize %d", vtype & ~VT_ARRAY, cDims, ElSize);
+		logModule.Write(L"A: writing array type=%d, cDims %d, ElSize %d", vtype & ~VT_ARRAY, cDims, ElSize);
 
 		for (cx = 1; cx <= cDims; cx++)
 		{
@@ -1181,7 +1181,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 
 		lElements = lMemSize;
 		lMemSize *= ElSize;
-		logModule.Write(L"writing array els(%d) elsize(%d)", lElements, ElSize);
+		logModule.Write(L"A: writing array els(%d) elsize(%d)", lElements, ElSize);
 
 
 		if ((vcopy == VT_I1) ||
@@ -1208,7 +1208,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 				if (hr == S_OK)
 				{
 					//the BSTR allocation area is contigious.
-					logModule.Write(L"Writing vt = %d array length=%d", vcopy, lElements);
+					logModule.Write(L"A: Writing vt = %d array length=%d", vcopy, lElements);
 					int backup = logModule.get_Logging(); // disable for the moment
 					logModule.set_Logging(0);
 					int els = 0;
@@ -1220,7 +1220,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 					}
 					
 					logModule.set_Logging(backup);
-					logModule.Write(L"written VT_BSTR array length=%d %x", els, hr);
+					logModule.Write(L"A: written VT_BSTR array length=%d %x", els, hr);
 					::SafeArrayUnaccessData(psa);
 				}
 			}
@@ -1256,7 +1256,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 						hr = SafeArrayPtrOfIndex(psa, &rgIndices[0], (void**)&pVar);
 						if (FAILED(hr))
 						{
-							logModule.Write(L"FATAL: SafeArrayPtrOfIndex failed %x", hr);
+							logModule.Write(L"A FATAL: SafeArrayPtrOfIndex failed %x", hr);
 							SafeArrayUnlock(psa);
 							return hr;
 						}
@@ -1297,7 +1297,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 				}
 				::SafeArrayUnlock(psa);
 				logModule.set_Logging(backup);
-				logModule.Write(L"written VT_VARIANT array length=%d Error = %x", findEl, hr);
+				logModule.Write(L"A: written VT_VARIANT array length=%d Error = %x", findEl, hr);
 			} // if not zero elements
 		}
 		else
@@ -1359,7 +1359,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 				STATSTG pstatstg = { 0 };
 				hr = l_pIStr->Stat(&pstatstg, STATFLAG_NONAME);
 				cBytes = pstatstg.cbSize.LowPart;
-				logModule.Write(L"Streamsize %d", cBytes);
+				logModule.Write(L"A: Streamsize %d", cBytes);
 				hr = pStream->Write(&cBytes, sizeof(pstatstg.cbSize.LowPart), nullptr);
 				// copy the persisted object as bytestream to the main stream		
 				l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
@@ -1372,7 +1372,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 				}
 			    if (FAILED(hr))
 				{
-					logModule.Write(L"FATAL: cannot copy stream %x", hr);
+					logModule.Write(L"A FATAL: cannot copy stream %x", hr);
 				
 					Error(L"While trying to serialize this object an error ocurred", this->GetObjectCLSID(), hr);
 				}
@@ -1392,7 +1392,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 	exit: // sorry
 		if (cBytes > 0 && vtype != VT_BSTR && vtype != VT_UNKNOWN && vtype != VT_DISPATCH && vtype != VT_DECIMAL)
 			pStream->Write((char*)&TheVal.bVal, cBytes, nullptr);
-		logModule.Write(L"Simple variant type =%d, size=%d", vtype, cBytes);
+		logModule.Write(L"A: Simple variant type =%d, size=%d", vtype, cBytes);
 	}
 
 	return hr;
@@ -1434,7 +1434,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 		stream->Commit(STATFLAG_DEFAULT);//must be IStream thus 
 		hr = stream->Seek(set, STREAM_SEEK_CUR, &newpos);
 		auto cBytes = newpos.LowPart;
-		logModule.Write(L"Serialize key %s %x len %d", bstrKey, hr, cBytes);
+		logModule.Write(L"A: Serialize key %s %x len %d", bstrKey, hr, cBytes);
 		BYTE buf[512] = { 0 };
 		stream->SetSize(newpos);
 		stream->Seek(set, STREAM_SEEK_SET, nullptr); //cut off to correct length
@@ -1482,7 +1482,7 @@ STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
 			}
 			hr = WriteValue(vtype, pos->second.val, binaryString);
 		}
-		logModule.Write(L"WriteProperty propname=%s, type=%d, result=%x", Key, vtype, hr);
+		logModule.Write(L"A: WriteProperty propname=%s, type=%d, result=%x", Key, vtype, hr);
 		/*    ' 1- Len4 PropName var
 		' 4- Variant
 		'OR----
@@ -1524,7 +1524,7 @@ STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString) throw
 	if (SUCCEEDED(hr))
 	{
 		stream->Read((char*)&vt, sizeof(VARTYPE), nullptr);
-		logModule.Write(L"Deserialized key %s, with type %d", key, vt);
+		logModule.Write(L"A: Deserialized key %s, with type %d", key, vt);
 		hr = ReadValue(stream, &val, vt);
 		ElementModel m;
 		_dictionary.insert(std::pair<CComBSTR, ElementModel>(key, m));
@@ -1538,7 +1538,7 @@ STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString) throw
 	}
 	else
 	{
-		logModule.Write(L"DeserializeKey %d failed", hr);
+		logModule.Write(L"A: DeserializeKey %d failed", hr);
 	}
 	return hr;
 }
@@ -1563,7 +1563,7 @@ STDMETHODIMP CApplication::get_KeyStates(
 		
 		if (ansi.empty())
 		{
-			logModule.Write(L"Severe error, empty key found");
+			logModule.Write(L"A: Severe error, empty key found");
 			continue;
 		}				
 		

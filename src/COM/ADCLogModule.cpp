@@ -135,7 +135,7 @@ void LoggingModule::Close(bool deleteLogFile) throw()
 // it synchronizes on a mutex so all processes go through this bottleneck
 // and will 'fight' for file access
 // be sure not to enable such a thing in production
-void LoggingModule::Write(PCWSTR pszFormat, ...) throw()
+void LoggingModule::Write(PCWSTR pszFormat, ...) 
 {
 	bool noFileAccess = false;
 	CComBSTR m_fmt;
@@ -210,7 +210,7 @@ void LoggingModule::Write(PCWSTR pszFormat, ...) throw()
 				}
 				file2.close();
 			}
-			catch(std::exception ex)
+			catch(const std::exception& ex)
 			{ 
 				//ignore, maybe next log it will succeed
 			}

@@ -11,14 +11,14 @@
 #pragma comment(lib, "xmllite.lib")
 
 //#include <atlfile.h>
-ConfigurationManager::ConfigurationManager(const BSTR configFile) throw()
+ConfigurationManager::ConfigurationManager(const BSTR configFile) noexcept
 {
 	logModule.Write(L"Config %s", configFile);
 	_szFilePath = configFile;
 	time(&_ftLastCheck);
 	Init();
 }
-ConfigurationManager::ConfigurationManager() throw()
+ConfigurationManager::ConfigurationManager() noexcept
 {	
 	time(&_ftLastCheck);
 	_szFilePath.Attach(GetModulePath());	
@@ -29,7 +29,7 @@ ConfigurationManager::ConfigurationManager() throw()
 		Init();
 	}	
 }
-void ConfigurationManager::Init() throw()
+void ConfigurationManager::Init() noexcept
 {
 	if (!_szFilePath.IsEmpty())
 	{
@@ -41,7 +41,7 @@ void ConfigurationManager::Init() throw()
 		}
 	}
 }
-time_t ConfigurationManager::GetFileTime() throw()
+time_t ConfigurationManager::GetFileTime() noexcept
 {	
 	struct ::stat stResult;
 	auto  ansi = _szFilePath.ToString();	
@@ -54,7 +54,31 @@ time_t ConfigurationManager::GetFileTime() throw()
 	//tm* clock = gmtime(&stResult.st_mtime);	// Get the last modified time and put it into the time structure 
 	return stResult.st_mtime;
 }
-BSTR ConfigurationManager::AppSettings(const BSTR key, PCWSTR defaultValue) throw()
+
+wstring ConfigurationManager::AppSettings(const wstring key, PCWSTR defaultValue) noexcept
+{
+	HRESULT hr = CheckTimeOut();
+	if (FAILED(hr))
+	{
+		logModule.Write(L"Cannot parse config file because of (%x)", hr);
+		return std::move(wstring());
+	}
+
+	auto found = _map.find(key);
+
+	//ATLTRACE(L"AppSettings findKey found %d %s\r\n", found, key);
+	//note: GetValueAt returns by reference, and does not Copy()	
+	if (found != _map.end() && found->first == key)
+	{
+		return std::move(std::wstring(found->second.c_str(), found->second.length()));
+	}
+	else if (defaultValue != nullptr)
+	{
+		return std::move(wstring(defaultValue));
+	}
+	return std::move(wstring());
+}
+BSTR ConfigurationManager::AppSettings(const BSTR key, PCWSTR defaultValue) noexcept
 {
 	
 	HRESULT hr = CheckTimeOut();
@@ -63,16 +87,14 @@ BSTR ConfigurationManager::AppSettings(const BSTR key, PCWSTR defaultValue) thro
 		logModule.Write(L"Cannot parse config file because of (%x)", hr);
 		return nullptr;
 	}
-	CComBSTR find;
-	find.Attach(key);
+
+	auto found = _map.find(key);
 	
-	auto found = _map.find(find);
-	find.Detach();
 	//ATLTRACE(L"AppSettings findKey found %d %s\r\n", found, key);
 	//note: GetValueAt returns by reference, and does not Copy()	
-	if (found != _map.end() && ((CComBSTR)(*found).first).CompareTo(key) == 0) 
+	if (found != _map.end() && found->first == key) 
 	{
-		return found->second.Copy();
+		return ::SysAllocStringLen(found->second.c_str(), found->second.length());
 	}
 	else if (defaultValue != nullptr)
 	{
@@ -81,14 +103,14 @@ BSTR ConfigurationManager::AppSettings(const BSTR key, PCWSTR defaultValue) thro
 	return nullptr;
 	
 }
-ConfigurationManager::~ConfigurationManager() throw()
+ConfigurationManager::~ConfigurationManager() noexcept
 {
 	_map.clear();
 	_xmlReader.Release();
 	_malloc.Release();
 	_szFilePath.Empty();
 }
-HRESULT ConfigurationManager::CheckTimeOut() throw()
+HRESULT ConfigurationManager::CheckTimeOut() noexcept
 {
 	
 	auto curT = GetFileTime();
@@ -186,7 +208,7 @@ HRESULT ConfigurationManager::CheckTimeOut() throw()
 							if (hr == S_OK)
 							{
 								_xmlReader->GetValue(&pwzValue, nullptr);
-								_map.insert(std::pair<CComBSTR, CComBSTR>(key, pwzValue));
+								_map.insert(std::pair<wstring, wstring>(key, pwzValue));
 							}
 						}
 					}					

@@ -11,7 +11,7 @@
 using namespace redis3m;
 #define _SECOND 10000000
 #define KEEPCONNECTION_IN_POOL_SEC 20
-DWORD __stdcall  redis3m::TimerThread(void* param)
+DWORD __stdcall  redis3m::TimerThread(void* param)	
 {
 
 	_timer.Attach(::CreateWaitableTimer(NULL, TRUE, NULL));
@@ -38,26 +38,41 @@ DWORD __stdcall  redis3m::TimerThread(void* param)
 //we must clean up connections before Redis disconnects itself
 // todo find out if we can optimize this
 // so, what's the problem Redisfree(c) in Connection.cpp delivers a system exception if Redis closed it already
-void __stdcall redis3m::TimerAPCProc() throw() 
+void __stdcall redis3m::TimerAPCProc() noexcept
 {
 	_access_mutex.Enter();
-	auto size = connections.size();
-	
-	for (auto x = connections.begin(); x != connections.end();)
+	if (connections.size() > 0)
 	{
-		auto con = *x;
-		if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - con->_startSessionRequest).count() > KEEPCONNECTION_IN_POOL_SEC)
-		{
-			connections.erase(x++);// the ++ seems to work, do not change
-			logModule.Write(L"Removed Redis conn from pool, left over %d", connections.size());
+		try {
+			std::vector<int> toErase;
+			int vectorPos = 0;
+			for (auto x = connections.cbegin(); x != connections.cend(); ++x)
+			{
+				auto con = *x;
+
+				if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - con->_startSessionRequest).count() > KEEPCONNECTION_IN_POOL_SEC)
+				{
+					toErase.push_back(vectorPos);
+					//connections.erase(x++);// the ++ seems to work, do not change
+
+					logModule.Write(L"Removed Redis conn from pool, left over %d", connections.size());
+				}
+				vectorPos++;
+			}
+			for (auto x = toErase.cbegin(); x != toErase.cend(); ++x)
+			{
+				connections.erase(connections.cbegin() + (*x));
+
+			}
 		}
-		else
+		catch (...)
 		{
-			++x;
+			logModule.Write(L"Cleaning Connection pool failed");
 		}
+
 	}
 	
-	if (connections.size() == 0)
+	else
 	{
 		auto success = ::CancelWaitableTimer(_timer);
 		_timer.Close();
@@ -73,14 +88,14 @@ connection::ptr_t simple_pool::get()
 	connection::ptr_t ret;
 
 	_access_mutex.Enter();
-	std::set<connection::ptr_t>::iterator it = connections.begin();
-
-	if (it != connections.end())
-	{
-		ret = *it;
-		connections.erase(it);
+	auto sz = connections.size();
+	if (sz > 0)
+	{		
+		ret = connections.at(sz-1);
+		ret->_startSessionRequest = std::chrono::system_clock::now();
+		connections.pop_back();
+		
 	}
-
 	if (_timer == nullptr)
 	{
 		auto handle  = ::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL);
@@ -110,6 +125,7 @@ connection::ptr_t simple_pool::get()
 				{
 					logModule.Write(L"AUTH failed");
 					ret.reset();
+					throw "AUTH failed";
 				}
 			}
 			if (_database != 0 && ret != connection::ptr_t())
@@ -125,7 +141,8 @@ connection::ptr_t simple_pool::get()
 		}
 		catch (connection_error ex)
 		{
-			logModule.Write(L"An exception occurred %x", s2ws(ex.what()).c_str());
+			logModule.Write(L"connection_error occurred %x", s2ws(ex.what()).c_str());
+			throw ex.what();
 		}
 	}
 	
@@ -138,7 +155,7 @@ void simple_pool::put(connection::ptr_t conn)
     if (conn->is_valid())
     {
     	_access_mutex.Enter();
-        connections.insert(conn);
+        connections.push_back(conn);
 		_access_mutex.Leave();
     }
 }

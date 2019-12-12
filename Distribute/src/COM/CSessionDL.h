@@ -238,12 +238,12 @@ public:
 					//ms instead of EXPIRE seconds
 					appkeyPrefix.resize(appkeyLen);
 					appkeyPrefix.append(str_toupper( expireKeys[expireKey].first));
-					logModule.Write(L"Setting %s expired at %d ms", s2ws(appkeyPrefix), expireKeys[expireKey].second);
+					logModule.Write(L"Setting %s expired at %d ms", s2ws(expireKeys[expireKey].first).c_str(), expireKeys[expireKey].second);
 					auto exp = command("PEXPIRE") << appkeyPrefix << expireKeys[expireKey].second;
 					reply = conn->run(exp);
 					if (reply.type() == reply::type_t::_ERROR)
 					{
-						logModule.Write(L"fail PEXPIRE %s", s2ws(reply.str()));
+						logModule.Write(L"fail PEXPIRE %s", s2ws(reply.str()).c_str());
 					}
 				}
 			}
@@ -431,9 +431,7 @@ public:
 		auto sGuid = HexStringFromMemory(guid, sizeof(GUID));
 		std::string ansi;
 		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(sAppkey);
-		ansi.append(":");
-		ansi.append(sGuid);
+		ansi.append(sAppkey).append(":").append(sGuid);
 
 
 		auto c = pool->get();
@@ -442,11 +440,8 @@ public:
 		{
 			//old			
 			auto newKey = HexStringFromMemory((PUCHAR)guidNewPar, sizeof(GUID));
-			std::string newKeyAnsi;
-			newKey.reserve(sizeof(GUID) * 2 + 1);
-			newKey.append(sAppkey);
-			newKey.append(":");
-			newKey.append(newKey);		
+			newKey.reserve(sizeof(GUID) * 2+ 1);
+			newKey.insert(0, ":").insert(0, sAppkey);
 			
 			auto reply = c->run(command("RENAME")(ansi)(newKey)); // http://www.redis.io/commands/rename
 			//re-use
@@ -519,9 +514,7 @@ public:
 		auto sGuid = HexStringFromMemory(guid, sizeof(GUID));
 		std::string ansi;
 		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(sAppkey);
-		ansi.append(":");
-		ansi.append(sGuid);
+		ansi.append(sAppkey).append(":").append(sGuid);
 		auto reply = c->run(command("EXPIRE")(ansi)("0")); // not sure if 0 means 'eternal' so look for milliseconds
 		pool->put(c);
 
@@ -538,9 +531,7 @@ public:
 		auto skey = HexStringFromMemory((PBYTE)guid, sizeof(GUID));
 		std::string ansi;
 		ansi.reserve(sizeof(GUID) * 2 + 1);
-		ansi.append(appkey);
-		ansi.append(":");
-		ansi.append(skey);
+		ansi.append(appkey).append(":").append(skey);
 
 		std::string buf;
 		PersistMetaData meta;
@@ -601,9 +592,9 @@ public:
 	{
 		auto appkey = HexStringFromMemory((PBYTE)&m_App_KeyPar, sizeof(GUID));
 		auto skey = HexStringFromMemory((PBYTE)&m_GUIDPar, sizeof(GUID));
-		std::string ansi = appkey + ":" + skey;
-		
-
+		std::string ansi;
+		ansi.reserve(sizeof(GUID) * 2 + 1);
+		ansi.append(appkey).append(":").append(skey);
 
 		auto conn = pool->get();
 		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get

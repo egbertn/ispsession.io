@@ -39,7 +39,7 @@ public:
 		bIsDBOpen = 
 		bErrState = blnPersistDoneByOnEndPage=	blnCancel = blnNew = blnExpired =
 			 blnSnifQueryStringFirst = blnCookieNoSSL = blnLoggedOn = blnReEntrance =
-			blnLiquid = blnWasLiquid = blnSucceeded = blnFoundURLGuid =
+			blnLiquid = blnSucceeded = blnFoundURLGuid =
 			g_blnValid = bReadonly = FALSE;
 		
 		ZeroMemory(&oldGuid, sizeof(GUID));
@@ -123,8 +123,7 @@ private:
 		blnCookieNoSSL,
 		blnLoggedOn,	
 		blnReEntrance,
-		blnLiquid,
-		blnWasLiquid,
+		blnLiquid,		
 		blnSucceeded,
 		blnFoundURLGuid,
 		bErrState,

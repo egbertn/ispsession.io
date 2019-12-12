@@ -7,7 +7,6 @@
 namespace ATL
 {
 
-//typedef  HRESULT  (__stdcall*HASHDATA2) (LPBYTE, DWORD, LPBYTE, DWORD);
 
 /////////////////////////////////////////////////////////////////////////////
 // CComBSTR2
@@ -956,25 +955,15 @@ public:
 	
 	unsigned long GetHashCode() throw() 
 	{
-		//if insufficient, shlwapi::HashData could be used 
 		unsigned long hash=0;
-		//HASHDATA2 hashdata2 = NULL;
-		//hash = LHashValOfName(::GetThreadLocale(), m_str);
 		
-		//TCHAR shlwapi[] = {'S', 'H', 'L', 'W', 'A', 'P', 'I', '.', 'D', 'L', 'L', '\0'};
-		//HINSTANCE hinst = LoadLibrary(shlwapi);
-		//char procName[]={'H', 'a', 's', 'h', 'D', 'a', 't', 'a', '\0'}; // procName		
-		//hashdata2 = (HASHDATA2) GetProcAddress(hinst, procName); //
 //		HRESULT hr = S_OK;
 		if (!IsEmpty())
 		{
 			//compress unicode before hashing
 			CComBSTR lpza;
 			lpza.Attach(ToByteString());
-			//CW2AEX<> lpza(m_str, CP_UTF8);
-			
-			//if (hashdata2 != NULL)
-			HRESULT	hr = HashData((PBYTE)lpza.m_str, lpza.ByteLength(),(LPBYTE) &hash, sizeof(unsigned long));
+			HRESULT	hr = HashData2((PBYTE)lpza.m_str, lpza.ByteLength(),(LPBYTE) &hash, sizeof(unsigned long));
 			if (hr != S_OK) hash = 0xFFFFFFFF;
 		}
 		//FreeLibrary(hinst);
@@ -2912,7 +2901,7 @@ _Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStre
 			}
 			if (spStream != NULL)
 				return OleSaveToStream(spStream, pStream);
-			return WriteClassStm(pStream, CLSID_NULL);
+			return pStream->Write(&CLSID_NULL, sizeof(GUID), nullptr);
 		}
 	case VT_UI1:
 	case VT_I1:

@@ -26,6 +26,7 @@ std::string str_toupper(std::string s);
 
 
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName);
+BSTR __stdcall GetDCDomain();
 void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[], int els);
 //void __stdcall ReportComError(const DWORD win32err, PCWSTR msg=NULL);
 //void __stdcall ReportComError2(const HRESULT hr, PCWSTR msg = NULL);
@@ -60,3 +61,4 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 void __stdcall FreeString(BSTR * theString);
 bool __stdcall LicentieCheck(GUID *licence, BSTR licenseContents);
 STDMETHODIMP ISequentialStream_Copy( ISequentialStream* iface, ISequentialStream* pstm, ULARGE_INTEGER cb, ULARGE_INTEGER* pcbRead, ULARGE_INTEGER* pcbWritten);
+HRESULT __stdcall HashData2(const unsigned char* lpSrc, DWORD nSrcLen, unsigned char *lpDest, DWORD nDestLen);

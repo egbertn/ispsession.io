@@ -889,7 +889,7 @@ STDMETHODIMP NWCSession::put_Readonly(VARIANT_BOOL newVal)  throw()
 
 
 // Inits database
-STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) 
+STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 {
     if (bErrState == TRUE) return E_FAIL;
 	
@@ -907,14 +907,11 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void)
 		try {
 			hr = pgetSession.OpenRowset(pool, btAppKey, guid);
 		}
-		catch (LPCWSTR ex)
-		{
-			logModule.Write(L"db: pgetSession.OpenRowset(g_dc) %s, %x", ex, E_FAIL);
-			return E_FAIL;
-		}
+		
 		catch (...)
 		{
-			logModule.Write(L"db: pgetSession.OpenRowset(g_dc) undefined, %x", E_FAIL);
+			logModule.Write(L"db: pgetSession.OpenRowset undefined, %x", E_FAIL);
+			this->bErrState = TRUE;
 			return E_FAIL;
 		}
 		if (FAILED(hr))

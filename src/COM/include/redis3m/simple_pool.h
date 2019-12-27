@@ -19,7 +19,7 @@ namespace redis3m
 		LPVOID lpThreadParameter
 		);*/
 	DWORD __stdcall  TimerThread(void* param);
-	void __stdcall TimerAPCProc();
+	void __stdcall TimerAPCProc() noexcept;
 /**
  * @brief Manages a pool of connections to a single Redis server
  */

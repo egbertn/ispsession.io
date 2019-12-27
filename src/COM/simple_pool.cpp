@@ -35,6 +35,11 @@ DWORD __stdcall  redis3m::TimerThread(void* param)
 	} 
 	return 0;
 }
+bool isExpired(const shared_ptr<redis3m::connection> n) noexcept
+{
+	auto now = std::chrono::system_clock::now();
+	return (std::chrono::duration_cast<std::chrono::seconds>(now - n->_startSessionRequest).count() > KEEPCONNECTION_IN_POOL_SEC);
+}
 //we must clean up connections before Redis disconnects itself
 // todo find out if we can optimize this
 // so, what's the problem Redisfree(c) in Connection.cpp delivers a system exception if Redis closed it already
@@ -43,27 +48,25 @@ void __stdcall redis3m::TimerAPCProc() noexcept
 	_access_mutex.Enter();
 	if (connections.size() > 0)
 	{
+		auto erased = false;
 		try {
-			std::vector<int> toErase;
-			int vectorPos = 0;
-			for (auto x = connections.cbegin(); x != connections.cend(); ++x)
+			
+			/* s.erase(s.begin(), std::find_if(s.begin(), s.end(),
+		std::not1(std::ptr_fun<int, int>(std::isspace)))); */
+			for(;;)
 			{
-				auto con = *x;
+				auto f = std::find_if(connections.cbegin(), connections.cend(), isExpired);
+				if (f == connections.end())
+					break;
 
-				if (std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - con->_startSessionRequest).count() > KEEPCONNECTION_IN_POOL_SEC)
-				{
-					toErase.push_back(vectorPos);
-					//connections.erase(x++);// the ++ seems to work, do not change
-
-					logModule.Write(L"Removed Redis conn from pool, left over %d", connections.size());
-				}
-				vectorPos++;
+				erased = true;
+				connections.erase(f);
+			
 			}
-			for (auto x = toErase.cbegin(); x != toErase.cend(); ++x)
-			{
-				connections.erase(connections.cbegin() + (*x));
+			if (erased)
+				logModule.Write(L"Removed Redis conn from pool, left over %d", connections.size());
+		
 
-			}
 		}
 		catch (...)
 		{
@@ -72,12 +75,15 @@ void __stdcall redis3m::TimerAPCProc() noexcept
 
 	}
 	
-	else
+	if (connections.size() ==0)
 	{
-		auto success = ::CancelWaitableTimer(_timer);
-		_timer.Close();
-		_threadHandle.Close();
-		logModule.Write(L"Canceling timer thread %d", success);
+		if (_timer.m_h != nullptr)
+		{
+			auto success = ::CancelWaitableTimer(_timer);
+			_timer.Close();
+			_threadHandle.Close();
+			logModule.Write(L"Canceling timer thread %d", success);
+		}
 	}
 	_access_mutex.Leave();
 };
@@ -118,6 +124,7 @@ connection::ptr_t simple_pool::get()
 		try
 		{
 			ret = connection::create(_host, _port);
+			ret->_startSessionRequest = std::chrono::system_clock::now();
 			if (!_password.empty())
 			{
 				auto response = ret->run(command("AUTH") (_password));
@@ -137,12 +144,11 @@ connection::ptr_t simple_pool::get()
 				}
 			}
 			logModule.Write(L"Add Redis Conn to pool %d, %s, %d", _database, s2ws(_host).c_str(), _port);
-			ret->_startSessionRequest = std::chrono::system_clock::now();
 		}
 		catch (connection_error ex)
 		{
 			logModule.Write(L"connection_error occurred %x", s2ws(ex.what()).c_str());
-			throw ex.what();
+			return redis3m::connection::ptr_t();
 		}
 	}
 	

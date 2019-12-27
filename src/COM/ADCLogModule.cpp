@@ -165,13 +165,11 @@ void LoggingModule::Write(PCWSTR pszFormat, ...)
 
 	bool appendCrLf = !m_bstrTrace.EndsWith(L"\n");
 	m_bstrTrace.Insert(0, m_fmt);
-
+	if (appendCrLf)			
+		m_bstrTrace.Append(L'\r\n');
 	if ((m_LoggingEnabled & 2) == 2)
 	{
-		if (appendCrLf)			
-			m_bstrTrace.Append(L'\n');
 		OutputDebugStringW(m_bstrTrace);
-		
 	}
 	// write only to the file if we have access
 	if (m_file != NULL && !noFileAccess && (m_LoggingEnabled & 1) == 1)
@@ -217,8 +215,7 @@ void LoggingModule::Write(PCWSTR pszFormat, ...)
 			OpenFile();	
 		}
 		
-		if (appendCrLf)
-			m_bstrTrace.Append(L"\r\n", 2);
+		
 		auto ansi = m_bstrTrace.ToString();
 		
 		m_file.Write(ansi.c_str(), ansi.length());

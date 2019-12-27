@@ -189,7 +189,7 @@ public:
 private:	
 	// non TLB exposed methods
 	// Inits database
-	STDMETHOD(dbInit)();
+	STDMETHOD(dbInit)() noexcept;
 	
 	STDMETHOD(PersistSession)() noexcept;
 	// creates a new GUID and writes cookie, if possible

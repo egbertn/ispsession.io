@@ -127,7 +127,7 @@ public:
 		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
 		//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
 		LONG totalRequestTime
-		)
+		) 
 	{
 		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));
 		auto appkeyLen = appkey.size() + 1;
@@ -257,12 +257,13 @@ public:
 		return hr;
 	}
 
-	HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const GUID& appKey, IKeySerializer*  pDictionary)
+	HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const GUID& appKey, IKeySerializer*  pDictionary) noexcept
 	{
 		HRESULT hr = S_OK;
 		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));
 		string applicationPrefix(appkey); 
 		applicationPrefix.append(":");
+
 		auto conn = pool->get();
 		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
 		{
@@ -436,6 +437,10 @@ public:
 		std::shared_ptr<redis3m::connection> c;
 		try {
 			c = pool->get();
+			if (c == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
+			{
+				return E_ACCESSDENIED;
+			}
 		}
 		catch (...)
 		{
@@ -604,7 +609,7 @@ public:
 		ansi.append(appkey).append(":").append(skey);
 		std::shared_ptr<redis3m::connection> conn;
 		try {
-			conn = pool->get();
+			conn = pool->get();			
 		}
 		catch (...)
 		{

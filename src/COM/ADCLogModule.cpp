@@ -166,7 +166,7 @@ void LoggingModule::Write(PCWSTR pszFormat, ...)
 	bool appendCrLf = !m_bstrTrace.EndsWith(L"\n");
 	m_bstrTrace.Insert(0, m_fmt);
 	if (appendCrLf)			
-		m_bstrTrace.Append(L'\r\n');
+		m_bstrTrace.Append(L"\r\n");
 	if ((m_LoggingEnabled & 2) == 2)
 	{
 		OutputDebugStringW(m_bstrTrace);

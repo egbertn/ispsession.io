@@ -75,6 +75,7 @@ public:
 
 	HRESULT FinalConstruct() throw()
 	{
+        NoConnectionPooling =
 		m_OnStartPageCalled = FALSE;
 		m_bErrState = FALSE;
 
@@ -100,6 +101,7 @@ private:
 	BOOL m_bErrState;
 	BOOL m_doLogging;
 	BOOL m_OnStartPageCalled ;
+    BOOL NoConnectionPooling;
 	GUID m_AppKey;
 	BOOL m_licenseOK;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;

@@ -126,7 +126,8 @@ public:
 		
 		PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
 		//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
-		LONG totalRequestTime
+		LONG totalRequestTime,
+        BOOL noConnectionPooling = FALSE
 		) 
 	{
 		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));
@@ -250,14 +251,17 @@ public:
 
 			reply = conn->run(command("EXEC")); //commit transaction
 			hr =   reply.str() == "" ? S_OK : E_FAIL;
-			pool->put(conn);
+            if (noConnectionPooling == FALSE)
+            {
+                pool->put(conn);
+            }
 		}
 
 	   
 		return hr;
 	}
 
-	HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const GUID& appKey, IKeySerializer*  pDictionary) noexcept
+	HRESULT __stdcall ApplicationGet(const simple_pool::ptr_t &pool, const GUID& appKey, IKeySerializer*  pDictionary, BOOL noConnectionPooling = FALSE) noexcept
 	{
 		HRESULT hr = S_OK;
 		auto appkey = HexStringFromMemory((PBYTE)&appKey, sizeof(GUID));
@@ -318,8 +322,10 @@ public:
 				logModule.Write(L"A: ApplicationGet: corrupt state for %s", appkey);
 			}
 		}
-		
-		pool->put(conn);
+        if (noConnectionPooling == FALSE)
+        {
+            pool->put(conn);
+        }
 	
 		return result;
 	}	
@@ -423,7 +429,8 @@ public:
 			LONG zLenPar,
 			PBYTE previousLastUpdated, //timestamp 8 BYTES never zero!,
 			//TODO: totalRequestTime must be added in an unsorted list in REDIS this can be used as statistics array
-			LONG totalRequestTime
+			LONG totalRequestTime,
+            BOOL noConnectionPooling = FALSE
 			)
     {	
 		auto hr = S_OK;
@@ -515,11 +522,14 @@ public:
 				}
 			}			
 		}		
-		pool->put(c);
+        if (noConnectionPooling == FALSE)
+        {
+            pool->put(c);
+        }
         return hr;
     }
 	//returns S_OK if success. E_FAIL if the session does not exist
-	HRESULT static __stdcall SessionDelete(const simple_pool::ptr_t pool, PUCHAR appKey, PUCHAR guid) throw()
+	HRESULT static __stdcall SessionDelete(const simple_pool::ptr_t pool, PUCHAR appKey, PUCHAR guid, const BOOL noConnectionPooling = FALSE) throw()
 	{
 		auto c = pool->get();
 		auto sAppkey = HexStringFromMemory(appKey, sizeof(GUID));
@@ -528,15 +538,18 @@ public:
 		ansi.reserve(sizeof(GUID) * 2 + 1);
 		ansi.append(sAppkey).append(":").append(sGuid);
 		auto reply = c->run(command("EXPIRE")(ansi)("0")); // not sure if 0 means 'eternal' so look for milliseconds
-		pool->put(c);
-
+        if (noConnectionPooling == FALSE)
+        {
+            pool->put(c);
+        }
+        
 		return reply.type() == reply::type_t::INTEGER && reply.integer() == (long long)1 ? S_OK : E_FAIL;
 	}
 	HRESULT static _stdcall SessionInsert(const simple_pool::ptr_t &pool,
 		const GUID *appKey, const GUID *guid,
 		const LONG Expires,
 		const BOOL ReEntrance,
-		const BOOL liquid) throw()
+		const BOOL liquid, const BOOL noConnectionPooling = FALSE) throw()
 	{
 
 		auto appkey = HexStringFromMemory((PBYTE)appKey, sizeof(GUID));
@@ -555,8 +568,10 @@ public:
 
 		auto conn = pool->get();
 		auto reply = conn->run(command("SET")(ansi)(buf)("EX")(Expires * 60));
-
-		pool->put(conn);
+        if (noConnectionPooling == FALSE)
+        {
+            pool->put(conn);
+        }
 		//std::wstring wstr = s2ws(ansi); //TODO: must all be ansi
 		logModule.Write(L"insert %s", s2ws(ansi).c_str());
 
@@ -600,7 +615,7 @@ class CpSessionGet:
 public:
 	//Gets the session returns S_FALSE if the session is empty
 	HRESULT __stdcall OpenRowset(const simple_pool::ptr_t &pool,
-		const GUID& m_App_KeyPar, const GUID& m_GUIDPar) 
+		const GUID& m_App_KeyPar, const GUID& m_GUIDPar, const BOOL noConnectionPooling = FALSE) 
 	{
 		auto appkey = HexStringFromMemory((PBYTE)&m_App_KeyPar, sizeof(GUID));
 		auto skey = HexStringFromMemory((PBYTE)&m_GUIDPar, sizeof(GUID));
@@ -674,7 +689,10 @@ public:
 			}
 			break;
 		}		
-		pool->put(conn);
+        if (noConnectionPooling == FALSE)
+        {
+            pool->put(conn);
+        }
         return result;
 	}
 	~CpSessionGet()

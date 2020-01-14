@@ -231,6 +231,13 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	{		
 		strCookieDOM.Attach(bstrProp.Detach());		
 	}
+    bstrProp = L"NoConnectionPool";
+    bstrProp.Insert(0, prefix);
+    bstrProp.Attach(config.AppSettings(bstrProp));
+    if (!bstrProp.IsEmpty())
+    {
+        bNoSessionPooling = bstrProp.ToBool() == VARIANT_TRUE ? TRUE : FALSE;
+    }
 	bstrProp = L"DataSource";
 	bstrProp.Insert(0, prefix);
 	strConstruct = _wgetenv(bstrProp);
@@ -905,7 +912,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 	for(;;)
 	{
 		try {
-			hr = pgetSession.OpenRowset(pool, btAppKey, guid);
+			hr = pgetSession.OpenRowset(pool, btAppKey, guid, bNoSessionPooling);
 		}
 		
 		catch (...)
@@ -935,7 +942,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 			
 			hr = CSessionDL::SessionInsert(pool, &btAppKey, &guid, lngTimeOutSetting,
 				blnReEntrance , 
-				blnLiquid);				
+				blnLiquid, bNoSessionPooling);				
 			lngTimeout = lngTimeOutSetting; //default
 			logModule.Write(L"CSessionDL.SessionInsert(g_dc) %x", hr);
 			
@@ -1099,7 +1106,7 @@ STDMETHODIMP NWCSession::PersistSession(void) noexcept
 				blnLiquid, 
 				blnLiquid == FALSE ? nullptr : &guid, 
 				pStream,
-				lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS);
+				lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS, bNoSessionPooling);
 		logModule.Write(L"CSessionDL.SessionSave timeOut (%d), reEntrance(%d), Liquid(%d), size(%d) time(%d), hr(%x)", lngTimeout, blnReEntrance, blnLiquid, lSize, totalRequestTimeMS, hr);
 		pStream.Release();
 	
@@ -1107,7 +1114,7 @@ STDMETHODIMP NWCSession::PersistSession(void) noexcept
 	else if (blnCancel == TRUE)
 	{  
 		
-		hr = CSessionDL::SessionDelete(pool, (PUCHAR)&btAppKey, (PUCHAR)&oldGuid);
+		hr = CSessionDL::SessionDelete(pool, (PUCHAR)&btAppKey, (PUCHAR)&oldGuid, bNoSessionPooling);
 		logModule.Write(L"CSessionDL.SessionDelete %x", hr);
 	
 	}

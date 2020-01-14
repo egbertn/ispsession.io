@@ -11,7 +11,7 @@
 using namespace redis3m;
 #define _SECOND 10000000
 #define KEEPCONNECTION_IN_POOL_SEC 20
-DWORD __stdcall  redis3m::TimerThread(void* param)	
+DWORD __stdcall  redis3m::TimerThread(void*)	
 {
 
 	_timer.Attach(::CreateWaitableTimer(NULL, TRUE, NULL));

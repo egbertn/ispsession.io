@@ -619,7 +619,7 @@ public:
 			{
 				totalLen = 0;
 				els = elements;
-				ULONG curel = 0;
+				LONG curel = 0;
 				while (els != 0)
 				{
 					els--;

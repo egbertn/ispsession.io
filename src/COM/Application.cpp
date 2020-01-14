@@ -141,7 +141,7 @@ STDMETHODIMP CApplication::PersistApplication() throw()
 	{	
 		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
 		CComPtr<IKeySerializer> database = this;
-		hr = CApplicationDL::ApplicationSave(pool, m_AppKey, database,  m_dbTimeStamp, (LONG)totalRequestTimeMS);		
+		hr = CApplicationDL::ApplicationSave(pool, m_AppKey, database,  m_dbTimeStamp, (LONG)totalRequestTimeMS, NoConnectionPooling);
 
 		logModule.Write(L"CApplicationDL::ApplicationSave  time(%d), hr(%x)", totalRequestTimeMS, hr);
 
@@ -628,6 +628,14 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
 		Error(bstrProp.Append(L" key not found"), this->GetObjectCLSID(), E_INVALIDARG);
 		return E_INVALIDARG;
 	}
+    bstrProp = L"NoConnectionPool";
+    bstrProp.Insert(0, prefix);
+    bstrProp.Attach(config.AppSettings(bstrProp));
+    if (!bstrProp.IsEmpty())
+    {
+        NoConnectionPooling = bstrProp.ToBool() == VARIANT_TRUE ? TRUE : FALSE;
+    }
+
 	bstrProp = L"ClassicCsession.LIC";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
@@ -676,7 +684,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
 	{
 		CComPtr<IKeySerializer> database = this;
 		CApplicationDL applicationDl;
-		hr = applicationDl.ApplicationGet(pool, m_AppKey, database);
+		hr = applicationDl.ApplicationGet(pool, m_AppKey, database, NoConnectionPooling);
 	}
 	
 	

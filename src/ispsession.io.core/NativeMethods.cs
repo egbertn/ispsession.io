@@ -66,8 +66,18 @@ namespace ispsession.io.core
         /// <summary>
         /// emulates Shlwapi HashData
         /// </summary>
-        internal static uint HashData(byte[] lpSrc, int nSrcLen, ref byte[] lpDest, int nDestLen)
+        internal static uint HashData(byte[] lpSrc, ref byte[] lpDest)
         {
+            if (lpDest == null)
+            {
+                throw new ArgumentNullException(nameof(lpDest));
+            }
+            if (lpSrc == null)
+            {
+                throw new ArgumentNullException(nameof(lpSrc));
+            }
+            int nSrcLen = lpSrc.Length;
+            int nDestLen = lpDest.Length;
             int srcCount = nSrcLen - 1, destCount = nDestLen - 1;
             if (lpSrc == null || lpDest == null)
                 return NativeMethods.E_INVALIDARG;

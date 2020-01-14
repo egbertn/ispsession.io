@@ -1434,8 +1434,8 @@ namespace ispsession.io.core
         {
             if (string.IsNullOrEmpty(value)) return 0;
             var bytes = _encoding.GetBytes(value);
-            var hash = new byte[4];
-            var result = NativeMethods.HashData(bytes, bytes.Length, ref hash, hash.Length);
+            var hash = new byte[sizeof(uint)];
+            var result = NativeMethods.HashData(bytes, ref hash);
             if (result != 0)
             {
                 return 0;

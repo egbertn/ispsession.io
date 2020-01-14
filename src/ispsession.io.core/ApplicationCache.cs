@@ -16,7 +16,7 @@ namespace ispsession.io
         private const string CannotInitiateSession = "Cannot Initiate Cache now";
         private IDictionary<string, ElementModel> _dictionary;
         private readonly HashSet<string> _removed;
-        private CacheAppSettings _settings;
+        private readonly CacheAppSettings _settings;
         //becomes true if application is not new but requested, loaded as late as possible!
         private bool _wasLoaded;
         private readonly object locker = new object();

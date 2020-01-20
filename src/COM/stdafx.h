@@ -7,7 +7,7 @@
 #define Demo
 // defines for ISP Session tiny edition
 //TODO: GLOG implementation
-#define EXPIREAT ( 43860+30) // ie: 30/jan/2020
+#define EXPIREAT ( 43860+60) // ie: 30/jan/2020
 #pragma warning( disable : 4840 )
 
 #define MAXINSTANCES 1000

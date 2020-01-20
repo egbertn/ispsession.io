@@ -9,14 +9,15 @@ using namespace redis3m;
 
 connection::connection(const std::string& host, const unsigned port/*, const std::string& password*/)
 {
-	timeval tv = { 5,0 };
-    c = redisConnectWithTimeout(host.c_str(), port, tv);
+	
+    c = redisConnect(host.c_str(), port);
     if (c->err != REDIS_OK)
     {
         redisFree(c);
         throw unable_to_connect();
     }
-
+    redisEnableKeepAlive(c);
+    
 }
 
 connection::connection(const std::string& path)
@@ -27,6 +28,10 @@ connection::connection(const std::string& path)
         redisFree(c);
         throw unable_to_connect();
     }
+    c->timeout = 0;
+   
+    redisEnableKeepAlive(c);
+
 	
 }
 
@@ -34,7 +39,15 @@ connection::~connection()
 {
 	if (is_valid())
 	{		
-		redisFree(c);		
+        try {
+            redisFree(c);
+        }
+        catch (...)
+        {
+            // should not happen in redis.conf it should have
+            //timeout 0 and  tcp-keepalive 300
+            
+        }
 	}
 	c->err = REDIS_ERR;
 }

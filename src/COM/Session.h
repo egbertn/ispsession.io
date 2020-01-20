@@ -37,7 +37,7 @@ public:
 		dtExpires = 0;
 		bHashsessionID =
 		bIsDBOpen = 
-        bNoSessionPooling = bErrState = blnPersistDoneByOnEndPage=	blnCancel = blnNew = blnExpired =
+        bNoConnectionPooling = bErrState = blnPersistDoneByOnEndPage=	blnCancel = blnNew = blnExpired =
 			 blnSnifQueryStringFirst = blnCookieNoSSL = blnLoggedOn = blnReEntrance =
 			blnLiquid = blnSucceeded = blnFoundURLGuid =
 			g_blnValid = bReadonly = FALSE;
@@ -133,7 +133,7 @@ private:
 		blnPersistDoneByOnEndPage,
 		bHashsessionID,
 		bReadonly,
-		bIsDirty, bIsDBOpen, bNoSessionPooling; //for the application
+		bIsDirty, bIsDBOpen, bNoConnectionPooling; //for the application
 
 	DATE dtExpires;
 	

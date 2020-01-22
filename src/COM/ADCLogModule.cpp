@@ -6,16 +6,16 @@ using namespace std::experimental;
 // Copyright ADC Cure 2006-2018 
 // this code is no free public source, but only provided as shared source, when you have obtained a license
 
-LoggingModule::LoggingModule(void) throw() :
+LoggingModule::LoggingModule(void) noexcept :
 	m_LoggingEnabled(0)
 {
 }
-void LoggingModule::set_TempLocation(int location) throw()
+void LoggingModule::set_TempLocation(int location) noexcept
 {
 	m_tempLocation = location;
 }
 //accepts a folder or filename and looks into if it has Append rights
-bool LoggingModule::HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask = (FILE_APPEND_DATA | SYNCHRONIZE)) throw() //write includes append and create
+bool LoggingModule::HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask = (FILE_APPEND_DATA | SYNCHRONIZE)) noexcept //write includes append and create
 {
 	ATL::CSecurityDesc s;
 	auto result = AtlGetSecurityDescriptor(fileToCheck, SE_OBJECT_TYPE::SE_FILE_OBJECT, &s, DACL_SECURITY_INFORMATION, true);
@@ -57,7 +57,7 @@ bool LoggingModule::HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask = (FILE_
 	
 	return (accessRights & mask) == mask;
 }
-void LoggingModule::set_Logging(int enable) throw()
+void LoggingModule::set_Logging(int enable) noexcept
 { 
 	m_LoggingEnabled = enable;
 	
@@ -84,7 +84,7 @@ void LoggingModule::set_Logging(int enable) throw()
 		
 			std::wstring buf = m_tempLocation == 0 ? 
 				(std::wstring(_wgetenv(L"windir")) + L"\\temp") : 
-				std::wstring( filesystem::temp_directory_path().c_str());
+				std::wstring( std::filesystem::temp_directory_path().c_str());
 
 			if (buf.empty())
 			{
@@ -112,16 +112,16 @@ void LoggingModule::set_Logging(int enable) throw()
 	else
 		Close();
 }
-int LoggingModule::get_Logging() throw()
+int LoggingModule::get_Logging() noexcept
 {
 	return m_LoggingEnabled;
 }
-LoggingModule::~LoggingModule(void) throw()
+LoggingModule::~LoggingModule(void) noexcept
 {
 	this->Close();
 }
 ///<sumarray> releases resources</summary>
-void LoggingModule::Close(bool deleteLogFile) throw()
+void LoggingModule::Close(bool deleteLogFile) noexcept
 {
 	m_file.Close();
 //	m_hMutex.Close();
@@ -135,7 +135,7 @@ void LoggingModule::Close(bool deleteLogFile) throw()
 // it synchronizes on a mutex so all processes go through this bottleneck
 // and will 'fight' for file access
 // be sure not to enable such a thing in production
-void LoggingModule::Write(PCWSTR pszFormat, ...) 
+void LoggingModule::Write(PCWSTR pszFormat, ...)  noexcept
 {
 	bool noFileAccess = false;
 	CComBSTR m_fmt;
@@ -230,7 +230,7 @@ void LoggingModule::Write(PCWSTR pszFormat, ...)
 	
 	}
 	// opens file for append and prepends a BOM if needed
-	bool LoggingModule::OpenFile() throw()
+	bool LoggingModule::OpenFile() noexcept
 	{
 		if (m_file == nullptr && !m_logFileName.IsEmpty())
 		{

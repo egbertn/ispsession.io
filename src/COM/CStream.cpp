@@ -2,7 +2,7 @@
 #include "StdAfx.h"
 #include "CStream.h"
 
-HRESULT CStream::FinalConstruct() throw()
+HRESULT CStream::FinalConstruct()  noexcept
 {
 
 	//logModule.Write(L"CStream::ctor\r\n");	
@@ -13,13 +13,13 @@ HRESULT CStream::FinalConstruct() throw()
 
 
 }
-void CStream::FinalRelease() throw()
+void CStream::FinalRelease()  noexcept
 {
 	//	logModule.Write(L"CStream::FinalRelease\r\n");
 	Clear();
 }
 
-STDMETHODIMP CStream::Read(void* pv, ULONG cb, ULONG *pcbRead) throw()
+STDMETHODIMP CStream::Read(void* pv, ULONG cb, ULONG *pcbRead)  noexcept
 {
 	// Check parameters.
 	if (pcbRead != nullptr)
@@ -56,7 +56,7 @@ STDMETHODIMP CStream::Read(void* pv, ULONG cb, ULONG *pcbRead) throw()
 	return cb != cBytesRead ? S_FALSE : S_OK;
 }
 
-STDMETHODIMP CStream::Write(const void* pv, ULONG cb, ULONG *pcbWritten) throw()
+STDMETHODIMP CStream::Write(const void* pv, ULONG cb, ULONG *pcbWritten)  noexcept
 {
 	// Check parameters.
 	if (pv == nullptr)
@@ -101,7 +101,7 @@ STDMETHODIMP CStream::Write(const void* pv, ULONG cb, ULONG *pcbWritten) throw()
 }
 
 
-STDMETHODIMP CStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) throw()
+STDMETHODIMP CStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition)  noexcept
 {
 	//NOTE: we don't bother to write 2G limit memory for our purposes! 
 	// Therefore, the HighPart of dbLibMove is ignored
@@ -136,7 +136,7 @@ STDMETHODIMP CStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGE
 	return S_OK;
 
 }
-STDMETHODIMP CStream::SetSize(ULARGE_INTEGER libNewSize)  throw()
+STDMETHODIMP CStream::SetSize(ULARGE_INTEGER libNewSize)   noexcept
 {
 
 	ULARGE_INTEGER li;
@@ -155,7 +155,7 @@ STDMETHODIMP CStream::CopyTo(
 	IStream*      pstm,         
 	ULARGE_INTEGER  cb,           
 	ULARGE_INTEGER* pcbRead,      
-	ULARGE_INTEGER* pcbWritten)  throw()
+	ULARGE_INTEGER* pcbWritten)  noexcept
 {
 	HRESULT        hr = S_OK;
 	BYTE           tmpBuffer[512];
@@ -207,23 +207,23 @@ STDMETHODIMP CStream::CopyTo(
 	return hr;
 
 }
-STDMETHODIMP CStream::Commit(DWORD)  throw()
+STDMETHODIMP CStream::Commit(DWORD)  noexcept
 {
 	return E_NOTIMPL;
 }
-STDMETHODIMP CStream::Revert() throw()
+STDMETHODIMP CStream::Revert() noexcept
 {
 	return E_NOTIMPL;
 }
-STDMETHODIMP CStream::LockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) throw()
+STDMETHODIMP CStream::LockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) noexcept
 {
 	return E_NOTIMPL;	
 }
-STDMETHODIMP CStream::UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD)  throw()
+STDMETHODIMP CStream::UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD)  noexcept
 {
 	return E_NOTIMPL;
 }
-STDMETHODIMP CStream::Stat(STATSTG *pStatstg, DWORD) throw()
+STDMETHODIMP CStream::Stat(STATSTG *pStatstg, DWORD) noexcept
 {
 	if (pStatstg == nullptr)
 	{
@@ -233,19 +233,19 @@ STDMETHODIMP CStream::Stat(STATSTG *pStatstg, DWORD) throw()
 
 	return S_OK;
 }
-STDMETHODIMP CStream::Clone(IStream **) throw()
+STDMETHODIMP CStream::Clone(IStream **) noexcept
 {
 	return E_NOTIMPL;
 }
 
-//STDMETHODIMP CStream::get_Pointer(PBYTE *pointer) throw()
+//STDMETHODIMP CStream::get_Pointer(PBYTE *pointer) noexcept
 //{
 //	//logModule.Write(L"get_Pointer");
 //	//TODO:
 //	*pointer = m_alloc.m_pData;
 //	return *pointer == nullptr ? E_POINTER : S_OK;
 //}
-//STDMETHODIMP CStream::put_Pointer(PBYTE pointer) throw()
+//STDMETHODIMP CStream::put_Pointer(PBYTE pointer) noexcept
 //{
 //	//logModule.Write(L"get_Pointer");
 //	//TODO:
@@ -257,7 +257,7 @@ STDMETHODIMP CStream::Clone(IStream **) throw()
 //}
 ////
 // custom methods
-void CStream::Clear()  throw()
+void CStream::Clear()  noexcept
 {
 	
 		//m_alloc.Free();

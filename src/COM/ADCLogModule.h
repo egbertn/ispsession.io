@@ -13,20 +13,20 @@ using namespace std;
 class LoggingModule
 {
 public:
-	LoggingModule() ;
-	~LoggingModule();
+	LoggingModule() noexcept;
+	~LoggingModule() noexcept;
 	//releases resources
-	void Close(bool deleteLogFile = false);
-	void Write(PCWSTR pszFormat, ...);
-	void set_Logging(int enable);
+	void Close(bool deleteLogFile = false) noexcept;
+	void Write(PCWSTR pszFormat, ...) noexcept;
+	void set_Logging(int enable) noexcept;
 	// 0 = %windir%\Temp, 1=%userprofile%\Local Settings\Temp
-	void set_TempLocation(int location);
-	int get_Logging();
-	bool OpenFile();
+	void set_TempLocation(int location) noexcept;
+	int get_Logging() noexcept;
+	bool OpenFile() noexcept;
 
 private:
 	//not wfstream because it has problems opening a shared file
-	bool HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask);
+	bool HasWriteAccess(PCWSTR fileToCheck, ACCESS_MASK mask) noexcept;
 	CAtlFile m_file;
 	//0 disabled 1 = to file, 2 = to Debug 3 = both
 	int m_LoggingEnabled; 

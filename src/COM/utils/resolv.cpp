@@ -13,9 +13,9 @@
 
 #else
 #include "..\include\hiredis\hiredis.h"
-#include "..\include\Win32_Interop\Win32_FDAPI.h"
-#include <WinSock2.h>
-//#include <WS2tcpip.h> //don't se use Win32_Interop.lib
+#define REDIS_SOCKCOMPAT_IMPLEMENTATION
+#include "..\include\hiredis\sockcompat.h"
+
 #endif
 #include <string.h>
 

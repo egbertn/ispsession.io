@@ -21,6 +21,7 @@
 #include <sstream>
 #include <algorithm>
 #include <regex>
+#include <random>       // std::default_random_engine
 #include <numeric>
 #endif
 
@@ -226,7 +227,8 @@ connection::ptr_t connection_pool::create_slave_connection()
     sentinel->append(command("SENTINEL") << "slaves" << master_name );
     reply response = sentinel->get_reply();
     std::vector<reply> slaves(response.elements());
-    std::random_shuffle(slaves.begin(), slaves.end());
+    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::shuffle(slaves.begin(), slaves.end(), std::default_random_engine(seed));
 
     for (std::vector<reply>::const_iterator it = slaves.begin();
          it != slaves.end(); ++it)

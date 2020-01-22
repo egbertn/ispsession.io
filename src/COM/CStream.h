@@ -9,8 +9,8 @@ class ATL_NO_VTABLE  CStream:
 {
 
 public:	
-	HRESULT FinalConstruct();
-	void FinalRelease();
+	HRESULT FinalConstruct() noexcept;
+	void FinalRelease() noexcept;
 	DECLARE_NO_REGISTRY()
 	DECLARE_NOT_AGGREGATABLE(CStream)
 	
@@ -19,20 +19,20 @@ public:
 		COM_INTERFACE_ENTRY(IStream)
 	END_COM_MAP()
 	//	Implementation of ISequentialStream
-	STDMETHOD(Read)(void*, ULONG, ULONG *);
-	STDMETHOD(Write) (const void*, ULONG, ULONG *);
+	STDMETHOD(Read)(void*, ULONG, ULONG *) noexcept;
+	STDMETHOD(Write) (const void*, ULONG, ULONG *) noexcept;
 	// Implementation of IStream	
-	STDMETHOD(Seek)(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition);
-	STDMETHOD(SetSize)(ULARGE_INTEGER libNewSize);
-	STDMETHOD(CopyTo)(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten);
-	STDMETHOD(Commit)(DWORD grfCommitFlags);
-	STDMETHOD(Revert)(void);
-	STDMETHOD(LockRegion)(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType);
-	STDMETHOD(UnlockRegion)(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType);
-	STDMETHOD(Stat)(STATSTG *pstatstg, DWORD grfStatFlag);
-	STDMETHOD(Clone)(IStream **ppstm);
+	STDMETHOD(Seek)(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGER *plibNewPosition) noexcept;
+	STDMETHOD(SetSize)(ULARGE_INTEGER libNewSize) noexcept;
+	STDMETHOD(CopyTo)(IStream *pstm, ULARGE_INTEGER cb, ULARGE_INTEGER *pcbRead, ULARGE_INTEGER *pcbWritten) noexcept;
+	STDMETHOD(Commit)(DWORD grfCommitFlags) noexcept;
+	STDMETHOD(Revert)(void) noexcept;
+	STDMETHOD(LockRegion)(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) noexcept;
+	STDMETHOD(UnlockRegion)(ULARGE_INTEGER libOffset, ULARGE_INTEGER cb, DWORD dwLockType) noexcept;
+	STDMETHOD(Stat)(STATSTG *pstatstg, DWORD grfStatFlag) noexcept;
+	STDMETHOD(Clone)(IStream **ppstm) noexcept;
 
-	void Clear();
+	void Clear() noexcept;
 private:
 	//bool m_WasAssignedArray;
 	//ULONG       m_iReadPos;     // Current index position for reading from the buffer.

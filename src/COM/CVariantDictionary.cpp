@@ -9,13 +9,13 @@
 
 
 // CVariantDictionary
-STDMETHODIMP CVariantDictionary::get_Count(int* pVal) throw()
+STDMETHODIMP CVariantDictionary::get_Count(int* pVal) noexcept
 {
 	*pVal = (int)_dictionary.size();
 	return S_OK;
 }
 
-STDMETHODIMP CVariantDictionary::get_Item(VARIANT varKey, VARIANT* pVal) throw()
+STDMETHODIMP CVariantDictionary::get_Item(VARIANT varKey, VARIANT* pVal) noexcept
 {
 	//LONG El=0, Position=0;
 	HRESULT hr = S_OK;
@@ -90,7 +90,7 @@ STDMETHODIMP CVariantDictionary::get_Item(VARIANT varKey, VARIANT* pVal) throw()
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::put_Item(VARIANT varKey, VARIANT newVal) throw()
+STDMETHODIMP CVariantDictionary::put_Item(VARIANT varKey, VARIANT newVal) noexcept
 {
     //LONG El = 0, Position = 0;
 	HRESULT hr = S_OK;
@@ -161,7 +161,7 @@ STDMETHODIMP CVariantDictionary::put_Item(VARIANT varKey, VARIANT newVal) throw(
 }
 // dotned always prefers putref instead of 
 // put_Item
-STDMETHODIMP CVariantDictionary::putref_Item(VARIANT varKey, VARIANT newVal) throw()
+STDMETHODIMP CVariantDictionary::putref_Item(VARIANT varKey, VARIANT newVal) noexcept
 {
 	HRESULT hr = S_OK;
 	VARIANT* valueArray = nullptr;
@@ -230,7 +230,7 @@ STDMETHODIMP CVariantDictionary::putref_Item(VARIANT varKey, VARIANT newVal) thr
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::get_Key(VARIANT VarKey, VARIANT* pVal) throw()
+STDMETHODIMP CVariantDictionary::get_Key(VARIANT VarKey, VARIANT* pVal) noexcept
 {
 	HRESULT hr = S_OK;
 	CComVariant KeyCopy;
@@ -254,7 +254,7 @@ STDMETHODIMP CVariantDictionary::get_Key(VARIANT VarKey, VARIANT* pVal) throw()
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::_NewEnum(IUnknown** pVal) throw()
+STDMETHODIMP CVariantDictionary::_NewEnum(IUnknown** pVal) noexcept
 {
 	HRESULT hr = S_OK;
 	ULONG size = (ULONG)_dictionary.size();
@@ -281,7 +281,7 @@ STDMETHODIMP CVariantDictionary::_NewEnum(IUnknown** pVal) throw()
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::Remove(VARIANT varKey) throw()
+STDMETHODIMP CVariantDictionary::Remove(VARIANT varKey) noexcept
 {
 	HRESULT hr = S_OK;
 	CComVariant varcopy;
@@ -316,7 +316,7 @@ STDMETHODIMP CVariantDictionary::Remove(VARIANT varKey) throw()
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::RemoveAll(void) throw()
+STDMETHODIMP CVariantDictionary::RemoveAll(void) noexcept
 {	
 	logModule.Write(L"RemoveAll");
 	/*for (auto pos = _isserialized.begin(); pos != _isserialized.end(); ++pos)
@@ -334,7 +334,7 @@ STDMETHODIMP CVariantDictionary::RemoveAll(void) throw()
 }
 
 
-STDMETHODIMP CVariantDictionary::LocalLoad(IStream* pStream, const DWORD lSize) throw()
+STDMETHODIMP CVariantDictionary::LocalLoad(IStream* pStream, const DWORD lSize) noexcept
 {
 	HRESULT hr = S_OK;
 	INT cx = 0;
@@ -395,13 +395,13 @@ STDMETHODIMP CVariantDictionary::LocalLoad(IStream* pStream, const DWORD lSize) 
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::isDirty(BOOL *retval) throw()
+STDMETHODIMP CVariantDictionary::isDirty(BOOL *retval) noexcept
 {
 	*retval = blnDirty;
 	return S_OK;
 }
 
-STDMETHODIMP CVariantDictionary::WriteProperty(IStream *pStream, const BSTR strPropName, const VARIANT* TheVal) throw()
+STDMETHODIMP CVariantDictionary::WriteProperty(IStream *pStream, const BSTR strPropName, const VARIANT* TheVal) noexcept
 {
    
 	// write the complete string including the leading 4 bytes
@@ -454,7 +454,7 @@ STDMETHODIMP CVariantDictionary::WriteProperty(IStream *pStream, const BSTR strP
 
 // Writes a Variant, including complex types to the memory stream
 STDMETHODIMP CVariantDictionary::WriteValue(IStream *pStream,
-	const VARIANT* TheVal,  VARTYPE vtype, const BSTR strKeyName) throw()
+	const VARIANT* TheVal,  VARTYPE vtype, const BSTR strKeyName) noexcept
 {
 
 	LONG cBytes = 0,
@@ -767,7 +767,7 @@ exit: // sorry
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::ReadProperty(IStream* pStream, _Inout_ BSTR *strPropName, VARIANT* TheVal) throw()
+STDMETHODIMP CVariantDictionary::ReadProperty(IStream* pStream, _Inout_ BSTR *strPropName, VARIANT* TheVal) noexcept
 {
 
 /*   'for each named property SEARCH on it
@@ -813,7 +813,7 @@ STDMETHODIMP CVariantDictionary::ReadProperty(IStream* pStream, _Inout_ BSTR *st
 ///<param name="TheValue">asdf</param>
 ///<param name="vtype">VT variant type</param>
 ///<returns>a HRESULT</returns>
-STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue, VARTYPE vtype) throw()
+STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue, VARTYPE vtype) noexcept
 {
     LONG cBytes =0,
 		ElSize =0,
@@ -1076,7 +1076,7 @@ STDMETHODIMP CVariantDictionary::ReadValue(IStream * pStream, VARIANT* TheValue,
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::LocalContents(DWORD * lSize, IStream **pSequentialStream) throw()
+STDMETHODIMP CVariantDictionary::LocalContents(DWORD * lSize, IStream **pSequentialStream) noexcept
 {
 	HRESULT hr = S_OK;
 	VARIANT cVarTemp = { VT_EMPTY };
@@ -1125,7 +1125,7 @@ STDMETHODIMP CVariantDictionary::LocalContents(DWORD * lSize, IStream **pSequent
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::get_Exists(VARIANT vKey, VARIANT_BOOL* pVal) throw()
+STDMETHODIMP CVariantDictionary::get_Exists(VARIANT vKey, VARIANT_BOOL* pVal) noexcept
 {
 
 	CComVariant keycopy;
@@ -1137,7 +1137,7 @@ STDMETHODIMP CVariantDictionary::get_Exists(VARIANT vKey, VARIANT_BOOL* pVal) th
 	}
 	return hr;
 }
-STDMETHODIMP CVariantDictionary::get_VarType(VARIANT vKey, SHORT *vType) throw()
+STDMETHODIMP CVariantDictionary::get_VarType(VARIANT vKey, SHORT *vType) noexcept
 {
 	
 	CComVariant keycopy;
@@ -1158,7 +1158,7 @@ STDMETHODIMP CVariantDictionary::get_VarType(VARIANT vKey, SHORT *vType) throw()
 }
 
 
-STDMETHODIMP CVariantDictionary::Persist(VARIANT vKey) throw()
+STDMETHODIMP CVariantDictionary::Persist(VARIANT vKey) noexcept
 {
 	HRESULT hr = S_OK;
 	logModule.Write(L"Persist %s", vKey.bstrVal);
@@ -1229,7 +1229,7 @@ STDMETHODIMP CVariantDictionary::Persist(VARIANT vKey) throw()
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::put_Readonly(VARIANT_BOOL newVal) throw()
+STDMETHODIMP CVariantDictionary::put_Readonly(VARIANT_BOOL newVal) noexcept
 {
 	this->readOnly = newVal == VARIANT_TRUE ? TRUE : FALSE;
 	return S_OK;
@@ -1239,7 +1239,7 @@ STDMETHODIMP CVariantDictionary::put_Readonly(VARIANT_BOOL newVal) throw()
  *writes a string in utf-8 compressed format
  *
  ***/
-STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) throw()
+STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) noexcept
 {
 	HRESULT hr = S_OK;
 
@@ -1279,7 +1279,7 @@ STDMETHODIMP CVariantDictionary::WriteString(IStream *pStream, BSTR TheVal) thro
 /*
  * decompresses a string (BSTR) from utf-8 format and also tests for old (legacy) utf-16 format
  */
-STDMETHODIMP CVariantDictionary::ReadString(IStream *pStream, BSTR *retval) throw()
+STDMETHODIMP CVariantDictionary::ReadString(IStream *pStream, BSTR *retval) noexcept
 {
 	HRESULT hr = S_OK;
 	UINT lTempSize = 0;
@@ -1327,7 +1327,7 @@ STDMETHODIMP CVariantDictionary::ReadString(IStream *pStream, BSTR *retval) thro
 	return hr;
 }
 
-STDMETHODIMP CVariantDictionary::EnsureBuffer(INT newBuffer) throw()
+STDMETHODIMP CVariantDictionary::EnsureBuffer(INT newBuffer) noexcept
 {
 	if (newBuffer > m_currentBufLen)
 	{

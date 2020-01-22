@@ -2794,7 +2794,7 @@ public:
 		byref = pT;
 	}
 #ifdef _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
-	_Check_return_ HRESULT WriteToStream(_Inout_ IStream* pStream);
+	_Check_return_ HRESULT WriteToStream(_Inout_ IStream* pStream) noexcept;
 	_Check_return_ HRESULT WriteToStream(
 		_Inout_ IStream* pStream,
 		_In_ VARTYPE vtWrite)
@@ -2873,7 +2873,7 @@ public:
 #ifdef _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
 #pragma warning(push)
 #pragma warning(disable: 4702)
-_Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStream) throw()
+_Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStream) noexcept
 {
 	if(pStream == NULL)
 		return E_INVALIDARG;

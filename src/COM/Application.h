@@ -6,7 +6,7 @@
 
 #include "IKeySerializer.h"
 #include "tools.h"
-#include "CRedLock.h"
+//#include "CRedLock.h"
 
 //defines a datavalue structure
 struct ElementModel
@@ -81,20 +81,20 @@ public:
 
 		SEEK_NULL.QuadPart = 0;
 		m_currentBufLen = 0;
-		dlm = new CRedLock();
+		//dlm = new CRedLock();
 		return S_OK;
 	}
 	void FinalRelease() throw()
 	{
-		if (dlm != NULL) {
+		/*if (dlm != NULL) {
 		delete dlm;
-		}
+		}*/
 
 	}
 private:
 	
-	CRedLock  * dlm;
-	CLock my_lock;
+	//CRedLock  * dlm;
+	//CLock my_lock;
 	//redis connection pool
 	simple_pool::ptr_t pool;
 	BYTE m_dbTimeStamp[8];
@@ -108,7 +108,7 @@ private:
 	std::map<CComBSTR, ElementModel, KeyComparer> _dictionary;
 	std::vector<string> _removed; // do not change to char* for some unknown reason, this gets corrupted
 	LARGE_INTEGER SEEK_NULL;	
-	CHeapPtr<byte> m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
+	CHeapPtr<unsigned char> m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
 	INT m_currentBufLen;
 
 public:

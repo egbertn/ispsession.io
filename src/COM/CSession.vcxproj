@@ -26,7 +26,7 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccLocalPath>SAK</SccLocalPath>
     <SccProvider>SAK</SccProvider>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.18362.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -150,7 +150,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/NODEFAULTLIB:libcmt.lib /LTCG %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>hiredisD.lib; Win32_InteropD.lib;Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>hiredisD.lib; Ws2_32.lib; Netapi32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)CSession.dll</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <ModuleDefinitionFile>.\CSession.def</ModuleDefinitionFile>
@@ -203,7 +203,7 @@
       <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>hiredis64D.lib;Win32_Interop64D.lib; Netapi32.lib;%(AdditionalDependencies); </AdditionalDependencies>
+      <AdditionalDependencies>Ws2_32.lib;hiredis64D.lib;Netapi32.lib;%(AdditionalDependencies); </AdditionalDependencies>
       <OutputFile>$(OutDir)CSession64.dll</OutputFile>
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <ModuleDefinitionFile>.\CSession.Def</ModuleDefinitionFile>
@@ -254,13 +254,14 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
       <FloatingPointModel>Precise</FloatingPointModel>
-      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ExpandAttributedSource>false</ExpandAttributedSource>
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -287,7 +288,7 @@
       <ImportLibrary>$(OutDir)CSession.lib</ImportLibrary>
       <TargetMachine>MachineX86</TargetMachine>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>kernel32.lib;advapi32.lib;Netapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;%(AdditionalDependencies);Win32_Interop.lib;hiredis.lib</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;advapi32.lib;Netapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;%(AdditionalDependencies);hiredis.lib;Ws2_32.lib;</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Message>Performing registration</Message>
@@ -323,13 +324,14 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <FunctionLevelLinking>false</FunctionLevelLinking>
-      <TreatWChar_tAsBuiltInType>false</TreatWChar_tAsBuiltInType>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ExpandAttributedSource>false</ExpandAttributedSource>
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -351,13 +353,12 @@
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <SetChecksum>false</SetChecksum>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
-      <DataExecutionPrevention>
-      </DataExecutionPrevention>
+      <DataExecutionPrevention>false</DataExecutionPrevention>
       <ImportLibrary>$(OutDir)CSession.lib</ImportLibrary>
       <TargetMachine>MachineX64</TargetMachine>
       <AllowIsolation>true</AllowIsolation>
       <EnableUAC>false</EnableUAC>
-      <AdditionalDependencies>kernel32.lib;user32.lib;advapi32.lib;ole32.lib;oleaut32.lib;uuid.lib;%(AdditionalDependencies);hiredis64.lib;Netapi32.lib</AdditionalDependencies>
+      <AdditionalDependencies>%(AdditionalDependencies);hiredis64.lib;Netapi32.lib;Ws2_32.lib;</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Message>Performing registration</Message>
@@ -387,7 +388,7 @@
     <ClCompile Include="dllmain.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN64;_WINDOWS;NDEBUG;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
-    <ClCompile Include="CRedLock.cpp" />
+    <None Include="CRedLock.cpp" />
     <ClCompile Include="include\getopt\getopt.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>

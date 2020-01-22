@@ -16,8 +16,8 @@
 #define _UNICODE
 #define NOCOMM 
 //support Windows Server 2003 with SP1,
-#define WINVER _WIN32_WINNT_WIN8	
-#define _WIN32_WINNT _WIN32_WINNT_WIN8
+#define WINVER 0x0603  	
+#define _WIN32_WINNT 0x0603  
  #define INCL_WINSOCK_API_TYPEDEFS 0
 #define WIN32_MEAN_AND_LEAN
 #define VC_EXTRALEAN 

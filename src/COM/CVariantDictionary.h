@@ -33,7 +33,7 @@ public:
 		
 	END_COM_MAP()
 
-	HRESULT FinalConstruct() throw()
+	HRESULT FinalConstruct()  
 	{
 		readOnly = 
 		blnDirty = FALSE;	
@@ -46,7 +46,7 @@ public:
 		return S_OK;
 	}
 
-	void FinalRelease() throw()
+	void FinalRelease()  
 	{
 		_dictionary.clear();
 		_isserialized.clear();
@@ -56,31 +56,31 @@ public:
 	}
 	// NOT STDMETHOD because we don't support aggregation (we are sealed)
 	
-	STDMETHODIMP get_Item(VARIANT varKey, VARIANT* pVal);
-	STDMETHODIMP put_Item(VARIANT varKey, VARIANT newVal);
-	STDMETHODIMP putref_Item(VARIANT varKey, VARIANT newVal);
+	STDMETHODIMP get_Item(VARIANT varKey, VARIANT* pVal) noexcept;
+	STDMETHODIMP put_Item(VARIANT varKey, VARIANT newVal) noexcept;
+	STDMETHODIMP putref_Item(VARIANT varKey, VARIANT newVal) noexcept;
 	
-	STDMETHODIMP get_Key(VARIANT KeyIndex, VARIANT* pVal);
-	STDMETHODIMP get_Count(int* pVal);
-	STDMETHODIMP _NewEnum(IUnknown** pVal);
-	STDMETHODIMP Remove(VARIANT varKey);
-	STDMETHODIMP RemoveAll(void);
-	STDMETHODIMP get_Exists(VARIANT vKey, VARIANT_BOOL* pVal);
-	STDMETHODIMP get_VarType(VARIANT vKey, SHORT * pVal);
-	STDMETHODIMP Persist(VARIANT vKey);
+	STDMETHODIMP get_Key(VARIANT KeyIndex, VARIANT* pVal) noexcept;
+	STDMETHODIMP get_Count(int* pVal) noexcept;
+	STDMETHODIMP _NewEnum(IUnknown** pVal) noexcept;
+    STDMETHODIMP Remove(VARIANT varKey) noexcept;
+	STDMETHODIMP RemoveAll(void) noexcept;
+	STDMETHODIMP get_Exists(VARIANT vKey, VARIANT_BOOL* pVal) noexcept;
+	STDMETHODIMP get_VarType(VARIANT vKey, SHORT * pVal) noexcept;
+	STDMETHODIMP Persist(VARIANT vKey) noexcept;
 
-	STDMETHODIMP LocalContents(DWORD* lSize, IStream **pSequentialStream);
+	STDMETHODIMP LocalContents(DWORD* lSize, IStream **pSequentialStream) noexcept;
 
-	STDMETHODIMP LocalLoad(IStream* pStream, const DWORD lSize);
-	STDMETHODIMP isDirty(BOOL *retval);
-	STDMETHODIMP WriteProperty(IStream *pStream, const BSTR strPropName, const VARIANT* TheVal);
-	STDMETHODIMP WriteValue(IStream *pStream, const VARIANT* TheVal, VARTYPE vtype, const BSTR theKey);
-	STDMETHODIMP ReadProperty(IStream *pStream, BSTR *strPropName, VARIANT* TheVal);
-	STDMETHODIMP ReadValue(IStream *pStream, VARIANT* TheValue, VARTYPE vtype);	
-	STDMETHODIMP put_Readonly(const VARIANT_BOOL newVal);
-	STDMETHODIMP WriteString(IStream *pStream, const BSTR TheVal);
-	STDMETHODIMP ReadString(IStream *pStream, BSTR *retval);
-	STDMETHODIMP EnsureBuffer(INT newSize);
+	STDMETHODIMP LocalLoad(IStream* pStream, const DWORD lSize) noexcept;
+	STDMETHODIMP isDirty(BOOL *retval) noexcept;
+	STDMETHODIMP WriteProperty(IStream *pStream, const BSTR strPropName, const VARIANT* TheVal) noexcept;
+	STDMETHODIMP WriteValue(IStream *pStream, const VARIANT* TheVal, VARTYPE vtype, const BSTR theKey) noexcept;
+	STDMETHODIMP ReadProperty(IStream *pStream, BSTR *strPropName, VARIANT* TheVal) noexcept;
+	STDMETHODIMP ReadValue(IStream *pStream, VARIANT* TheValue, VARTYPE vtype) noexcept;
+	STDMETHODIMP put_Readonly(const VARIANT_BOOL newVal) noexcept;
+	STDMETHODIMP WriteString(IStream *pStream, const BSTR TheVal) noexcept;
+	STDMETHODIMP ReadString(IStream *pStream, BSTR *retval) noexcept;
+	STDMETHODIMP EnsureBuffer(INT newSize) noexcept;
 	//STDMETHODIMP ReadUnsupportedValue(IStream *pStream, VARIANT* TheValue, DWORD size);
 	//STDMETHODIMP WriteUnsupportedValue(IStream *pStream, VARIANT* TheValue);
 private:
@@ -97,7 +97,7 @@ private:
 	std::map<CComBSTR, CComVariant, TextComparer> _dictionary;
 	std::map<CComBSTR, bool, TextComparer> _isserialized;	
 	
-	CHeapPtr<byte> m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
+	CHeapPtr<unsigned char> m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
 	INT m_currentBufLen = 0;
 	LARGE_INTEGER SEEK_NULL;	
 };

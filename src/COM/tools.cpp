@@ -11,27 +11,23 @@
 using namespace std::experimental;
 std::wstring& __stdcall ltrim(std::wstring &s) 
 {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-		std::not1(std::ptr_fun<int, int>(std::isspace))));
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) {return !std::isspace(c); }));
 	return s;
 }
 std::string& __stdcall ltrim(std::string &s) 
 {
-	s.erase(s.begin(), std::find_if(s.begin(), s.end(),
-		std::not1(std::ptr_fun<int, int>(std::isspace))));
-	return s;
+    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) {return !std::isspace(c); }));
+    return s;
 }
 // trim from end
 std::wstring& __stdcall rtrim(std::wstring &s) 
 {
-	s.erase(std::find_if(s.rbegin(), s.rend(),
-		std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int c) {return !std::isspace(c); }).base(), s.end());
 	return s;
 }
 std::string& __stdcall rtrim(std::string &s) 
 {
-	s.erase(std::find_if(s.rbegin(), s.rend(),
-		std::not1(std::ptr_fun<int, int>(std::isspace))).base(), s.end());
+    s.erase(std::find_if(s.rbegin(), s.rend(), [](int c) {return !std::isspace(c); }).base(), s.end());
 	return s;
 }
 
@@ -93,15 +89,15 @@ void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elem
 
 }
 
-bool __stdcall FileExists(const wchar_t * FileName) throw()
+bool __stdcall FileExists(const wchar_t * FileName) noexcept
 {
 	CComBSTR bstrFileName(FileName);
 	auto ansi = bstrFileName.ToString();
-	return filesystem::exists(ansi);
+	return std::filesystem::exists(ansi);
 }
 //attach to it
 // e.g. searching on web.Config will return .Config
-BSTR __stdcall FileExtension(const CComBSTR& FileName) throw()
+BSTR __stdcall FileExtension(const CComBSTR& FileName) noexcept
 {
 	int lastPos = FileName.LastIndexOf('.');
 	if (lastPos >= 0)
@@ -110,7 +106,7 @@ BSTR __stdcall FileExtension(const CComBSTR& FileName) throw()
 }
 //strips path and extension e.g. 'c:\\dir\\file.ext' becomes 'file'
 // returns null if an error ocurred
-BSTR __stdcall FileStripPath(const wchar_t* pathname) throw()
+BSTR __stdcall FileStripPath(const wchar_t* pathname) noexcept
 {	
 	wchar_t drive[_MAX_DRIVE];
 	wchar_t dir[_MAX_DIR ];
@@ -126,7 +122,7 @@ BSTR __stdcall FileStripPath(const wchar_t* pathname) throw()
 	return fileName.Detach();
 }
 //strips file and extension e.g. 'c:\\dir\\file.ext' becomes 'c:\\dir'
-BSTR __stdcall FileStripFile(const wchar_t* pathname) throw()
+BSTR __stdcall FileStripFile(const wchar_t* pathname) noexcept
 {
 	wchar_t drive[_MAX_DRIVE];
 	wchar_t dir[_MAX_DIR];
@@ -147,7 +143,7 @@ BSTR __stdcall FileStripFile(const wchar_t* pathname) throw()
 	//	fileName.Append(ext);
 	return path.Detach();
 }
-BSTR __stdcall GetModulePath() throw()
+BSTR __stdcall GetModulePath() noexcept
 {
 	CComBSTR licenseFile(MAX_PATH);
 	
@@ -167,7 +163,7 @@ BSTR __stdcall GetModulePath() throw()
 
 	return licenseFile.Detach();
 }
-BSTR __stdcall GetDCDomain() throw()
+BSTR __stdcall GetDCDomain() noexcept
 {
 	PWSTR wgname = nullptr;
 	NETSETUP_JOIN_STATUS status;
@@ -187,7 +183,7 @@ BSTR __stdcall GetDCDomain() throw()
 	return nullptr;
 }
 //
-BSTR __stdcall GetNetBIOSName(bool GiveDnsName = false) throw()
+BSTR __stdcall GetNetBIOSName(bool GiveDnsName = false) noexcept
 {
 	DWORD realSize = MAX_COMPUTERNAME_LENGTH + 1;
 	CComBSTR retVal(realSize);
@@ -199,7 +195,7 @@ BSTR __stdcall GetNetBIOSName(bool GiveDnsName = false) throw()
 	return nullptr;
 }
 
-void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = NULL, int els = 0) throw()
+void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = NULL, int els = 0) noexcept
 {
 	
 	HANDLE report = ::RegisterEventSourceW(NULL, L"ISPSession");	
@@ -251,7 +247,7 @@ void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = NULL, int els = 0
 //	LogMessage(MSG_ERROR, amsg, 1);
 //}
 
-DATE __stdcall Now() throw()
+DATE __stdcall Now() noexcept
 {
 	SYSTEMTIME st;
 	GetLocalTime(&st);
@@ -261,7 +257,7 @@ DATE __stdcall Now() throw()
 }
 //select convert(varchar(23), getdate(), 126) = ISO8601
 // returns: eg '2009-04-22T13:11:36.377'
-BSTR __stdcall FormatDBTimeStamp(const DATE ts) throw()
+BSTR __stdcall FormatDBTimeStamp(const DATE ts) noexcept
 {
 	if (ts == NULL) return NULL;
 	SYSTEMTIME st = { 0 };
@@ -282,7 +278,7 @@ BSTR __stdcall FormatDBTimeStamp(const DATE ts) throw()
 	return sTS.Detach();
 
 }
-STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm) throw()
+STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm) noexcept
 {
 	if (pPersistStmInit == nullptr || pStm == nullptr)
 		return E_INVALIDARG;
@@ -297,7 +293,7 @@ STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm
 	return hr;
 }
 
-STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj) throw()
+STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj) noexcept
 {
 	if (pStm == nullptr || ppvObj == nullptr) return E_INVALIDARG;
 
@@ -397,23 +393,28 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 //}
 wstring __stdcall s2ws(const std::string& str)
 {
-	std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-	return converter.from_bytes(str);
+    auto count = ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), nullptr, 0);
+    wstring ret;
+    ret.resize(count);
+    ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), ret.data(), count);
+    return std::move(ret);
 
 }
 
 string __stdcall ws2s(const std::wstring& wstr)
 {
-	using convert_type = std::codecvt_utf8<wchar_t>;
-	std::wstring_convert<convert_type, wchar_t> converter;
 
-	return converter.to_bytes(wstr);
+    auto count = ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.length(), nullptr, 0, nullptr, nullptr);
+    string ret;
+    ret.resize(count);
+    ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.length(), ret.data(), count, nullptr, nullptr);
+    return std::move(ret);
 
 }
 
 //assumes that PBYTE is valid memory! 
 //ensures that a return is given, e.g. NULL bytes will return an empty hexadecimal range of 'len' length
-std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) throw()
+std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) noexcept
 {
 	if (bytes == NULL || len <= 0)
 	{
@@ -444,7 +445,7 @@ std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) throw()
 	};
 	return std::move(retVal);
 }
-void __stdcall sHexFromBt(GUID* psa, BSTR *sRet) throw()
+void __stdcall sHexFromBt(GUID* psa, BSTR *sRet) noexcept
 {
 	auto pvdata = (PBYTE)psa;
 	if (::SysReAllocStringLen(sRet, psa == NULL ? L"00000000000000000000000000000000" : NULL, sizeof(GUID) * 2) == TRUE)
@@ -474,7 +475,7 @@ void __stdcall sHexFromBt(GUID* psa, BSTR *sRet) throw()
 
 // converts binary array to hexadecimal string prepended by 0x
 // so {0xFF, 0xFF} would become L"0xFFFF" 
-BSTR __stdcall sHexFromBt(const PUCHAR btBytes, LONG cb, bool prepend) throw()
+BSTR __stdcall sHexFromBt(const PUCHAR btBytes, LONG cb, bool prepend) noexcept
 {
     int cx; 
 	BYTE btBlah;
@@ -524,7 +525,7 @@ BSTR __stdcall sHexFromBt(const PUCHAR btBytes, LONG cb, bool prepend) throw()
 	return  myGUID.Detach();
 	
 }
-BOOL __stdcall IsValidHex(const BSTR Cookie) throw()
+BOOL __stdcall IsValidHex(const BSTR Cookie) noexcept
 {
 	UINT sLen = ::SysStringLen(Cookie);
 
@@ -542,7 +543,7 @@ BOOL __stdcall IsValidHex(const BSTR Cookie) throw()
 	return TRUE;
 }
 // Converts Hex GUID in Parameter strCookiePtr to addrGUID
-BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) throw()
+BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) noexcept
 {
 	
 	LONG cx = 0;
@@ -588,7 +589,7 @@ BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) throw()
 	return  retval;
 	
 }
-void __stdcall FreeString(__out BSTR * theString) throw()
+void __stdcall FreeString(__out BSTR * theString) noexcept
 {
 	if (theString != NULL && *theString != NULL)
 	{
@@ -597,7 +598,7 @@ void __stdcall FreeString(__out BSTR * theString) throw()
 	}
 }
 
-STDMETHODIMP ISequentialStream_Copy(_In_ ISequentialStream* iface, _In_ ISequentialStream* pstm, _In_ ULARGE_INTEGER cb, _Inout_opt_ ULARGE_INTEGER* pcbRead, _Inout_opt_ ULARGE_INTEGER* pcbWritten) throw()
+STDMETHODIMP ISequentialStream_Copy(_In_ ISequentialStream* iface, _In_ ISequentialStream* pstm, _In_ ULARGE_INTEGER cb, _Inout_opt_ ULARGE_INTEGER* pcbRead, _Inout_opt_ ULARGE_INTEGER* pcbWritten) noexcept
 {
 	HRESULT        hr = S_OK;
 	BYTE           tmpBuffer[128];
@@ -656,7 +657,7 @@ STDMETHODIMP ISequentialStream_Copy(_In_ ISequentialStream* iface, _In_ ISequent
 // position 1: License
 // position 2-5 calculated license
 // position 6-9 calculated hash on license (if license type = 4)
-bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) throw()
+bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) noexcept
 {
 	bool retVal = false;
 	char licenseType = 0;
@@ -764,7 +765,7 @@ static const unsigned char HashDataLookup[256] = {
 				  0x25, 0x45, 0x27, 0x75, 0x92, 0xB8, 0xA3, 0xC8, 0xDE, 0xEB, 0xF8, 0xF3, 0xDB,
 				  0x0A, 0x98, 0x83, 0x7B, 0xE5, 0xCB, 0x4C, 0x78, 0xD1 };
 // same as ShlWapi.HashData
-HRESULT __stdcall HashData2(const unsigned char* lpSrc, DWORD nSrcLen, unsigned char *lpDest, DWORD nDestLen) throw()
+HRESULT __stdcall HashData2(const unsigned char* lpSrc, DWORD nSrcLen, unsigned char *lpDest, DWORD nDestLen) noexcept
 {
 	INT srcCount = nSrcLen - 1, destCount = nDestLen - 1;
 	if (!lpSrc || !lpDest)

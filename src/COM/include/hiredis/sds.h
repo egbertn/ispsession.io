@@ -34,90 +34,46 @@
 #define __SDS_H
 
 #define SDS_MAX_PREALLOC (1024*1024)
-
-#ifdef _WIN32
-#include "../Win32_Interop/Win32_Portability.h"
-#include "../Win32_Interop/win32_types_hiredis.h"
+#ifdef _MSC_VER
+#define __attribute__(x)
 #endif
+
 #include <sys/types.h>
 #include <stdarg.h>
 #include <stdint.h>
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 typedef char *sds;
 
-#ifdef _WIN32
-#define PACK( __Declaration__ ) __pragma( pack(push, 1) ) __Declaration__ __pragma( pack(pop) )
-
-/* Note: sdshdr5 is never used, we just access the flags byte directly.
-* However is here to document the layout of type 5 SDS strings. */
-PACK(
-	struct sdshdr5 {
-	unsigned char flags; /* 3 lsb of type, and 5 msb of string length */
-	char buf[];
-};)
-PACK(
-	struct sdshdr8 {
-	uint8_t len; /* used */
-	uint8_t alloc; /* excluding the header and null terminator */
-	unsigned char flags; /* 3 lsb of type, 5 unused bits */
-	char buf[];
-};)
-PACK(
-	struct sdshdr16 {
-	uint16_t len; /* used */
-	uint16_t alloc; /* excluding the header and null terminator */
-	unsigned char flags; /* 3 lsb of type, 5 unused bits */
-	char buf[];
-};)
-PACK(
-	struct sdshdr32 {
-	uint32_t len; /* used */
-	uint32_t alloc; /* excluding the header and null terminator */
-	unsigned char flags; /* 3 lsb of type, 5 unused bits */
-	char buf[];
-};)
-PACK(
-	struct sdshdr64 {
-	uint64_t len; /* used */
-	uint64_t alloc; /* excluding the header and null terminator */
-	unsigned char flags; /* 3 lsb of type, 5 unused bits */
-	char buf[];
-};)
-#else
 /* Note: sdshdr5 is never used, we just access the flags byte directly.
  * However is here to document the layout of type 5 SDS strings. */
-struct __attribute__((__packed__)) sdshdr5 {
-	unsigned char flags; /* 3 lsb of type, and 5 msb of string length */
-	char buf[];
+struct __attribute__ ((__packed__)) sdshdr5 {
+    unsigned char flags; /* 3 lsb of type, and 5 msb of string length */
+    char buf[];
 };
-struct __attribute__((__packed__)) sdshdr8 {
-	uint8_t len; /* used */
-	uint8_t alloc; /* excluding the header and null terminator */
-	unsigned char flags; /* 3 lsb of type, 5 unused bits */
-	char buf[];
+struct __attribute__ ((__packed__)) sdshdr8 {
+    uint8_t len; /* used */
+    uint8_t alloc; /* excluding the header and null terminator */
+    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    char buf[];
 };
-struct __attribute__((__packed__)) sdshdr16 {
-	uint16_t len; /* used */
-	uint16_t alloc; /* excluding the header and null terminator */
-	unsigned char flags; /* 3 lsb of type, 5 unused bits */
-	char buf[];
+struct __attribute__ ((__packed__)) sdshdr16 {
+    uint16_t len; /* used */
+    uint16_t alloc; /* excluding the header and null terminator */
+    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    char buf[];
 };
-struct __attribute__((__packed__)) sdshdr32 {
-	uint32_t len; /* used */
-	uint32_t alloc; /* excluding the header and null terminator */
-	unsigned char flags; /* 3 lsb of type, 5 unused bits */
-	char buf[];
+struct __attribute__ ((__packed__)) sdshdr32 {
+    uint32_t len; /* used */
+    uint32_t alloc; /* excluding the header and null terminator */
+    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    char buf[];
 };
-struct __attribute__((__packed__)) sdshdr64 {
-	uint64_t len; /* used */
-	uint64_t alloc; /* excluding the header and null terminator */
-	unsigned char flags; /* 3 lsb of type, 5 unused bits */
-	char buf[];
+struct __attribute__ ((__packed__)) sdshdr64 {
+    uint64_t len; /* used */
+    uint64_t alloc; /* excluding the header and null terminator */
+    unsigned char flags; /* 3 lsb of type, 5 unused bits */
+    char buf[];
 };
-#endif
 
 #define SDS_TYPE_5  0
 #define SDS_TYPE_8  1
@@ -131,134 +87,134 @@ struct __attribute__((__packed__)) sdshdr64 {
 #define SDS_TYPE_5_LEN(f) ((f)>>SDS_TYPE_BITS)
 
 static inline size_t sdslen(const sds s) {
-	unsigned char flags = s[-1];
-	switch (flags&SDS_TYPE_MASK) {
-	case SDS_TYPE_5:
-		return SDS_TYPE_5_LEN(flags);
-	case SDS_TYPE_8:
-		return SDS_HDR(8, s)->len;
-	case SDS_TYPE_16:
-		return SDS_HDR(16, s)->len;
-	case SDS_TYPE_32:
-		return SDS_HDR(32, s)->len;
-	case SDS_TYPE_64:
-		return SDS_HDR(64, s)->len;
-	}
-	return 0;
+    unsigned char flags = s[-1];
+    switch(flags&SDS_TYPE_MASK) {
+        case SDS_TYPE_5:
+            return SDS_TYPE_5_LEN(flags);
+        case SDS_TYPE_8:
+            return SDS_HDR(8,s)->len;
+        case SDS_TYPE_16:
+            return SDS_HDR(16,s)->len;
+        case SDS_TYPE_32:
+            return SDS_HDR(32,s)->len;
+        case SDS_TYPE_64:
+            return SDS_HDR(64,s)->len;
+    }
+    return 0;
 }
 
 static inline size_t sdsavail(const sds s) {
-	unsigned char flags = s[-1];
-	switch (flags&SDS_TYPE_MASK) {
-	case SDS_TYPE_5: {
-		return 0;
-	}
-	case SDS_TYPE_8: {
-		SDS_HDR_VAR(8, s);
-		return sh->alloc - sh->len;
-	}
-	case SDS_TYPE_16: {
-		SDS_HDR_VAR(16, s);
-		return sh->alloc - sh->len;
-	}
-	case SDS_TYPE_32: {
-		SDS_HDR_VAR(32, s);
-		return sh->alloc - sh->len;
-	}
-	case SDS_TYPE_64: {
-		SDS_HDR_VAR(64, s);
-		return sh->alloc - sh->len;
-	}
-	}
-	return 0;
+    unsigned char flags = s[-1];
+    switch(flags&SDS_TYPE_MASK) {
+        case SDS_TYPE_5: {
+            return 0;
+        }
+        case SDS_TYPE_8: {
+            SDS_HDR_VAR(8,s);
+            return sh->alloc - sh->len;
+        }
+        case SDS_TYPE_16: {
+            SDS_HDR_VAR(16,s);
+            return sh->alloc - sh->len;
+        }
+        case SDS_TYPE_32: {
+            SDS_HDR_VAR(32,s);
+            return sh->alloc - sh->len;
+        }
+        case SDS_TYPE_64: {
+            SDS_HDR_VAR(64,s);
+            return sh->alloc - sh->len;
+        }
+    }
+    return 0;
 }
 
 static inline void sdssetlen(sds s, size_t newlen) {
-	unsigned char flags = s[-1];
-	switch (flags&SDS_TYPE_MASK) {
-	case SDS_TYPE_5:
-	{
-		unsigned char *fp = ((unsigned char*)s) - 1;
-		*fp = SDS_TYPE_5 | (newlen << SDS_TYPE_BITS);
-	}
-	break;
-	case SDS_TYPE_8:
-		SDS_HDR(8, s)->len = newlen;
-		break;
-	case SDS_TYPE_16:
-		SDS_HDR(16, s)->len = newlen;
-		break;
-	case SDS_TYPE_32:
-		SDS_HDR(32, s)->len = newlen;
-		break;
-	case SDS_TYPE_64:
-		SDS_HDR(64, s)->len = newlen;
-		break;
-	}
+    unsigned char flags = s[-1];
+    switch(flags&SDS_TYPE_MASK) {
+        case SDS_TYPE_5:
+            {
+                unsigned char *fp = ((unsigned char*)s)-1;
+                *fp = (unsigned char)(SDS_TYPE_5 | (newlen << SDS_TYPE_BITS));
+            }
+            break;
+        case SDS_TYPE_8:
+            SDS_HDR(8,s)->len = (uint8_t)newlen;
+            break;
+        case SDS_TYPE_16:
+            SDS_HDR(16,s)->len = (uint16_t)newlen;
+            break;
+        case SDS_TYPE_32:
+            SDS_HDR(32,s)->len = (uint32_t)newlen;
+            break;
+        case SDS_TYPE_64:
+            SDS_HDR(64,s)->len = (uint64_t)newlen;
+            break;
+    }
 }
 
 static inline void sdsinclen(sds s, size_t inc) {
-	unsigned char flags = s[-1];
-	switch (flags&SDS_TYPE_MASK) {
-	case SDS_TYPE_5:
-	{
-		unsigned char *fp = ((unsigned char*)s) - 1;
-		unsigned char newlen = SDS_TYPE_5_LEN(flags) + inc;
-		*fp = SDS_TYPE_5 | (newlen << SDS_TYPE_BITS);
-	}
-	break;
-	case SDS_TYPE_8:
-		SDS_HDR(8, s)->len += inc;
-		break;
-	case SDS_TYPE_16:
-		SDS_HDR(16, s)->len += inc;
-		break;
-	case SDS_TYPE_32:
-		SDS_HDR(32, s)->len += inc;
-		break;
-	case SDS_TYPE_64:
-		SDS_HDR(64, s)->len += inc;
-		break;
-	}
+    unsigned char flags = s[-1];
+    switch(flags&SDS_TYPE_MASK) {
+        case SDS_TYPE_5:
+            {
+                unsigned char *fp = ((unsigned char*)s)-1;
+                unsigned char newlen = SDS_TYPE_5_LEN(flags)+(unsigned char)inc;
+                *fp = SDS_TYPE_5 | (newlen << SDS_TYPE_BITS);
+            }
+            break;
+        case SDS_TYPE_8:
+            SDS_HDR(8,s)->len += (uint8_t)inc;
+            break;
+        case SDS_TYPE_16:
+            SDS_HDR(16,s)->len += (uint16_t)inc;
+            break;
+        case SDS_TYPE_32:
+            SDS_HDR(32,s)->len += (uint32_t)inc;
+            break;
+        case SDS_TYPE_64:
+            SDS_HDR(64,s)->len += (uint64_t)inc;
+            break;
+    }
 }
 
 /* sdsalloc() = sdsavail() + sdslen() */
 static inline size_t sdsalloc(const sds s) {
-	unsigned char flags = s[-1];
-	switch (flags&SDS_TYPE_MASK) {
-	case SDS_TYPE_5:
-		return SDS_TYPE_5_LEN(flags);
-	case SDS_TYPE_8:
-		return SDS_HDR(8, s)->alloc;
-	case SDS_TYPE_16:
-		return SDS_HDR(16, s)->alloc;
-	case SDS_TYPE_32:
-		return SDS_HDR(32, s)->alloc;
-	case SDS_TYPE_64:
-		return SDS_HDR(64, s)->alloc;
-	}
-	return 0;
+    unsigned char flags = s[-1];
+    switch(flags&SDS_TYPE_MASK) {
+        case SDS_TYPE_5:
+            return SDS_TYPE_5_LEN(flags);
+        case SDS_TYPE_8:
+            return SDS_HDR(8,s)->alloc;
+        case SDS_TYPE_16:
+            return SDS_HDR(16,s)->alloc;
+        case SDS_TYPE_32:
+            return SDS_HDR(32,s)->alloc;
+        case SDS_TYPE_64:
+            return SDS_HDR(64,s)->alloc;
+    }
+    return 0;
 }
 
 static inline void sdssetalloc(sds s, size_t newlen) {
-	unsigned char flags = s[-1];
-	switch (flags&SDS_TYPE_MASK) {
-	case SDS_TYPE_5:
-		/* Nothing to do, this type has no total allocation info. */
-		break;
-	case SDS_TYPE_8:
-		SDS_HDR(8, s)->alloc = newlen;
-		break;
-	case SDS_TYPE_16:
-		SDS_HDR(16, s)->alloc = newlen;
-		break;
-	case SDS_TYPE_32:
-		SDS_HDR(32, s)->alloc = newlen;
-		break;
-	case SDS_TYPE_64:
-		SDS_HDR(64, s)->alloc = newlen;
-		break;
-	}
+    unsigned char flags = s[-1];
+    switch(flags&SDS_TYPE_MASK) {
+        case SDS_TYPE_5:
+            /* Nothing to do, this type has no total allocation info. */
+            break;
+        case SDS_TYPE_8:
+            SDS_HDR(8,s)->alloc = (uint8_t)newlen;
+            break;
+        case SDS_TYPE_16:
+            SDS_HDR(16,s)->alloc = (uint16_t)newlen;
+            break;
+        case SDS_TYPE_32:
+            SDS_HDR(32,s)->alloc = (uint32_t)newlen;
+            break;
+        case SDS_TYPE_64:
+            SDS_HDR(64,s)->alloc = (uint64_t)newlen;
+            break;
+    }
 }
 
 sds sdsnewlen(const void *init, size_t initlen);
@@ -276,7 +232,7 @@ sds sdscpy(sds s, const char *t);
 sds sdscatvprintf(sds s, const char *fmt, va_list ap);
 #ifdef __GNUC__
 sds sdscatprintf(sds s, const char *fmt, ...)
-__attribute__((format(printf, 2, 3)));
+    __attribute__((format(printf, 2, 3)));
 #else
 sds sdscatprintf(sds s, const char *fmt, ...);
 #endif
@@ -291,7 +247,7 @@ sds *sdssplitlen(const char *s, int len, const char *sep, int seplen, int *count
 void sdsfreesplitres(sds *tokens, int count);
 void sdstolower(sds s);
 void sdstoupper(sds s);
-sds sdsfromlonglong(PORT_LONGLONG value);
+sds sdsfromlonglong(long long value);
 sds sdscatrepr(sds s, const char *p, size_t len);
 sds *sdssplitargs(const char *line, int *argc);
 sds sdsmapchars(sds s, const char *from, const char *to, size_t setlen);
@@ -316,7 +272,5 @@ void sds_free(void *ptr);
 #ifdef REDIS_TEST
 int sdsTest(int argc, char *argv[]);
 #endif
-#ifdef __cplusplus
- }
-#endif
+
 #endif

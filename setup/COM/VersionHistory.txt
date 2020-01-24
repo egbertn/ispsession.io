@@ -1,3 +1,10 @@
+8.2.0.173 Jan 24, 2020
+	Now using Visual Studio 2019.
+8.2.0.172 Jan 22, 2020
+	abandoned Win32_Interop (MS) library is no longer used, but SockCompat from hiredis.	
+	This reduced building complexity and the latest hiredis from Github could be pulled.
+8.2.0.170 December 27,2019
+	Fixes the Redis connection pool
 8.2.0.166
 	Fixes the LiquidCookie feature.
 8.2.0.162

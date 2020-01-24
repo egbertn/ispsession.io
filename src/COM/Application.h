@@ -11,7 +11,7 @@
 //defines a datavalue structure
 struct ElementModel
 {
-	ElementModel(_In_ const ElementModel& src)
+	ElementModel(_In_ const ElementModel& src) noexcept
 	{
 		this->IsNew = src.IsNew;
 		this->IsDirty = src.IsDirty;
@@ -20,7 +20,7 @@ struct ElementModel
 		memset(&this->val, 0, sizeof(VARIANT));
 		this->val = src.val;
 	}
-	ElementModel& operator=(_In_ const ElementModel& src)
+	ElementModel& operator=(_In_ const ElementModel& src) noexcept
 	{
 		IsNew = src.IsNew;
 		IsDirty = src.IsDirty;
@@ -28,7 +28,7 @@ struct ElementModel
 		ExpireAt = src.ExpireAt;
 		return *this;
 	}
-	ElementModel()
+	ElementModel() noexcept
 	{
 		memset(this, 0, sizeof(ElementModel));
 	}
@@ -39,7 +39,7 @@ struct ElementModel
 	BOOL IsSerialized;
 	//milliseconds
 	INT ExpireAt;	
-~ElementModel()
+~ElementModel() noexcept
 {
 	val.ClearToZero();
 }
@@ -48,7 +48,7 @@ struct ElementModel
 struct KeyComparer
 {
 public:
-	bool operator()(BSTR x, BSTR y) const throw()
+	bool operator()(BSTR x, BSTR y) const 
 	{
 		return ::VarBstrCmp(x, y, ::GetThreadLocale(), NORM_IGNORECASE) == VARCMP_LT;
 	}
@@ -113,19 +113,19 @@ private:
 
 public:
 	//IApplicationObject
-	STDMETHOD(get_Value)(BSTR Key, VARIANT* pvar);
-	STDMETHOD(put_Value)(BSTR Key, VARIANT var);
-	STDMETHOD(putref_Value)(BSTR Key, VARIANT var);
-	STDMETHOD(get_Key)(INT Index, BSTR* pval);
-	STDMETHOD(get_Count)(PINT pval);
-	STDMETHOD(_NewEnum)(IUnknown** ppval);
-	STDMETHOD(Remove)(BSTR Key);
-	STDMETHOD(RemoveAll)();
-	STDMETHOD(LockKey)(BSTR Key);
-	STDMETHOD(UnlockKey)(BSTR Key);
-	STDMETHOD(ExpireKeyAt)(BSTR Key, INT at);
-	STDMETHOD(get_Exists)(BSTR Key, VARIANT_BOOL *pVal);
-	STDMETHOD(get_KeyType)(BSTR Key, SHORT* pVal);
+	STDMETHOD(get_Value)(BSTR Key, VARIANT* pvar) noexcept;
+	STDMETHOD(put_Value)(BSTR Key, VARIANT var) noexcept;
+	STDMETHOD(putref_Value)(BSTR Key, VARIANT var) noexcept;
+	STDMETHOD(get_Key)(INT Index, BSTR* pval) noexcept;
+	STDMETHOD(get_Count)(PINT pval) noexcept;
+	STDMETHOD(_NewEnum)(IUnknown** ppval) noexcept;
+	STDMETHOD(Remove)(BSTR Key) noexcept;
+	STDMETHOD(RemoveAll)() noexcept;
+	STDMETHOD(LockKey)(BSTR Key) noexcept;
+	STDMETHOD(UnlockKey)(BSTR Key) noexcept;
+	STDMETHOD(ExpireKeyAt)(BSTR Key, INT at) noexcept;
+	STDMETHOD(get_Exists)(BSTR Key, VARIANT_BOOL *pVal) noexcept;
+	STDMETHOD(get_KeyType)(BSTR Key, SHORT* pVal) noexcept;
 
 	// public but not exposed to IDL
 	////IKeySerializer
@@ -134,41 +134,41 @@ public:
 		std::vector<string> &new_keys,
 		std::vector<string> &other_keys,
 		std::vector<std::pair<string, INT>> & expireKeys,
-		std::vector<string> &removed_keys);
-	STDMETHOD(SerializeKey)(BSTR key, IStream* binaryString);
+		std::vector<string> &removed_keys) noexcept;
+	STDMETHOD(SerializeKey)(BSTR key, IStream* binaryString) noexcept;
 	//unpacks key & value from the blob       
-	STDMETHOD (DeserializeKey)(const std::string& binaryString);
+	STDMETHOD (DeserializeKey)(const std::string& binaryString) noexcept;
 
-	static STDMETHODIMP SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix);
+	static STDMETHODIMP SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix) noexcept;
 
 
 private:
 
 	STDMETHOD( HasOnStartPageBeenCalled)();
 	//IIS specific 
-	STDMETHOD(OnStartPage)(IUnknown* pctx);
-	STDMETHOD(OnEndPage)();
+	STDMETHOD(OnStartPage)(IUnknown* pctx) noexcept;
+	STDMETHOD(OnEndPage)() noexcept;
 	//End IIS Specific
 	///<summary> 
 	/// finds element by specified key if result is S_FALSE it is not found
 	///</summary>
 
-	STDMETHOD(IsDirty)(BOOL* pRet);
+	STDMETHOD(IsDirty)(BOOL* pRet) noexcept;
 	//std:vector<byte> probably semantically is better, instead of std::string
-	STDMETHOD(ReadString)(IStream* stream, BSTR* outputString);
-	STDMETHOD(ReadValue)(IStream* pStream, VARIANT* TheValue, VARTYPE vtype);
+	STDMETHOD(ReadString)(IStream* stream, BSTR* outputString) noexcept;
+	STDMETHOD(ReadValue)(IStream* pStream, VARIANT* TheValue, VARTYPE vtype) noexcept;
 	//allows recursion
-	STDMETHOD(WriteString)(BSTR Key, IStream* inoutputString);
-	STDMETHOD(WriteValue)(VARTYPE vt, VARIANT& val, IStream* binaryString);
+	STDMETHOD(WriteString)(BSTR Key, IStream* inoutputString) noexcept;
+	STDMETHOD(WriteValue)(VARTYPE vt, VARIANT& val, IStream* binaryString) noexcept;
 	// converts a e.g. recordset into a VT_IUNKNOWN of IStream
-	STDMETHOD(ConvertObjectToStream)(VARIANT& val);
+	STDMETHOD(ConvertObjectToStream)(VARIANT& val) noexcept;
 	// converts an IStream to an instance of a COM class
-	STDMETHOD(ConvertVStreamToObject)(ElementModel& val);
+	STDMETHOD(ConvertVStreamToObject)(ElementModel& val) noexcept;
 
 	
-	STDMETHOD(InitializeDataSource)(IServer* pServer);
-	STDMETHOD(PersistApplication)();
-	STDMETHOD(EnsureBuffer)(INT newBuffer);
+	STDMETHOD(InitializeDataSource)(IServer* pServer) noexcept;
+	STDMETHOD(PersistApplication)() noexcept;
+	STDMETHOD(EnsureBuffer)(INT newBuffer) noexcept;
 	
 };
 

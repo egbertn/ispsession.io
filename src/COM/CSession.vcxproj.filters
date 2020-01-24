@@ -207,4 +207,7 @@
       <Filter>Source Files</Filter>
     </Midl>
   </ItemGroup>
+  <ItemGroup>
+    <Library Include="..\msvs\x64\Debug\hiredis64D.lib" />
+  </ItemGroup>
 </Project>

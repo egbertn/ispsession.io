@@ -8,7 +8,7 @@
 #include "tools.h"
 #include "CEnum.h"
 
-STDMETHODIMP CApplication::HasOnStartPageBeenCalled() throw()
+STDMETHODIMP CApplication::HasOnStartPageBeenCalled()  noexcept
 {
 
 	if (m_OnStartPageCalled == FALSE)
@@ -20,7 +20,7 @@ STDMETHODIMP CApplication::HasOnStartPageBeenCalled() throw()
 	return S_OK;
 }
 //IIS stuff
-STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
+STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc)  noexcept
 {
 
 	logModule.Write(L"Application:OnStartPage");
@@ -93,7 +93,7 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc) throw()
 }
 
 //IIS stuff
-STDMETHODIMP CApplication::OnEndPage() throw()
+STDMETHODIMP CApplication::OnEndPage()  noexcept
 {
 	HRESULT hr = PersistApplication();
 	logModule.Write(L"Application:OnEndPage");
@@ -101,7 +101,7 @@ STDMETHODIMP CApplication::OnEndPage() throw()
 }
 
 
-STDMETHODIMP CApplication::IsDirty(BOOL* pRet) throw()
+STDMETHODIMP CApplication::IsDirty(BOOL* pRet)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -124,7 +124,7 @@ STDMETHODIMP CApplication::IsDirty(BOOL* pRet) throw()
 	}
 	return hr;
 }
-STDMETHODIMP CApplication::PersistApplication() throw()
+STDMETHODIMP CApplication::PersistApplication()  noexcept
 {
 	HRESULT hr = S_OK;
 	if (m_bErrState == TRUE)
@@ -149,7 +149,7 @@ STDMETHODIMP CApplication::PersistApplication() throw()
 	
 	return hr;
 }
-STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
+STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -195,7 +195,7 @@ STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal) throw()
 	return hr;
 }
 
-STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal) throw()
+STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -259,7 +259,7 @@ STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal) throw()
 	return hr;
 }
 
-STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
+STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -329,7 +329,7 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal) throw()
 	}
 	return hr;
 }
-STDMETHODIMP CApplication::get_Key(INT Index, BSTR* pVal) throw()
+STDMETHODIMP CApplication::get_Key(INT Index, BSTR* pVal)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -356,7 +356,7 @@ STDMETHODIMP CApplication::get_Key(INT Index, BSTR* pVal) throw()
 	return hr;
 }
 
-STDMETHODIMP CApplication::get_Count(PINT pVal) throw()
+STDMETHODIMP CApplication::get_Count(PINT pVal)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -368,7 +368,7 @@ STDMETHODIMP CApplication::get_Count(PINT pVal) throw()
 }
 
 
-STDMETHODIMP CApplication::get_Exists(BSTR Key, VARIANT_BOOL* pVal) throw()
+STDMETHODIMP CApplication::get_Exists(BSTR Key, VARIANT_BOOL* pVal)  noexcept
 {
 	if (Key == nullptr || ::SysStringLen(Key) == 0)
 	{
@@ -380,7 +380,7 @@ STDMETHODIMP CApplication::get_Exists(BSTR Key, VARIANT_BOOL* pVal) throw()
 	return S_OK;
 }
 
-STDMETHODIMP CApplication::get_KeyType(BSTR Key, SHORT* pVal) throw()
+STDMETHODIMP CApplication::get_KeyType(BSTR Key, SHORT* pVal)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -396,7 +396,7 @@ STDMETHODIMP CApplication::get_KeyType(BSTR Key, SHORT* pVal) throw()
 	*pVal = pos->second.val.vt;
 	return hr;
 }
-STDMETHODIMP CApplication::_NewEnum(IUnknown **ppRet) throw()
+STDMETHODIMP CApplication::_NewEnum(IUnknown **ppRet)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -426,7 +426,7 @@ STDMETHODIMP CApplication::_NewEnum(IUnknown **ppRet) throw()
 	hr = m_enum->QueryInterface(IID_IUnknown, (void**)ppRet);
 	return hr;
 }
-STDMETHODIMP CApplication::Remove(BSTR Key) throw()
+STDMETHODIMP CApplication::Remove(BSTR Key)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -462,7 +462,7 @@ STDMETHODIMP CApplication::Remove(BSTR Key) throw()
 	
 	return hr;
 }
-STDMETHODIMP CApplication::RemoveAll() throw()
+STDMETHODIMP CApplication::RemoveAll()  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -487,7 +487,7 @@ STDMETHODIMP CApplication::RemoveAll() throw()
 	return hr;
 }
 
-STDMETHODIMP  CApplication::LockKey(BSTR Key) throw()
+STDMETHODIMP  CApplication::LockKey(BSTR Key)  noexcept
 {//will perform a PUT [Guid]:lock 1 command to redis 2.2+
 	
 	auto hr = HasOnStartPageBeenCalled();
@@ -505,12 +505,12 @@ STDMETHODIMP  CApplication::LockKey(BSTR Key) throw()
 	return hr;	
 }
 
-STDMETHODIMP CApplication::UnlockKey(BSTR key) throw()
+STDMETHODIMP CApplication::UnlockKey(BSTR key)  noexcept
 {
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
+STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms)  noexcept
 {
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
@@ -532,7 +532,7 @@ STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms) throw()
 
 
 // Opens a DB Connection and initialises the Dictionary with the binary contents
-STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
+STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 {
 	PCWSTR location = L"InitializeDataSource";
 	HRESULT hr = S_OK;
@@ -690,7 +690,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer) throw()
 	
 	return hr;
 }
-STDMETHODIMP CApplication::ReadString(IStream* pStream, BSTR *retval) throw()
+STDMETHODIMP CApplication::ReadString(IStream* pStream, BSTR *retval)  noexcept
 {
 	HRESULT hr = S_OK;
 	UINT lTempSize = 0;
@@ -748,7 +748,7 @@ STDMETHODIMP CApplication::ReadString(IStream* pStream, BSTR *retval) throw()
 ///<param name="TheValue">asdf</param>
 ///<param name="vtype">VT variant type</param>
 ///<returns>a HRESULT</returns>
-STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYPE vtype) throw()
+STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYPE vtype)  noexcept
 {
 	LONG cBytes = 0,
 		ElSize = 0,
@@ -1014,7 +1014,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 *writes a string in utf-8 compressed format
 *
 ***/
-STDMETHODIMP CApplication::WriteString(BSTR TheVal, IStream* pStream) throw()
+STDMETHODIMP CApplication::WriteString(BSTR TheVal, IStream* pStream)  noexcept
 {
 	HRESULT hr = S_OK;
 
@@ -1052,7 +1052,7 @@ STDMETHODIMP CApplication::WriteString(BSTR TheVal, IStream* pStream) throw()
 	}
 	return hr;
 }
-STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var) throw()
+STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var)  noexcept
 {
 	HRESULT hr = S_OK;
 	CComQIPtr<IStream> l_pIStr(var.val.punkVal);
@@ -1076,7 +1076,7 @@ STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var) throw()
 	
 	return hr;
 }
-STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var) throw()
+STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var)  noexcept
 {
 	if ((var.vt != VT_UNKNOWN && var.vt != VT_DISPATCH)|| var.punkVal == nullptr)
 	{
@@ -1115,7 +1115,7 @@ STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var) throw()
 }
 
 
-STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* pStream) throw()
+STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* pStream)  noexcept
 {
 
 	LONG cBytes = 0,
@@ -1413,7 +1413,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 // todo: fire and forget ? Nice improvement
 // binary data like this "$6\r\nfoobar\r\n" (without the quotes). The bytes need no encoding or escaping.
 // however, all strings are binary safe so escaping it as 'binary' is not necessary
- STDMETHODIMP  CApplication::SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix) throw()
+ STDMETHODIMP  CApplication::SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix) noexcept
 {
 
 	string k(appkeyPrefix);
@@ -1469,7 +1469,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 	return hr;
 
 }
-STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
+STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString)  noexcept
 {
 	HRESULT hr = S_OK;
 	binaryString->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
@@ -1506,7 +1506,7 @@ STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString) throw()
 	}
 	return hr;
 }
-STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString) throw()
+STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString)  noexcept
 {
 	HRESULT hr = S_OK;
 	CComObject<CStream>* cseqs;
@@ -1556,7 +1556,7 @@ STDMETHODIMP CApplication::get_KeyStates(
 	std::vector<string> &new_keys,
 	std::vector<string> &other_keys,
 	std::vector<std::pair<string, INT>> &expire_keys,
-	std::vector<string> &removed_keys) throw()
+	std::vector<string> &removed_keys)  noexcept
 {
 	//USES_CONVERSION;
 	HRESULT hr = S_OK;
@@ -1602,7 +1602,7 @@ STDMETHODIMP CApplication::get_KeyStates(
 
 /* END IKeySerializer*/
 
-STDMETHODIMP CApplication::EnsureBuffer(INT newBuffer) throw()
+STDMETHODIMP CApplication::EnsureBuffer(INT newBuffer)  noexcept
 {
 	if (newBuffer > m_currentBufLen)
 	{

@@ -14,7 +14,7 @@ class CComBSTR2
 {
 public:
 	BSTR m_str;
-	CComBSTR2() throw()
+	CComBSTR2()  noexcept
 	{
 		m_str = NULL;
 	}
@@ -124,7 +124,7 @@ public:
 		}
 	}
 
-	CComBSTR2& operator=(decltype(__nullptr)) throw()
+	CComBSTR2& operator=(decltype(__nullptr))  noexcept
 	{
 		::SysFreeString(m_str);
 		m_str = NULL;
@@ -141,7 +141,7 @@ public:
 		return *this;
 	}
 
-	inline CComBSTR2::~CComBSTR2() throw()
+	inline CComBSTR2::~CComBSTR2()  noexcept
 	{
 		::SysFreeString(m_str);
 	}
@@ -157,15 +157,15 @@ public:
 		return ulSize;
 	}
 	
-	unsigned int __stdcall Length() const throw()
+	unsigned int __stdcall Length() const  noexcept
 	{
 		return ::SysStringLen(m_str);
 	}
-	unsigned int __stdcall ByteLength() const throw()
+	unsigned int __stdcall ByteLength() const  noexcept
 	{
 		return ::SysStringByteLen(m_str);
 	}
-	operator BSTR() const throw()
+	operator BSTR() const  noexcept
 	{
 		return m_str;
 	}
@@ -174,7 +174,7 @@ public:
 #define ATL_NO_CCOMBSTR_ADDRESS_OF_ASSERT
 #endif
 
-	BSTR* operator&() throw()
+	BSTR* operator&()  noexcept
 	{
 #ifndef ATL_NO_CCOMBSTR_ADDRESS_OF_ASSERT
 		ATLASSERT(!*this);
@@ -190,12 +190,12 @@ public:
 		utf8.Attach(copyByteSTring);
 		return std::move( std::string((PSTR)utf8.m_str, utf8.ByteLength()));
 	}
-	std::wstring __stdcall ToWString() const throw()
+	std::wstring __stdcall ToWString() const  noexcept
 	{
 		// null is handled correctly
 		return std::move(std::wstring(m_str, Length()));
 	}
-	BSTR __stdcall Copy() const throw()
+	BSTR __stdcall Copy() const  noexcept
 	{
 		if (*this == NULL)
 			return NULL;
@@ -206,7 +206,7 @@ public:
 		
 	
 	}
-	_Check_return_ HRESULT CopyTo(_Outptr_result_maybenull_ _Result_nullonfailure_ BSTR* pbstr) const throw()
+	_Check_return_ HRESULT CopyTo(_Outptr_result_maybenull_ _Result_nullonfailure_ BSTR* pbstr) const  noexcept
 	{
 		ATLASSERT(pbstr != NULL);
 		if (pbstr == NULL)
@@ -223,12 +223,12 @@ public:
 	}
 
 	// *** returns true if length equals zero characters or when unallocated(null pointer)
-	bool __stdcall IsEmpty (void) const throw()
+	bool __stdcall IsEmpty (void) const  noexcept
 	{
 		return m_str == NULL || ByteLength() == 0;
 	}
 	/* added by may 2005 e.n. needs #include 'wchar.h'*/
-	STDMETHODIMP Format(_In_ PCWSTR pszFormat, _In_ va_list args) throw()
+	STDMETHODIMP Format(_In_ PCWSTR pszFormat, _In_ va_list args)  noexcept
 	{
 		size_t len = _vscwprintf( pszFormat, args );
 		HRESULT hr = S_OK;		
@@ -242,7 +242,7 @@ public:
 	}
 
 	/* added by may 2005 e.n. needs #include 'wchar.h'*/
-	HRESULT __cdecl Format(_In_ PCWSTR pszFormat, ...) throw()
+	HRESULT __cdecl Format(_In_ PCWSTR pszFormat, ...)  noexcept
 	{
 		va_list args;			
 		va_start( args, pszFormat );		
@@ -252,7 +252,7 @@ public:
 		return hr;
 	}
 private:
-	STDMETHODIMP Insert(_In_ unsigned int atPosition, _In_opt_ LPCOLESTR lpsz, _In_ unsigned int nLen) throw()
+	STDMETHODIMP Insert(_In_ unsigned int atPosition, _In_opt_ LPCOLESTR lpsz, _In_ unsigned int nLen)  noexcept
 	{
 		unsigned int curLen = Length();
 		HRESULT hr = S_OK;
@@ -270,16 +270,16 @@ private:
 		return hr;
 	}
 public:
-	STDMETHODIMP  Insert(_In_ unsigned int atPosition, _In_opt_ PCWSTR value) throw()
+	STDMETHODIMP  Insert(_In_ unsigned int atPosition, _In_opt_ PCWSTR value)  noexcept
 	{
 		return Insert(atPosition, value, (unsigned int)wcslen(value));
 	}
-	STDMETHODIMP Insert(_In_ unsigned int atPosition, _In_ const CComBSTR& value) throw()
+	STDMETHODIMP Insert(_In_ unsigned int atPosition, _In_ const CComBSTR& value)  noexcept
 	{
 		return Insert(atPosition, value.m_str, value.Length());
 	}
 
-	STDMETHODIMP TrimStart(_In_opt_ PCWSTR trimwhat = NULL) throw()
+	STDMETHODIMP TrimStart(_In_opt_ PCWSTR trimwhat = NULL)  noexcept
 	{
 		PCWSTR trim = trimwhat == NULL? L" ": trimwhat;
 		if (IsEmpty()) return S_OK;
@@ -288,7 +288,7 @@ public:
 			Remove(0, trimLen);
 		return S_OK;
 	}
-	STDMETHODIMP TrimEnd(_In_opt_ PCWSTR trimwhat = NULL) throw()
+	STDMETHODIMP TrimEnd(_In_opt_ PCWSTR trimwhat = NULL)  noexcept
 	{
 		PCWSTR trim = trimwhat == NULL? L" ": trimwhat;
 		if (IsEmpty()) return S_OK;
@@ -305,7 +305,7 @@ public:
 		_In_ unsigned int startIndex, 
 		//** the number of characters, you want to remove
 		//** if this number is outside valid bounds, it is corrected
-		_In_ unsigned int count) throw()
+		_In_ unsigned int count)  noexcept
 	{
 		unsigned int maxIdx = Length();
 		// avoid buffer overflow
@@ -331,7 +331,7 @@ public:
 	/// result john westh
 	/// won't extend string length!
 	/// </summary>
-	void __stdcall MergeString(_In_ unsigned int startIndex, _In_ const BSTR value) throw()
+	void __stdcall MergeString(_In_ unsigned int startIndex, _In_ const BSTR value)  noexcept
 	{
 
 		unsigned int maxIdx = Length();
@@ -341,7 +341,7 @@ public:
 			mergeLen = maxIdx - startIndex;
 		Checked::wmemcpy_s(&m_str[startIndex], maxIdx - startIndex, value, mergeLen);
 	}
-	BSTR __stdcall Substring(_In_ unsigned int startIndex)  const throw()
+	BSTR __stdcall Substring(_In_ unsigned int startIndex)  const  noexcept
 	{
 		unsigned int maxIdx = Length();
 		if (m_str != NULL && startIndex >= 0 && startIndex <= maxIdx)
@@ -352,18 +352,18 @@ public:
 			return NULL;
 	}
 	
-	STDMETHODIMP SetByteLength(_In_ unsigned int length) throw()
+	STDMETHODIMP SetByteLength(_In_ unsigned int length)  noexcept
 	{
 		return _SetByteLength(&m_str, length);
 	}
 	
 	// Cuts the length to specified but does not clear contents
-	STDMETHODIMP SetLength(_In_ unsigned int length) throw()
+	STDMETHODIMP SetLength(_In_ unsigned int length)  noexcept
 	{
 		return _SetLength(&m_str, length);
 	}
 private:
-	static STDMETHODIMP _SetByteLength(_Inout_ BSTR *str, _In_ unsigned int length) throw()
+	static STDMETHODIMP _SetByteLength(_Inout_ BSTR *str, _In_ unsigned int length)  noexcept
 	{
 		BSTR Copy = NULL;
 		if (*str != NULL)
@@ -388,13 +388,13 @@ private:
 		}
 		return *str == NULL ? E_OUTOFMEMORY : S_OK;
 	}
-	static STDMETHODIMP  _SetLength(_Inout_ BSTR * str, _In_ unsigned int length) throw()
+	static STDMETHODIMP  _SetLength(_Inout_ BSTR * str, _In_ unsigned int length)  noexcept
 	{
 		return ::SysReAllocStringLen(str, NULL, length) == FALSE ? E_OUTOFMEMORY : S_OK;
 		
 	}
 public:
-	int __stdcall TokenCount(_In_ PCWSTR find, _In_ bool caseInsensitive) throw()
+	int __stdcall TokenCount(_In_ PCWSTR find, _In_ bool caseInsensitive)  noexcept
 	{
 		int strLen = (int)Length();
 		int tokenCount = 0;
@@ -422,7 +422,7 @@ public:
 	/// myReplace(CComBSTR2(L"the"), CComBSTR2(L"big"));
 	/// </example>
 	/// <returns>The example would modify the string to "big dog jumps over big" </returns>	
-	STDMETHODIMP Replace(_In_opt_ BSTR find, _In_opt_ BSTR replace, _In_ bool caseInsensitive) throw()
+	STDMETHODIMP Replace(_In_opt_ BSTR find, _In_opt_ BSTR replace, _In_ bool caseInsensitive)  noexcept
 	{
 		HRESULT hr = S_OK;
 		if (m_str == NULL || find == NULL || replace == NULL)
@@ -479,12 +479,12 @@ public:
 	/// myReplace(CComBSTR2(L"the"), CComBSTR2(L"big"));
 	/// </example>
 	/// <returns>The example would modify the string to "big dog jumps over big" </returns>	
-	STDMETHODIMP Replace(_In_opt_ const BSTR find, _In_opt_ const BSTR replace) throw()
+	STDMETHODIMP Replace(_In_opt_ const BSTR find, _In_opt_ const BSTR replace)  noexcept
 	{
 		return Replace(find, replace, false);
 	}
 
-	SAFEARRAY* __stdcall Split(_In_opt_ PCWSTR expression, _In_ const bool caseInsenstive)  const throw()
+	SAFEARRAY* __stdcall Split(_In_opt_ PCWSTR expression, _In_ const bool caseInsenstive)  const  noexcept
 	{
 		return Split(CComBSTR(expression), caseInsenstive);
 	}
@@ -559,7 +559,7 @@ public:
 		}
 		return retval;
 	}
-	SAFEARRAY* __stdcall Split(_In_opt_ PCWSTR expression)  const throw()
+	SAFEARRAY* __stdcall Split(_In_opt_ PCWSTR expression)  const  noexcept
 	{
 		return Split(CComBSTR(expression), false);
 	}
@@ -576,7 +576,7 @@ public:
 	/// joined.Attach(CComBSTR2::Join(myArray.m_psa, CComBSTR2(L"|") ) );	/// 
 	/// </example>
 	/// <returns>The example would return "John|Smith"</returns>	
-	static BSTR __stdcall Join(_In_opt_ SAFEARRAY *psa, _In_ const BSTR delimiter) //throw()
+	static BSTR __stdcall Join(_In_opt_ SAFEARRAY *psa, _In_ const BSTR delimiter) // noexcept
 	{
 		BSTR retval = NULL;
 		HRESULT hr = S_OK;
@@ -651,7 +651,7 @@ public:
 	/// subbed.Attach(john.Substring(5));
 	/// </example>
 	/// <returns>The example would return "Smith"</returns>	
-	BSTR __stdcall Substring(_In_ const unsigned int startIndex, _In_ unsigned int length)  const throw()
+	BSTR __stdcall Substring(_In_ const unsigned int startIndex, _In_ unsigned int length)  const  noexcept
 	{
 		unsigned int maxIdx = Length();
 		//if (length < 0) length = 0;
@@ -665,7 +665,7 @@ public:
 			return NULL;
 	}
 private:
-	bool __stdcall local_Test(_In_opt_ PCWSTR src, unsigned int startIndex, bool caseInsensitive)  const throw()
+	bool __stdcall local_Test(_In_opt_ PCWSTR src, unsigned int startIndex, bool caseInsensitive)  const  noexcept
 	{
 		bool retval = false;
 		if (src != NULL)
@@ -683,28 +683,28 @@ private:
 	}
 public:
 
-	bool __stdcall EndsWith(_In_opt_ PCWSTR src, bool caseInsenstive) const throw()
+	bool __stdcall EndsWith(_In_opt_ PCWSTR src, bool caseInsenstive) const  noexcept
 	{
 		return local_Test(src, (unsigned int) wcslen(src),  caseInsenstive);
 	}
-	bool __stdcall EndsWith(_In_opt_ PCWSTR src) const throw()
+	bool __stdcall EndsWith(_In_opt_ PCWSTR src) const  noexcept
 	{
 		return local_Test(src, (unsigned int)wcslen(src), false);
 	}
-	bool __stdcall StartsWith(_In_opt_ PCWSTR src, bool caseInsensitive) const throw()
+	bool __stdcall StartsWith(_In_opt_ PCWSTR src, bool caseInsensitive) const  noexcept
 	{
 		return local_Test(src, Length(), caseInsensitive);
 	}
-	bool __stdcall StartsWith(_In_opt_ PCWSTR src) const throw()
+	bool __stdcall StartsWith(_In_opt_ PCWSTR src) const  noexcept
 	{
 		return local_Test(src, Length(), false);
 	}
-	int __stdcall LastIndexOf(_In_ const wchar_t src, _In_opt_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false)  const throw()
+	int __stdcall LastIndexOf(_In_ const wchar_t src, _In_opt_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false)  const  noexcept
 	{
 		wchar_t  src2[] = {src, NULL}; //create zero terminated PWSTR
 		return LastIndexOf(src2, startIndex, caseInsensitive);
 	}
-	int __stdcall LastIndexOf(_In_opt_ const wchar_t *src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0)  const throw()
+	int __stdcall LastIndexOf(_In_opt_ const wchar_t *src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0)  const  noexcept
 	{
 		int result = -1;
 		if (m_str != NULL && src != NULL)
@@ -736,7 +736,7 @@ public:
 		return result;
 	}
 
-	int __stdcall IndexOf(_In_ const wchar_t src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0) const throw()
+	int __stdcall IndexOf(_In_ const wchar_t src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0) const  noexcept
 	{
 		wchar_t  src2[] = {src, NULL}; //create zero terminated PWSTR
 		return IndexOf(src2, startIndex, caseInsensitive, count);
@@ -745,7 +745,7 @@ public:
 	//
 	// Addded by E.N.
 	//
-	int __stdcall IndexOf(_In_opt_ const PWSTR src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0) const throw()
+	int __stdcall IndexOf(_In_opt_ const PWSTR src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0) const  noexcept
 	{
 		int result = -1;
 		
@@ -778,7 +778,7 @@ public:
 	}
 
 	// copy BSTR to VARIANT
-	_Check_return_ HRESULT CopyTo(_Out_ VARIANT *pvarDest) const throw()
+	_Check_return_ HRESULT CopyTo(_Out_ VARIANT *pvarDest) const  noexcept
 	{
 		ATLASSERT(pvarDest != NULL);
 		HRESULT hRes = E_POINTER;
@@ -798,7 +798,7 @@ public:
 		}
 		return hRes;
 	}
-	void __stdcall Attach(_In_opt_ BSTR src) throw()
+	void __stdcall Attach(_In_opt_ BSTR src)  noexcept
 	{
 		if (m_str != src)
 		{
@@ -807,34 +807,34 @@ public:
 		}
 	}
 
-	BSTR Detach() throw()
+	BSTR Detach()  noexcept
 	{
 		BSTR s = m_str;
 		m_str = NULL;
 		return s;
 	}
 
-	void Empty() throw()
+	void Empty()  noexcept
 	{
 		::SysFreeString(m_str);
 		m_str = NULL;
 	}
 
-	bool operator!() const throw()
+	bool operator!() const  noexcept
 	{
 		return (m_str == NULL);
 	}
 	
-	_Check_return_ STDMETHODIMP Append(_In_ const CComBSTR2& bstrSrc) throw()
+	_Check_return_ STDMETHODIMP Append(_In_ const CComBSTR2& bstrSrc)  noexcept
 	{
 		return AppendBSTR(bstrSrc.m_str);
 	}
-	/*HRESULT Append(const CComVariant2& pVarSrc) throw()
+	/*HRESULT Append(const CComVariant2& pVarSrc)  noexcept
 	{
 		return Append(pVarSrc.pvarVal);
 	}*/
 	//Added by E.N.
-	_Check_return_ STDMETHODIMP Append(_In_ const VARIANT& pVar) throw()
+	_Check_return_ STDMETHODIMP Append(_In_ const VARIANT& pVar)  noexcept
 	{
 		HRESULT hr = S_OK;
 		if (pVar.vt != VT_BSTR)
@@ -851,18 +851,18 @@ public:
 		return hr;
 	}
 
-	_Check_return_ STDMETHODIMP Append(_In_opt_  LPCOLESTR lpsz) throw()
+	_Check_return_ STDMETHODIMP Append(_In_opt_  LPCOLESTR lpsz)  noexcept
 	{
 		__analysis_assume(lpsz);
 		return Append(lpsz, (UINT)ocslen(lpsz));
 	}
 	// a BSTR is just a LPCOLESTR so we need a special version to signify
 	// that we are appending a BSTR
-	_Check_return_ STDMETHODIMP AppendBSTR(_In_opt_ BSTR p) throw()
+	_Check_return_ STDMETHODIMP AppendBSTR(_In_opt_ BSTR p)  noexcept
 	{
 		return Append((LPCOLESTR)p, ::SysStringLen(p));
 	}
-	_Check_return_ STDMETHODIMP Append(_In_opt_count_(nLen) LPCOLESTR lpsz, int nLen) throw()
+	_Check_return_ STDMETHODIMP Append(_In_opt_count_(nLen) LPCOLESTR lpsz, int nLen)  noexcept
 	{
 		if (lpsz == NULL || (m_str != NULL && nLen == 0))
 			return S_OK;
@@ -873,19 +873,19 @@ public:
 		Checked::wmemcpy_s(m_str+n1, (n1 + nLen), lpsz, nLen);
 		return S_OK;
 	}
-	_Check_return_ STDMETHODIMP Append(_In_ char ch) throw()
+	_Check_return_ STDMETHODIMP Append(_In_ char ch)  noexcept
 	{
 		OLECHAR chO = ch;
 
 		return( Append( &chO, 1 ) );
 	}
 
-	_Check_return_ STDMETHODIMP Append(_In_ wchar_t ch) throw()
+	_Check_return_ STDMETHODIMP Append(_In_ wchar_t ch)  noexcept
 	{
 		return( Append( &ch, 1 ) );
 	}
 
-	_Check_return_ STDMETHODIMP AppendBytes(_In_opt_count_(nLen) const char* lpsz, int nLen) throw()
+	_Check_return_ STDMETHODIMP AppendBytes(_In_opt_count_(nLen) const char* lpsz, int nLen)  noexcept
 	{
 		if (lpsz == NULL || nLen == 0)
 			return S_OK;
@@ -901,7 +901,7 @@ public:
 		m_str = b;
 		return S_OK;
 	}
-	static int __stdcall CountChar(_In_ const BSTR a, _In_ wchar_t theChar) throw()
+	static int __stdcall CountChar(_In_ const BSTR a, _In_ wchar_t theChar)  noexcept
 	{
 		int retval = 0;
 		if (a != NULL) 
@@ -913,7 +913,7 @@ public:
 		return retval;
 	}
 	//returns -1 for lesser (<); 0 for equality and 1 for GT (>)
-	static int __stdcall Compare(_In_ const BSTR a, _In_ const BSTR b, _In_ bool ignoreCase, _In_ bool ignoreDiacritics, bool ignoreSymbols) throw()
+	static int __stdcall Compare(_In_ const BSTR a, _In_ const BSTR b, _In_ bool ignoreCase, _In_ bool ignoreDiacritics, bool ignoreSymbols)  noexcept
 	{
 		int retval = 0;
 		DWORD compareFlags = ignoreCase ? NORM_IGNORECASE : 0;
@@ -933,27 +933,27 @@ public:
 		return retval;
 	}
 	
-	int __stdcall CompareTo(_In_ const BSTR otherBstr) throw()
+	int __stdcall CompareTo(_In_ const BSTR otherBstr)  noexcept
 	{
 		return Compare(m_str, otherBstr, false, false, false);
 	}
 
-	int __stdcall CompareTo(_In_ const BSTR otherBstr, _In_ bool ignoreCase) throw()
+	int __stdcall CompareTo(_In_ const BSTR otherBstr, _In_ bool ignoreCase)  noexcept
 	{
 		return Compare(m_str, otherBstr, ignoreCase, false, false);
 	}
 
-	int __stdcall CompareTo(_In_ const BSTR otherBstr, _In_ bool ignoreCase, _In_ bool ignoreDiacritics) throw()
+	int __stdcall CompareTo(_In_ const BSTR otherBstr, _In_ bool ignoreCase, _In_ bool ignoreDiacritics)  noexcept
 	{
 		return Compare(m_str, otherBstr, ignoreCase, ignoreDiacritics, false);
 	}
 
-	int __stdcall CompareTo(_In_ const BSTR otherBstr, _In_ bool ignoreCase, _In_ bool ignoreDiacritics, bool ignoreSymbols) throw()
+	int __stdcall CompareTo(_In_ const BSTR otherBstr, _In_ bool ignoreCase, _In_ bool ignoreDiacritics, bool ignoreSymbols)  noexcept
 	{
 		return Compare(m_str, otherBstr, ignoreCase, ignoreDiacritics, ignoreSymbols);
 	}
 	
-	unsigned long GetHashCode() throw() 
+	unsigned long GetHashCode()  noexcept 
 	{
 		unsigned long hash=0;
 		
@@ -971,7 +971,7 @@ public:
 	}
 
 	// added by e.n.
-	static void __stdcall StringReverse(_In_opt_ const  BSTR s) throw()
+	static void __stdcall StringReverse(_In_opt_ const  BSTR s)  noexcept
 	{
 		//CComBSTR2 temp;
 		//HRESULT  hr = temp.AssignBSTR(s); //create a copy
@@ -985,7 +985,7 @@ public:
 		}
 
 	}
-	void __stdcall Reverse() throw()
+	void __stdcall Reverse()  noexcept
 	{
 		StringReverse(m_str);
 	}
@@ -997,7 +997,7 @@ public:
 			AtlThrow(hr);
 		return retval;
 	}
-	bool __stdcall IsBool() const throw()
+	bool __stdcall IsBool() const  noexcept
 	{
 		VARIANT_BOOL bogus;
 		if (Length() == 0) return false;
@@ -1008,7 +1008,7 @@ public:
 		HRESULT hr = ::VarBoolFromStr(m_str, ::GetThreadLocale(), LOCALE_NOUSEROVERRIDE, &bogus);
 		return hr == S_OK;
 	}
-	bool __stdcall IsNumeric() const throw()
+	bool __stdcall IsNumeric() const  noexcept
 	{
 		LONG64 bogus;
 		
@@ -1058,13 +1058,13 @@ public:
 		}
 		return retval;
 	}
-	_Check_return_ STDMETHODIMP AssignDate(_In_ const DATE date) throw()
+	_Check_return_ STDMETHODIMP AssignDate(_In_ const DATE date)  noexcept
 	{
 		Empty();
 		return ::VarBstrFromDate(date, ::GetThreadLocale(), LOCALE_NOUSEROVERRIDE, &m_str);
 	}
 
-	_Check_return_ HRESULT AssignBSTR(_In_opt_z_ const BSTR bstrSrc) throw()
+	_Check_return_ HRESULT AssignBSTR(_In_opt_z_ const BSTR bstrSrc)  noexcept
 	{
 		HRESULT hr = S_OK;
 		if (m_str != bstrSrc)
@@ -1129,7 +1129,7 @@ public:
 	}
 	//creates a copy to a wide-string
 	// optimal usage, attach to it...
-	BSTR ToWideString(_In_ UINT codePage=CP_UTF8) throw()
+	BSTR ToWideString(_In_ UINT codePage=CP_UTF8)  noexcept
 	{
 		UINT len = ByteLength();
 		int _convert = MultiByteToWideChar(codePage, 0, (PSTR) m_str, len, NULL, 0);
@@ -1142,7 +1142,7 @@ public:
 
 	}
 
-	_Check_return_ HRESULT ToLower() throw()
+	_Check_return_ HRESULT ToLower()  noexcept
 	{
 		if (m_str != NULL)
 		{
@@ -1196,7 +1196,7 @@ public:
 		}
 		return S_OK;
 	}
-	_Check_return_ STDMETHODIMP ToUpper() throw()
+	_Check_return_ STDMETHODIMP ToUpper()  noexcept
 	{
 		if (m_str != NULL)
 		{
@@ -1251,7 +1251,7 @@ public:
 		return S_OK;
 	}
 
-	bool __cdecl LoadNString(_In_ UINT uID,  ...) throw()
+	bool __cdecl LoadNString(_In_ UINT uID,  ...)  noexcept
 	{
 		va_list args;
 		va_start(args, uID);
@@ -1259,7 +1259,7 @@ public:
 		va_end(args);
 		return res;
 	}
-	bool __cdecl LoadNString2(_In_ UINT uID, _In_ HINSTANCE hInst, ...) throw()
+	bool __cdecl LoadNString2(_In_ UINT uID, _In_ HINSTANCE hInst, ...)  noexcept
 	{
 		va_list args;
 		va_start(args, hInst);
@@ -1268,7 +1268,7 @@ public:
 		return res;
 	}
 private:
-	bool __cdecl _LoadNString(_In_ UINT uID, _In_ HINSTANCE hInst, _In_ va_list args) throw()
+	bool __cdecl _LoadNString(_In_ UINT uID, _In_ HINSTANCE hInst, _In_ va_list args)  noexcept
 	{
 		
 		bool result = true;			
@@ -1320,13 +1320,13 @@ public:
 #ifdef _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
 	bool LoadString(
 		_In_ HINSTANCE hInst,
-		_In_ UINT nID) throw()
+		_In_ UINT nID)  noexcept
 	{
 		Empty();
 		return LoadStringResource(hInst, nID, m_str);
 	}
 
-	bool LoadString(_In_ UINT nID) throw()
+	bool LoadString(_In_ UINT nID)  noexcept
 	{
 		Empty();
 		return LoadStringResource(nID, m_str);
@@ -1356,7 +1356,7 @@ public:
 		return *this;
 	}
 	
-	bool __stdcall operator<(_In_ const CComBSTR2& bstrSrc) const throw()
+	bool __stdcall operator<(_In_ const CComBSTR2& bstrSrc) const  noexcept
 	{
 		return Compare(m_str, bstrSrc.m_str, true, true, true) == -1;
 	}
@@ -1365,12 +1365,12 @@ public:
 		CComBSTR2 bstr2(pszSrc);
 		return operator<(bstr2);
 	}
-	bool __stdcall operator<(_In_opt_ LPOLESTR pszSrc) const throw()
+	bool __stdcall operator<(_In_opt_ LPOLESTR pszSrc) const  noexcept
 	{
 		return operator<((LPCOLESTR)pszSrc);
 	}
 
-	bool __stdcall operator>(const CComBSTR2& bstrSrc) const throw()
+	bool __stdcall operator>(const CComBSTR2& bstrSrc) const  noexcept
 	{
 		return Compare(m_str, bstrSrc.m_str, true, true, true) == -1;
 	}
@@ -1379,20 +1379,20 @@ public:
 		CComBSTR2 bstr2(pszSrc);
 		return operator>(bstr2);
 	}
-	bool __stdcall operator>(_In_opt_ LPOLESTR pszSrc) const throw()
+	bool __stdcall operator>(_In_opt_ LPOLESTR pszSrc) const  noexcept
 	{
 		return operator>((LPCOLESTR)pszSrc);
 	}
 	
-	bool __stdcall operator!=(_In_ const CComBSTR2& bstrSrc) const throw()
+	bool __stdcall operator!=(_In_ const CComBSTR2& bstrSrc) const  noexcept
 	{
 		return !operator==(bstrSrc);
 	}
-	bool __stdcall operator!=(_In_opt_ LPCOLESTR pszSrc) const throw()
+	bool __stdcall operator!=(_In_opt_ LPCOLESTR pszSrc) const  noexcept
 	{
 		return !operator==(pszSrc);
 	}
-	bool operator!=(int nNull) const throw()
+	bool operator!=(int nNull) const  noexcept
 	{
 		return !operator==(nNull);
 	}
@@ -1401,21 +1401,21 @@ public:
 		return operator!=((LPCOLESTR)pszSrc);
 	}
 
-	bool __stdcall operator==(const CComBSTR2& bstrSrc) const throw()
+	bool __stdcall operator==(const CComBSTR2& bstrSrc) const  noexcept
 	{
 		return (Compare(m_str, bstrSrc.m_str, true, true, true) == 0);
 	}
-	bool __stdcall operator==(_In_opt_ LPCOLESTR pszSrc) const throw()
+	bool __stdcall operator==(_In_opt_ LPCOLESTR pszSrc) const  noexcept
 	{
 		CComBSTR2 bstr2(pszSrc);
 		return operator==(bstr2);
 	}
-	bool __stdcall operator==(_In_z_ LPOLESTR pszSrc) const throw()
+	bool __stdcall operator==(_In_z_ LPOLESTR pszSrc) const  noexcept
 	{
 		return operator==((LPCOLESTR)pszSrc);
 	}
 	
-	bool __stdcall operator==(int nNull) const throw()
+	bool __stdcall operator==(int nNull) const  noexcept
 	{
 		ATLASSERT(nNull == NULL);
 		(void)nNull;
@@ -1449,7 +1449,7 @@ public:
 		}
 	}
 
-	STDMETHODIMP Append(_In_opt_ LPCSTR lpsz) throw()
+	STDMETHODIMP Append(_In_opt_ LPCSTR lpsz)  noexcept
 	{
 		if (lpsz == NULL)
 			return S_OK;
@@ -1504,12 +1504,12 @@ public:
 		}
 		return retval;
 	}
-	STDMETHODIMP AssignWordHex(_In_ WORD pVal, _In_ bool fixedLen = true) throw()
+	STDMETHODIMP AssignWordHex(_In_ WORD pVal, _In_ bool fixedLen = true)  noexcept
 	{
 		PCWSTR fmt =  fixedLen ? L"%04x" : L"%x";
 		return Format(fmt, pVal);
 	}
-	STDMETHODIMP AssignLongHex(_In_ LONG pVal, _In_ bool fixedLen = true) throw()
+	STDMETHODIMP AssignLongHex(_In_ LONG pVal, _In_ bool fixedLen = true)  noexcept
 	{
 		PCWSTR fmt = fixedLen ? 	L"%08x" : L"%x";
 		return Format(fmt, pVal) ;		
@@ -1684,7 +1684,7 @@ public:
 		CComBSTR2 bstr2(pszSrc);
 		return operator==(bstr2);
 	}
-	_Check_return_ STDMETHODIMP WriteToStream(_Inout_ IStream* pStream) throw()
+	_Check_return_ STDMETHODIMP WriteToStream(_Inout_ IStream* pStream)  noexcept
 	{
 		ATLASSERT(pStream != NULL);
 		if(pStream == NULL)
@@ -1698,7 +1698,7 @@ public:
 		return cbStrLen ? pStream->Write((void*) m_str, cbStrLen, &cb) : S_OK;
 	}
 
-	_Check_return_ STDMETHODIMP ReadFromStream(_Inout_ IStream* pStream) throw()
+	_Check_return_ STDMETHODIMP ReadFromStream(_Inout_ IStream* pStream)  noexcept
 	{
 		ATLASSERT(pStream != NULL);
 		if(pStream == NULL)
@@ -1813,7 +1813,7 @@ public:
 		static bool LoadStringResource(
 		_In_ HINSTANCE hInstance,
 		_In_ UINT uID,
-		_Inout_ _Pre_null_ _Post_z_ BSTR& bstrText) throw()
+		_Inout_ _Pre_null_ _Post_z_ BSTR& bstrText)  noexcept
 	{
 		ATLASSERT(bstrText == NULL);
 
@@ -1832,7 +1832,7 @@ public:
 	_Success_(return != false)
 		static bool LoadStringResource(
 		_In_ UINT uID,
-		_Inout_ _Pre_null_ _Post_z_ BSTR& bstrText) throw()
+		_Inout_ _Pre_null_ _Post_z_ BSTR& bstrText)  noexcept
 	{
 		ATLASSERT(bstrText == NULL);
 
@@ -1851,14 +1851,14 @@ public:
 
 #endif
 	// each character in BSTR is copied to each element in SAFEARRAY
-	HRESULT BSTRToArray(_Outptr_ LPSAFEARRAY *ppArray) throw()
+	HRESULT BSTRToArray(_Outptr_ LPSAFEARRAY *ppArray)  noexcept
 	{
 		return VectorFromBstr(m_str, ppArray);
 	}
 
 
 	// first character of each element in SAFEARRAY is copied to BSTR
-	_Check_return_ HRESULT ArrayToBSTR(_In_ const SAFEARRAY *pSrc) throw()
+	_Check_return_ HRESULT ArrayToBSTR(_In_ const SAFEARRAY *pSrc)  noexcept
 	{
 		::SysFreeString(m_str);
 		return BstrFromVector((LPSAFEARRAY)pSrc, &m_str);
@@ -1878,11 +1878,11 @@ class CComVariant2 : public tagVARIANT
 {
 // Constructors
 public:
-	CComVariant2() throw()
+	CComVariant2() noexcept
 	{
 		ZeroMemory(this, sizeof(VARIANT));
 	}
-	~CComVariant2() throw()
+	~CComVariant2()  noexcept
 	{
 		HRESULT hr = Clear();
 		ATLASSERT(SUCCEEDED(hr));
@@ -1912,7 +1912,7 @@ public:
 		*this = lpszSrc;
 	}
 
-	CComVariant2(_In_ bool bSrc) throw()
+	CComVariant2(_In_ bool bSrc) noexcept
 	{
 		vt = VT_BOOL;
 		boolVal = bSrc ? ATL_VARIANT_TRUE : ATL_VARIANT_FALSE;
@@ -1935,12 +1935,12 @@ public:
 #endif			
 		}
 	}
-	CComVariant2(_In_ BYTE nSrc) throw()
+	CComVariant2(_In_ BYTE nSrc)  noexcept
 	{
 		vt = VT_UI1;
 		bVal = nSrc;
 	}
-	CComVariant2(_In_ short nSrc) throw()
+	CComVariant2(_In_ short nSrc)  noexcept
 	{
 		vt = VT_I2;
 		iVal = nSrc;
@@ -1962,7 +1962,7 @@ public:
 #endif
 		}
 	}
-	CComVariant2(_In_ float fltSrc) throw()
+	CComVariant2(_In_ float fltSrc)  noexcept
 	{
 		vt = VT_R4;
 		fltVal = fltSrc;
@@ -1985,29 +1985,29 @@ public:
 		}
 	}
 #if (_WIN32_WINNT >= 0x0501) || defined(_ATL_SUPPORT_VT_I8)
-	CComVariant2(_In_ LONG64 nSrc) throw()
+	CComVariant2(_In_ LONG64 nSrc)  noexcept
 	{
 		vt = VT_I8;
 		llVal = nSrc;
 	}
-	CComVariant2(ULONGLONG nSrc) throw()
+	CComVariant2(ULONGLONG nSrc)  noexcept
 	{
 		vt = VT_UI8;
 		ullVal = nSrc;
 	}
 #endif
 	// by e.n. works like ADsBuildVarArrayStr
-	CComVariant2(__in_ecount_opt(elements) PCWSTR theArray[], int elements) throw()
+	CComVariant2(__in_ecount_opt(elements) PCWSTR theArray[], int elements)  noexcept
 	{
 		BuildVarArray(theArray, elements);
 	}
-	CComVariant2(CY cySrc) throw()
+	CComVariant2(CY cySrc)  noexcept
 	{
 		vt = VT_CY;
 		cyVal.Hi = cySrc.Hi;
 		cyVal.Lo = cySrc.Lo;
 	}
-	CComVariant2(_In_opt_ IDispatch* pSrc) throw()
+	CComVariant2(_In_opt_ IDispatch* pSrc)  noexcept
 	{
 		vt = VT_DISPATCH;
 		pdispVal = pSrc;
@@ -2015,7 +2015,7 @@ public:
 		if (pdispVal != NULL)
 			pdispVal->AddRef();
 	}
-	CComVariant2(_In_opt_ IUnknown* pSrc) throw()
+	CComVariant2(_In_opt_ IUnknown* pSrc)  noexcept
 	{
 		vt = VT_UNKNOWN;
 		punkVal = pSrc;
@@ -2023,17 +2023,17 @@ public:
 		if (punkVal != NULL)
 			punkVal->AddRef();
 	}
-	CComVariant2(_In_ char cSrc) throw()
+	CComVariant2(_In_ char cSrc)  noexcept
 	{
 		vt = VT_I1;
 		cVal = cSrc;
 	}
-	CComVariant2(_In_ unsigned short nSrc) throw()
+	CComVariant2(_In_ unsigned short nSrc)  noexcept
 	{
 		vt = VT_UI2;
 		uiVal = nSrc;
 	}
-	CComVariant2(_In_ unsigned long nSrc) throw()
+	CComVariant2(_In_ unsigned long nSrc)  noexcept
 	{
 		vt = VT_UI4;
 		ulVal = nSrc;
@@ -2476,7 +2476,7 @@ public:
 	}
 
 
-	CComVariant2& operator=(_In_ float* pfSrc) throw()
+	CComVariant2& operator=(_In_ float* pfSrc)  noexcept
 	{
 		if (vt != (VT_R4|VT_BYREF))
 		{
@@ -2487,7 +2487,7 @@ public:
 		return *this;
 	}
 
-	CComVariant2& operator=(_In_ double* pfSrc) throw()
+	CComVariant2& operator=(_In_ double* pfSrc)  noexcept
 	{
 		if (vt != (VT_R8|VT_BYREF))
 		{
@@ -2545,7 +2545,7 @@ public:
 
 // Comparison Operators
 public:
-	bool operator==(_In_ const VARIANT& varSrc) const throw()
+	bool operator==(_In_ const VARIANT& varSrc) const  noexcept
 	{
 		// For backwards compatibility
 		if (vt == VT_NULL && varSrc.vt == VT_NULL)
@@ -2560,19 +2560,19 @@ public:
 		return VarCmp((VARIANT*)this, (VARIANT*)&varSrc, LOCALE_USER_DEFAULT, 0) == static_cast<HRESULT>(VARCMP_EQ);
 	}
 
-	bool operator!=(_In_ const VARIANT& varSrc) const throw()
+	bool operator!=(_In_ const VARIANT& varSrc) const  noexcept
 	{
 		return !operator==(varSrc);
 	}
 
-	bool operator<(_In_ const VARIANT& varSrc) const throw()
+	bool operator<(_In_ const VARIANT& varSrc) const  noexcept
 	{
 		if (vt == VT_NULL && varSrc.vt == VT_NULL)
 			return false;
 		return VarCmp((VARIANT*)this, (VARIANT*)&varSrc, ::GetThreadLocale(), 0)==VARCMP_LT;
 	}
 
-	bool operator>(_In_ const VARIANT& varSrc) const throw()
+	bool operator>(_In_ const VARIANT& varSrc) const  noexcept
 	{
 		if (vt == VT_NULL && varSrc.vt == VT_NULL)
 			return false;
@@ -2587,11 +2587,11 @@ private:
 
 // Operations
 public:
-	HRESULT Clear()
+	HRESULT Clear() noexcept
 	{ 
 		return ClearToZero();		
 	}
-	HRESULT ClearToZero() 
+	HRESULT ClearToZero() noexcept
 	{
 		HRESULT hr = ::VariantClear(this); 
 		if( FAILED(hr) )
@@ -2605,7 +2605,7 @@ public:
 
 	// behaves like ADsBuildVarArrayStr 
 	// returns: VT_ARRAY | VT_VARIANT (BSTR)
-	HRESULT BuildVarArray(__in_ecount_opt(elements) VARIANT theArray[], int elements) 
+	HRESULT BuildVarArray(__in_ecount_opt(elements) VARIANT theArray[], int elements) noexcept
 	{
 		HRESULT hr = S_OK;
 		if (elements <= 0 || theArray == NULL)
@@ -2638,7 +2638,7 @@ public:
 	}
 	// behaves like ADsBuildVarArrayStr 
 	// returns: VT_ARRAY | VT_VARIANT (BSTR)
-	HRESULT BuildVarArray(__in_ecount_opt(elements) PCWSTR theArray[], int elements) throw()
+	HRESULT BuildVarArray(__in_ecount_opt(elements) PCWSTR theArray[], int elements)  noexcept
 	{
 		HRESULT hr = S_OK;
 		if (elements <= 0 || theArray == NULL)
@@ -2673,7 +2673,7 @@ public:
 	{
 		return ::VariantCopy(this, const_cast<VARIANT*>(pSrc)); 
 	}
-	HRESULT CopyTo(_Out_ VARIANT* pDest) throw()
+	HRESULT CopyTo(_Out_ VARIANT* pDest)  noexcept
 	{
 		return ::VariantCopy(pDest, this);
 	}
@@ -2717,7 +2717,7 @@ public:
 		}
 		return hr;
 	}
-	HRESULT Attach(_In_ VARIANT* pSrc) throw()
+	HRESULT Attach(_In_ VARIANT* pSrc)  noexcept
 	{
 		if(pSrc == NULL)
 			return E_INVALIDARG;
@@ -2739,11 +2739,11 @@ public:
 	}
 
 	//Added by E.N.
-	void Detach() throw()
+	void Detach()  noexcept
 	{
 		ZeroMemory(this, sizeof(VARIANT));		
 	}
-	HRESULT Detach(_Inout_ BSTR* pDest) throw()
+	HRESULT Detach(_Inout_ BSTR* pDest)  noexcept
 	{
 		ATLASSERT(pDest != NULL);
 		if (*pDest != NULL) 
@@ -2789,7 +2789,7 @@ public:
 	template< typename T >
 	void SetByRef(_In_ T* pT) ATLVARIANT_THROW()
 	{
-		ClearThrow();
+		ClearThrow()
 		vt = CVarTypeInfo< T* >::VT;
 		byref = pT;
 	}
@@ -3170,7 +3170,7 @@ inline HRESULT CComVariant::VarCmp(
 	_In_ LPVARIANT pvarLeft, 
 	_In_ LPVARIANT pvarRight, 
 	_In_ LCID lcid, 
-	_In_ ULONG dwFlags) const throw()
+	_In_ ULONG dwFlags) const  noexcept
 {			
 	switch(vt) 
 	{

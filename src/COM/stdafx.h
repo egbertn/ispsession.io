@@ -7,20 +7,14 @@
 #define Demo
 // defines for ISP Session tiny edition
 //TODO: GLOG implementation
-#define EXPIREAT ( 43860+60) // ie: 30/jan/2020
+#define EXPIREAT ( 43889) // ie: 28/feb/2020
 #pragma warning( disable : 4840 )
 
 #define MAXINSTANCES 1000
-#define STRICT
 #define UNICODE
 #define _UNICODE
-#define NOCOMM 
-//support Windows Server 2003 with SP1,
-#define WINVER 0x0603  	
-#define _WIN32_WINNT 0x0603  
- #define INCL_WINSOCK_API_TYPEDEFS 0
-#define WIN32_MEAN_AND_LEAN
-#define VC_EXTRALEAN 
+
+#include <winsdkver.h>
 #define _ATL_FREE_THREADED
 #define _ATL_NO_AUTOMATIC_NAMESPACE
 #define _CRT_RAND_S

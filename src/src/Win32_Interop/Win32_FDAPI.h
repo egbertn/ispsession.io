@@ -110,6 +110,10 @@ typedef struct pollfd {
 #endif
 
 // API prototypes must match the unix implementation
+
+typedef int (*fdapi_ioctl)(SOCKET fd, unsigned long request, unsigned long* argp);
+typedef int (*fdapi_recv)(SOCKET sockfd, void* buf, size_t len, int flags);
+typedef int (*fdapi_send)(SOCKET s, const void* buf, size_t len,int flags);
 typedef int (*fdapi_pipe)(int pipefd[2]);
 typedef int (*fdapi_socket)(int af,int type,int protocol);
 typedef int (*fdapi_open)(const char * _Filename, int _OpenFlag, int flags);
@@ -184,6 +188,9 @@ extern fdapi_select         select;
 extern fdapi_setsockopt     setsockopt;
 extern fdapi_socket         socket;
 extern fdapi_write          write;
+extern fdapi_ioctl          ioctl;
+extern fdapi_recv           recv;
+extern fdapi_send           send;
 
 // Other FD based APIs
 void    FDAPI_SaveSocketAddrStorage(int rfd, SOCKADDR_STORAGE* socketAddrStorage);

@@ -34,6 +34,7 @@
 #include "Win32_Common.h"
 #include "Win32_Error.h"
 #include "Win32_Assert.h"
+#include <system_error>
 
 using namespace std;
 
@@ -41,6 +42,9 @@ using namespace std;
 
 extern "C" {
 // Unix compatible FD based routines
+fdapi_ioctl ioctl = NULL;
+fdapi_recv recv = NULL;
+fdapi_send send = NULL;
 fdapi_accept accept = NULL;
 fdapi_access access = NULL;
 fdapi_bind bind = NULL;
@@ -72,7 +76,6 @@ fdapi_setsockopt setsockopt = NULL;
 fdapi_socket socket = NULL;
 fdapi_write write = NULL;
 }
-
 auto f_WSACleanup = dllfunctor_stdcall<int>("ws2_32.dll", "WSACleanup");
 auto f_WSAFDIsSet = dllfunctor_stdcall<int, SOCKET, fd_set*>("ws2_32.dll", "__WSAFDIsSet");
 auto f_WSAGetLastError = dllfunctor_stdcall<int>("ws2_32.dll", "WSAGetLastError");
@@ -125,6 +128,20 @@ void EnableFastLoopback(SOCKET socket) {
 static fnWSIOCP_CloseSocketStateRFD* wsiocp_CloseSocketState;
 void FDAPI_SetCloseSocketState(fnWSIOCP_CloseSocketStateRFD* func) {
     wsiocp_CloseSocketState = func;
+}
+
+int win32_ioctl(SOCKET fd, unsigned long request, unsigned long* argp) {
+    int ret = f_ioctlsocket(fd, (long)request, argp);
+   
+    return ret != SOCKET_ERROR ? ret : -1;
+}
+int win32_recv(SOCKET sockfd, void* buf, size_t len, int flags) {
+    int ret = f_recv(sockfd, (char*)buf, (int)len, flags);
+    return ret != SOCKET_ERROR ? ret : -1;
+}
+int win32_send(SOCKET sockfd, const void* buf, size_t len, int flags) {
+    int ret = f_send(sockfd, (const char*)buf, (int)len, flags);
+    return ret != SOCKET_ERROR ? ret : -1;
 }
 
 int FDAPI_WSAGetLastError(void) {
@@ -1189,7 +1206,9 @@ public:
 private:
     Win32_FDSockMap() {
         InitWinsock();
-
+        ioctl = win32_ioctl;
+        recv = win32_recv;
+        send = win32_send;
         accept = FDAPI_accept;
         access = FDAPI_access;
         bind = FDAPI_bind;

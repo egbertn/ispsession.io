@@ -44,9 +44,13 @@
 
 #include "net.h"
 #include "sds.h"
-#include "sockcompat.h"
 #include "win32.h"
+ 
 
+#define _WIN32_WINNT 0x0603  
+#include "..\..\src\Win32_Interop\Win32_FDAPI.h"
+//#include <winsock2.h>
+//#include <WS2tcpip.h>
 /* Defined in hiredis.c */
 void __redisSetError(redisContext *c, int type, const char *str);
 
@@ -293,7 +297,7 @@ int redisCheckConnectDone(redisContext *c, int *completed) {
 
 int redisCheckSocketError(redisContext *c) {
     int err = 0, errno_saved = errno;
-    socklen_t errlen = sizeof(err);
+    int errlen = sizeof(err);
 
     if (getsockopt(c->fd, SOL_SOCKET, SO_ERROR, &err, &errlen) == -1) {
         __redisSetErrorFromErrno(c,REDIS_ERR_IO,"getsockopt(SO_ERROR)");

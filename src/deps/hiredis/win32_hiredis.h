@@ -28,8 +28,8 @@
 #include "../../src/Win32_Interop/Win32_Error.h"
 #include "../../src/Win32_Interop/Win32_FDAPI.h"
 #define INCL_WINSOCK_API_PROTOTYPES 0 // Important! Do not include Winsock API definitions to avoid conflicts with API entry points defined below.
-#include <WinSock2.h>                 // For SOCKADDR_STORAGE
-
+//#include <WinSock2.h>                 // For SOCKADDR_STORAGE
+#include "..\..\src\Win32_Interop\Win32_FDAPI.h"
 #include "hiredis.h"
 
 #define snprintf    _snprintf

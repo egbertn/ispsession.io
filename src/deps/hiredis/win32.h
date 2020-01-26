@@ -1,8 +1,15 @@
+#pragma once
 #ifndef _WIN32_HELPER_INCLUDE
 #define _WIN32_HELPER_INCLUDE
 #ifdef _MSC_VER
 
-#include <winsock2.h> /* for struct timeval */
+//#include <winsock2.h> /* for struct timeval */
+/*
+ * Structure used in select() call, taken from the BSD file sys/time.h.
+ */
+ /*
+   * Structure used in select() call, taken from the BSD file sys/time.h.
+   */
 
 #ifndef inline
 #define inline __inline

@@ -8,7 +8,7 @@
 #include <vector>
 //#include <atlsync.h>
 #include <locale>
-#include <codecvt>
+
 using namespace std;
 class LoggingModule
 {

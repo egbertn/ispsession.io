@@ -7,8 +7,8 @@
 /* at Tue Jan 19 04:14:07 2038
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0622 
-    protocol : all , ms_ext, app_config, c_ext, robust
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
+    protocol : dce , ms_ext, app_config, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -584,24 +584,24 @@ EXTERN_C const IID IID_IApplicationCache;
             /* [in] */ INT KeyIndex,
             /* [retval][out] */ BSTR *pVal) = 0;
         
-        virtual /* [helpstring][propget] */ HRESULT STDMETHODCALLTYPE get_Count( 
+        virtual /* [propget] */ HRESULT STDMETHODCALLTYPE get_Count( 
             /* [retval][out] */ int *pVal) = 0;
         
         virtual /* [restricted][id] */ HRESULT STDMETHODCALLTYPE _NewEnum( 
             /* [retval][out] */ IUnknown **pVal) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE Remove( 
+        virtual HRESULT STDMETHODCALLTYPE Remove( 
             /* [in] */ BSTR Key) = 0;
         
-        virtual /* [helpstring] */ HRESULT STDMETHODCALLTYPE RemoveAll( void) = 0;
+        virtual HRESULT STDMETHODCALLTYPE RemoveAll( void) = 0;
         
-        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE LockKey( 
+        virtual /* [id] */ HRESULT STDMETHODCALLTYPE LockKey( 
             /* [in] */ BSTR Key) = 0;
         
-        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE UnlockKey( 
+        virtual /* [id] */ HRESULT STDMETHODCALLTYPE UnlockKey( 
             /* [in] */ BSTR Key) = 0;
         
-        virtual /* [helpstring][id] */ HRESULT STDMETHODCALLTYPE ExpireKeyAt( 
+        virtual /* [id] */ HRESULT STDMETHODCALLTYPE ExpireKeyAt( 
             /* [in] */ BSTR vKey,
             /* [in] */ INT at) = 0;
         
@@ -696,7 +696,7 @@ EXTERN_C const IID IID_IApplicationCache;
             /* [in] */ INT KeyIndex,
             /* [retval][out] */ BSTR *pVal);
         
-        /* [helpstring][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count )( 
+        /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count )( 
             IApplicationCache * This,
             /* [retval][out] */ int *pVal);
         
@@ -704,22 +704,22 @@ EXTERN_C const IID IID_IApplicationCache;
             IApplicationCache * This,
             /* [retval][out] */ IUnknown **pVal);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *Remove )( 
+        HRESULT ( STDMETHODCALLTYPE *Remove )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key);
         
-        /* [helpstring] */ HRESULT ( STDMETHODCALLTYPE *RemoveAll )( 
+        HRESULT ( STDMETHODCALLTYPE *RemoveAll )( 
             IApplicationCache * This);
         
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *LockKey )( 
+        /* [id] */ HRESULT ( STDMETHODCALLTYPE *LockKey )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key);
         
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *UnlockKey )( 
+        /* [id] */ HRESULT ( STDMETHODCALLTYPE *UnlockKey )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key);
         
-        /* [helpstring][id] */ HRESULT ( STDMETHODCALLTYPE *ExpireKeyAt )( 
+        /* [id] */ HRESULT ( STDMETHODCALLTYPE *ExpireKeyAt )( 
             IApplicationCache * This,
             /* [in] */ BSTR vKey,
             /* [in] */ INT at);

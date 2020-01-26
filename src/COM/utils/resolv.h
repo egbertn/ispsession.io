@@ -3,10 +3,11 @@
 
 #pragma once
 
-#include "../../redis3m/utils/exception.h"
+#include "exception.h"
 #include <string>
 #include <vector>
-
+#include "..\deps\hiredis\sockcompat.h"
+#include "..\deps\hiredis\hiredis.h"
 namespace redis3m
 {
 namespace resolv

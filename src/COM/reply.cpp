@@ -1,7 +1,7 @@
 // Copyright (c) 2014 Luca Marturana. All rights reserved.
 // Licensed under Apache 2.0, see LICENSE for details
-#include "include/hiredis/hiredis.h"
-#include "include/redis3m/reply.h"
+#include "..\deps\hiredis\hiredis.h"
+#include "reply.h"
 
 using namespace redis3m;
 

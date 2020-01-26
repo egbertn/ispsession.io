@@ -3,8 +3,8 @@
 
 #pragma once
 
-#include "../../include/redis3m/utils/noncopyable.h"
-#include "../../include/redis3m/connection.h"
+#include "utils/noncopyable.h"
+#include "connection.h"
 #include <set>
 #include <memory>
 //#include <mutex>

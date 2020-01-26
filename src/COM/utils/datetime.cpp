@@ -1,7 +1,7 @@
 // Copyright (c) 2014 Luca Marturana. All rights reserved.
 // Licensed under Apache 2.0, see LICENSE for details
 #define NO_BOOST
-#include "..\include\redis3m\utils\datetime.h"
+#include "datetime.h"
 
 using namespace redis3m;
 

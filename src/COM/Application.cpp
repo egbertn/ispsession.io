@@ -1514,7 +1514,7 @@ STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString)  noex
 	CComPtr<IStream> stream;
 
 	stream = cseqs;
-	stream->Write(binaryString.c_str(), binaryString.size(), nullptr);
+	stream->Write(binaryString.c_str(), static_cast<ULONG>( binaryString.size()), nullptr);
 	stream->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
 
 	/*

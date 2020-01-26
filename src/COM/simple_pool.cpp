@@ -4,8 +4,8 @@
 // Added timing logic (TimerThread), after X (say 20) seconds, a connection is removed from the pool.
 
 #include "stdafx.h"
-#include "include/redis3m/simple_pool.h"
-#include "include/redis3m/command.h"
+#include "simple_pool.h"
+#include "command.h"
 #include <thread>
 #include "tools.h"
 using namespace redis3m;

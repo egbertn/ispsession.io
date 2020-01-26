@@ -32,7 +32,7 @@
  Gregory Petrosyan
  */
 #include "..\stdafx.h"
-#include "..\include\redis3m\utils\sha1.h"
+#include "sha1.h"
 
 namespace redis3m
 {

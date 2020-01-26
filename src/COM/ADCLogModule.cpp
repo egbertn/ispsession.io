@@ -172,53 +172,14 @@ void LoggingModule::Write(PCWSTR pszFormat, ...)  noexcept
 		OutputDebugStringW(m_bstrTrace);
 	}
 	// write only to the file if we have access
-	if (m_file != NULL && !noFileAccess && (m_LoggingEnabled & 1) == 1)
+	if (m_file != nullptr && !noFileAccess && (m_LoggingEnabled & 1) == 1)
 	{
 		ULONGLONG nCurLen;
 		m_file.GetPosition(nCurLen);
-	
-
-		if (nCurLen > 1024  * 1024 * 1024)
-		{
-			m_file.Close();
-			std::locale utf8_locale(std::locale(), new std::codecvt_utf8<wchar_t>);
-			std::wifstream file(m_logFileName, ios_base::binary);
-			file.imbue(utf8_locale);			
-			std::vector<std::wstring> linev;
-
-			wchar_t buffer[10000] = { 0 };
-			while (file.good())
-			{
-				file.getline(buffer, 10000);
-				linev.push_back(buffer);
-			}
-			file.close();
-			try
-			{
-				//recreate file
-				std::wofstream file2(m_logFileName, ios_base::out);
-
-				file2.imbue(utf8_locale);
-
-				std::vector<std::wstring>::size_type sz = linev.size();
-				sz--;
-				for (std::vector<std::wstring>::size_type i = sz / 2; i <= sz; i++)
-				{
-					file2 << linev[i];
-				}
-				file2.close();
-			}
-			catch(const std::exception& ex)
-			{ 
-				//ignore, maybe next log it will succeed
-			}
-			OpenFile();	
-		}
-		
 		
 		auto ansi = m_bstrTrace.ToString();
 		
-		m_file.Write(ansi.c_str(), ansi.length());
+		m_file.Write(ansi.c_str(), static_cast<DWORD>( ansi.length()));
 		//clear buffer so we can be sure the buffer advances
 	//	m_file.Flush();
 		//if (mutResult != NULL)

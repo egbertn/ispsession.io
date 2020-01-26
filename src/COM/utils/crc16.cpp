@@ -41,7 +41,7 @@
  * Xor constant to output CRC : 0000
  * Output for "123456789"     : 31C3
  */
-#include "..\include\redis3m\utils\crc16.h"
+#include "crc16.h"
 
 using namespace redis3m;
 

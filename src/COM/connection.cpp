@@ -2,38 +2,133 @@
 // Licensed under Apache 2.0, see LICENSE for details
 // Some modifications, added some fixes, times out within 5 seconds
 #include "stdafx.h"
-#include "include\redis3m\connection.h"
-#include "include\hiredis\hiredis.h"
+#include "connection.h"
+//#include "..\..\src\src\Win32_Interop\Win32_FDAPI.h"
+#include "..\..\src\deps\hiredis\hiredis.h"
 
 using namespace redis3m;
-
+//bool connectFUNC3(char* ipaddr)
+//{
+//
+//    struct sockaddr_in server = { 0 };
+//    server.sin_family = AF_INET;
+//    server.sin_addr.s_addr = inet_addr(ipaddr);
+//    server.sin_port = htons(5577);
+//
+//    // ipaddr valid?
+//    if (server.sin_addr.s_addr == INADDR_NONE)
+//        return false;
+//
+//    auto sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+//    if (sock == INVALID_SOCKET)
+//        return false;
+//
+//    // put socked in non-blocking mode...
+//    u_long block = 1;
+//    if (ioctlsocket(sock, FIONBIO, &block) == SOCKET_ERROR)
+//    {
+//        close(sock);
+//        return false;
+//    }
+//
+//    if (connect(sock, (struct sockaddr*) & server, sizeof(server)) == SOCKET_ERROR)
+//    {
+//        if (WSAGetLastError() != WSAEWOULDBLOCK)
+//        {
+//            // connection failed
+//            close(sock);
+//            return false;
+//        }
+//
+//        // connection pending
+//
+//        fd_set setW, setE;
+//
+//        FD_ZERO(&setW);
+//        FD_SET(sock, &setW);
+//        FD_ZERO(&setE);
+//        FD_SET(sock, &setE);
+//
+//        timeval time_out = { 0 };
+//        time_out.tv_sec = 5;
+//        time_out.tv_usec = 0;
+//
+//        int ret = select(0, NULL, &setW, &setE, &time_out);
+//        if (ret <= 0)
+//        {
+//            // select() failed or connection timed out
+//            close(sock);
+//            if (ret == 0)
+//                WSASetLastError(WSAETIMEDOUT);
+//            return false;
+//        }
+//
+//        if (FD_ISSET(sock, &setE))
+//        {
+//            // connection failed
+//            int err = 0;
+//            int sz = sizeof(err);
+//            int erropt = SO_ERROR;
+//            getsockopt(sock, SOL_SOCKET, erropt, &err, &sz);
+//            close(sock);
+//            WSASetLastError(err);
+//            return false;
+//        }
+//    }
+//
+//    // connection successful
+//
+//    // put socked in blocking mode...
+//    block = 0;
+//    if (ioctlsocket(sock, FIONBIO, &block) == SOCKET_ERROR)
+//    {
+//        close(sock);
+//        return false;
+//    }
+//
+//    return true;
+//}
 connection::connection(const std::string& host, const unsigned port/*, const std::string& password*/)
 {
-	
-    c = redisConnect(host.c_str(), port);
+    timeval tv = { 5,0 };//because of a bug in hiridis 50 microseconds are 5 seconds
+    /*redisOptions opt = { 0 };
+    REDIS_OPTIONS_SET_TCP(&opt, host.c_str(), port);
+    opt.options |= REDIS_OPT_NONBLOCK;
+    opt.timeout = &tv;
+    c = redisConnectWithOptions(&opt);
+    if (c == nullptr || c->err != REDIS_OK)
+    {
+        redisFree(c);
+        throw unable_to_connect();
+    }
+    redisFree(c);
+    opt.options = 0;
+    c = redisConnectWithOptions(&opt);*/
+    c = redisConnectWithTimeout(host.c_str(), port, tv);
+    
     if (c->err != REDIS_OK)
     {
         redisFree(c);
         throw unable_to_connect();
     }
+
     redisEnableKeepAlive(c);
     
 }
 
-connection::connection(const std::string& path)
-{
-    c = redisConnectUnix(path.c_str());
-    if (c->err != REDIS_OK)
-    {
-        redisFree(c);
-        throw unable_to_connect();
-    }
-    c->timeout = 0;
-   
-    redisEnableKeepAlive(c);
-
-	
-}
+//connection::connection(const std::string& path)
+//{
+//    c = redisConnectUnix(path.c_str());
+//    if (c->err != REDIS_OK)
+//    {
+//        redisFree(c);
+//        throw unable_to_connect();
+//    }
+//   
+//    redisEnableKeepAlive(c);
+//
+//	
+//}
 
 connection::~connection()
 {

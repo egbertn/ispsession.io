@@ -1,8 +1,8 @@
 #include "stdafx.h"
-#include "include/redis3m/cluster_pool.h"
-#include "include/redis3m/utils/logging.h"
-#include "include/redis3m/utils/crc16.h"
-#include "include/redis3m/command.h"
+#include "cluster_pool.h"
+#include "utils/logging.h"
+#include "utils/crc16.h"
+#include "command.h"
 #ifndef NO_BOOST
 #include <boost/format.hpp>
 #endif

@@ -4,7 +4,7 @@
 
 
 
-#include "..\include\redis3m\utils\resolv.h"
+
 #ifndef _MSC_VER
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -12,14 +12,13 @@
 #include <arpa/inet.h>
 
 #else
-#include "..\include\hiredis\hiredis.h"
-#define REDIS_SOCKCOMPAT_IMPLEMENTATION
-#include "..\include\hiredis\sockcompat.h"
+//#include "..\src\Win32_Interop\Win32_FDAPI.h"
 
 #endif
-#include <string.h>
+#include "utils/resolv.h"
 
 using namespace redis3m;
+
 
 std::vector<std::string> resolv::get_addresses(const std::string &hostname)
 {
@@ -30,7 +29,7 @@ std::vector<std::string> resolv::get_addresses(const std::string &hostname)
     hints.ai_socktype = SOCK_STREAM;
     hints.ai_family = PF_INET;
 
-    int addrinfo_ret = getaddrinfo(hostname.c_str(), NULL, &hints, &ret_addrinfo);
+    const int addrinfo_ret = getaddrinfo(hostname.c_str(), NULL, &hints, &ret_addrinfo);
     if (addrinfo_ret != 0)
     {
         throw resolv::cannot_resolve_hostname("getaddrinfo returned != 0");

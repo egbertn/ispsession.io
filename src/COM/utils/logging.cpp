@@ -1,6 +1,6 @@
 // Copyright (c) 2014 Luca Marturana. All rights reserved.
 // Licensed under Apache 2.0, see LICENSE for details
-#include "..\include\redis3m\utils\logging.h"
+#include "logging.h"
 #include <iostream>
 
 using namespace redis3m;

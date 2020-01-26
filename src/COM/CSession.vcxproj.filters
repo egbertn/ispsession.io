@@ -43,9 +43,6 @@
     <ClCompile Include="CStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="connection_pool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="connection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -61,13 +58,7 @@
     <ClCompile Include="utils\datetime.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils\file.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="utils\logging.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="utils\resolv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utils\sha1.cpp">
@@ -103,6 +94,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="CRedLock.cpp">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="resolv.cpp">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="connection_pool.cpp">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
@@ -146,28 +143,13 @@
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\redis3m\patterns\model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\redis3m\patterns\orm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\redis3m\patterns\scheduler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\redis3m\patterns\script_exec.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\redis3m\patterns\simple_obj_store.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\redis3m\utils\noncopyable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="include\redis3m\utils\pool.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="include\redis3m\utils\resolv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="include\redis3m\utils\sha1.h">
@@ -188,6 +170,12 @@
     <ClInclude Include="IKeySerializer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="resolv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="connection_pool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="CSession.rc">
@@ -206,8 +194,5 @@
     <Midl Include="CSession.idl">
       <Filter>Source Files</Filter>
     </Midl>
-  </ItemGroup>
-  <ItemGroup>
-    <Library Include="..\msvs\x64\Debug\hiredis64D.lib" />
   </ItemGroup>
 </Project>

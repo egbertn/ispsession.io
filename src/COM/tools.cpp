@@ -393,10 +393,10 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 //}
 wstring __stdcall s2ws(const std::string& str)
 {
-    auto count = ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), nullptr, 0);
+    auto count = ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.length()), nullptr, 0);
     wstring ret;
     ret.resize(count);
-    ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), str.length(), ret.data(), count);
+    ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.length()), ret.data(), count);
     return std::move(ret);
 
 }
@@ -404,10 +404,10 @@ wstring __stdcall s2ws(const std::string& str)
 string __stdcall ws2s(const std::wstring& wstr)
 {
 
-    auto count = ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.length(), nullptr, 0, nullptr, nullptr);
+    auto count = ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), nullptr, 0, nullptr, nullptr);
     string ret;
     ret.resize(count);
-    ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), wstr.length(), ret.data(), count, nullptr, nullptr);
+    ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), ret.data(), count, nullptr, nullptr);
     return std::move(ret);
 
 }
@@ -710,7 +710,7 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) noexcept
 	ULONG hashcode = buf.GetHashCode(),
 		checkCode, checkCode2;
 	//offset 4
-	memcpy(&checkCode, (PBYTE)license + sizeof(unsigned char),
+	memcpy(&checkCode, static_cast<void*>(license + sizeof(unsigned char)),
 		sizeof(checkCode));
 	//offset 5
 	memcpy(&checkCode2,
@@ -730,7 +730,7 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) noexcept
 	case 8:
 	case 4://isp session blk this just checks the GUID, not the given domain name
 
-		buf = (LONG)licenseType;
+		buf = static_cast<LONG>(licenseType);
 		space = checkCode; //reuse variable
 		buf += space;
 		if (buf.GetHashCode() == checkCode2)

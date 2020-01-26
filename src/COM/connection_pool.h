@@ -5,11 +5,11 @@
 
 #include <string>
 #include <set>
-#include "../../include/redis3m/connection.h"
+#include "connection.h"
 #include <memory>
 #include <mutex>
-#include "../../include/redis3m/utils/exception.h"
-#include "../../include/redis3m/utils/noncopyable.h"
+#include "utils/exception.h"
+#include "utils/noncopyable.h"
 
 namespace redis3m {
     REDIS3M_EXCEPTION(cannot_find_sentinel)
@@ -19,7 +19,8 @@ namespace redis3m {
     REDIS3M_EXCEPTION(wrong_database)
     REDIS3M_EXCEPTION(role_dont_match)
     REDIS3M_EXCEPTION(authentication_error)
-
+    REDIS3M_EXCEPTION(cannot_resolve_hostname)
+       
     /**
      * @brief Manages a connection pool, using a Redis Sentinel
      * to get instances ip, managing also failover
@@ -58,6 +59,8 @@ namespace redis3m {
          * @param conn
          */
         void put(connection::ptr_t conn );
+
+        std::vector<std::string> get_addresses(const std::string& hostname);
 
         template<typename Ret>
         /**

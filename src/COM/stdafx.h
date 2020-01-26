@@ -30,7 +30,7 @@
 
 using namespace ATL;
 #define NO_BOOST
-#include "include/redis3m/redis3m.hpp"
+#include "redis3m.hpp"
 #include <iostream> 
 #include <cctype>
 #include <clocale>
@@ -56,7 +56,7 @@ constexpr auto ONEMINUTE = 0.00069444444444444F;
 #define ERROR_READONLY  L"Session is set readonly"
 #define ERROR_INPUT  L"Expecting string input"
 
-
+#define _OFF_T_DEFINED
 
 #define FreeVariant(var) ::VariantClear(var); ZeroMemory(var, sizeof(VARIANT));
 #define CHECK_ERR(err, msg) { \

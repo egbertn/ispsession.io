@@ -1,16 +1,16 @@
 // Copyright (c) 2014 Luca Marturana. All rights reserved.
 // Licensed under Apache 2.0, see LICENSE for details
 #include "stdafx.h"
-#include "include/redis3m/connection_pool.h"
-#include "include/redis3m/command.h"
-#include "include/redis3m/utils/resolv.h"
+#include "connection_pool.h"
+#include "command.h"
+#include "utils/resolv.h"
 #ifndef NO_BOOST
 #include <boost/format.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
 #endif
-#include "include/redis3m/utils/logging.h"
+#include "utils/logging.h"
 #include <chrono>
 #include <thread>
 #ifndef NO_BOOST
@@ -119,7 +119,33 @@ void connection_pool::put(connection::ptr_t conn)
         connections.insert(conn);
     }
 }
+std::vector<std::string> resolv::get_addresses(const std::string& hostname)
+{
+    std::vector<std::string> ret_v;
+    struct addrinfo hints, * ret_addrinfo;
 
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_family = PF_INET;
+   
+    const int addrinfo_ret = getaddrinfo(hostname.c_str(), NULL, &hints, &ret_addrinfo);
+    if (addrinfo_ret != 0)
+    {
+        throw resolv::cannot_resolve_hostname("getaddrinfo returned != 0");
+    }
+
+    struct addrinfo* ret_ptr = ret_addrinfo;
+    while (ret_ptr)
+    {
+        char addrstr[100];
+        inet_ntop(ret_ptr->ai_family, &((struct sockaddr_in*) ret_ptr->ai_addr)->sin_addr, addrstr, sizeof(addrstr));
+        ret_v.push_back(addrstr);
+        ret_ptr = ret_ptr->ai_next;
+    }
+
+    freeaddrinfo(ret_addrinfo);
+    return ret_v;
+}
 connection::ptr_t connection_pool::sentinel_connection()
 {
     for(const std::string& host : sentinel_hosts)
@@ -227,7 +253,7 @@ connection::ptr_t connection_pool::create_slave_connection()
     sentinel->append(command("SENTINEL") << "slaves" << master_name );
     reply response = sentinel->get_reply();
     std::vector<reply> slaves(response.elements());
-    unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+    unsigned int seed = static_cast<unsigned int>( std::chrono::system_clock::now().time_since_epoch().count());
     std::shuffle(slaves.begin(), slaves.end(), std::default_random_engine(seed));
 
     for (std::vector<reply>::const_iterator it = slaves.begin();

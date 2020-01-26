@@ -35,7 +35,7 @@ STDMETHODIMP CStream::Read(void* pv, ULONG cb, ULONG *pcbRead)  noexcept
 		return S_OK;
 	}
 	// Calculate bytes left and bytes to read.
-	auto cBytesLeft = m_ulSize.LowPart - m_iWritePos.LowPart;
+	const auto cBytesLeft = m_ulSize.LowPart - m_iWritePos.LowPart;
 	ULONG cBytesRead = cb > cBytesLeft ? cBytesLeft : cb;
 	
 	// If no more bytes to retrieve return S_FALSE.
@@ -85,7 +85,7 @@ STDMETHODIMP CStream::Write(const void* pv, ULONG cb, ULONG *pcbWritten)  noexce
 #ifdef logModule
 		logModule.Write(L"Stream Resize Write %d", m_ulLength);
 #endif
-		m_buf.resize((size_t)m_ulLength.QuadPart);
+		m_buf.resize(static_cast<size_t>(m_ulLength.QuadPart));
 	}
 	// Copy callers memory to internal bufffer and update write position.
 	memcpy(&m_buf[ m_iWritePos.LowPart], pv, cb);
@@ -126,7 +126,7 @@ STDMETHODIMP CStream::Seek(LARGE_INTEGER dlibMove, DWORD dwOrigin, ULARGE_INTEGE
 		{
 			m_ulLength = m_ulSize;
 			m_ulLength.QuadPart = MEMALIGN_32(m_iWritePos.QuadPart);
-			m_buf.resize((size_t)m_ulLength.QuadPart);
+			m_buf.resize(static_cast<size_t>(m_ulLength.QuadPart));
 		}		
 	}
 	if (plibNewPosition != nullptr)
@@ -142,7 +142,7 @@ STDMETHODIMP CStream::SetSize(ULARGE_INTEGER libNewSize)   noexcept
 	ULARGE_INTEGER li;
 	li = libNewSize;
 	m_ulLength.QuadPart = MEMALIGN_32(li.QuadPart);
-	m_buf.resize((size_t)m_ulLength.QuadPart);
+	m_buf.resize(static_cast<size_t>(m_ulLength.QuadPart));
 	m_ulSize = li;
 	if (m_iWritePos.QuadPart > li.QuadPart)
 	{
@@ -167,12 +167,12 @@ STDMETHODIMP CStream::CopyTo(
 	AtlTrace(L"(%p, %p, %d, %p, %p)\n", this, pstm,
 		cb.u.LowPart, pcbRead, pcbWritten);
 
-	if (pstm == 0)
+	if (pstm == nullptr)
 		return STG_E_INVALIDPOINTER;
 
 	totalBytesRead.QuadPart = 0;
 	totalBytesWritten.QuadPart = 0;
-	ULARGE_INTEGER backupWRitePos = m_iWritePos;
+	const ULARGE_INTEGER backupWRitePos = m_iWritePos;
 	m_iWritePos.QuadPart = 0;
 
 	while (cb.QuadPart > 0 && hr == S_OK)
@@ -233,6 +233,7 @@ STDMETHODIMP CStream::Stat(STATSTG *pStatstg, DWORD) noexcept
 
 	return S_OK;
 }
+
 STDMETHODIMP CStream::Clone(IStream **) noexcept
 {
 	return E_NOTIMPL;

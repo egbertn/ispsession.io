@@ -16,7 +16,7 @@ public:
 	BSTR m_str;
 	CComBSTR2()  noexcept
 	{
-		m_str = NULL;
+		m_str = nullptr;
 	}
 #ifdef _ATL_CCOMBSTR_EXPLICIT_CONSTRUCTORS
 	explicit CComBSTR(_In_ int nSize)
@@ -29,12 +29,11 @@ public:
 		{
 			AtlThrow(E_INVALIDARG);
 		}
-		m_str = NULL;
+		m_str = nullptr;
 
-		HRESULT hr = SetLength(nSize);
+		const HRESULT hr = SetLength(nSize);
 		if (FAILED(hr))
-			AtlThrow(hr);
-		ZeroMemory(m_str, nSize * sizeof(wchar_t));
+			AtlThrow(hr);		
 		
 	}
 	CComBSTR2(_In_ int nSize, _In_reads_opt_(nSize) LPCOLESTR sz)
@@ -45,7 +44,7 @@ public:
 		}
 		
 		if (nSize == 0)
-			m_str = NULL;
+			m_str = nullptr;
 		else
 		{
 			m_str = ::SysAllocStringLen(sz, nSize);
@@ -57,8 +56,8 @@ public:
 	}
 	CComBSTR2(_In_opt_z_ LPCOLESTR pSrc)
 	{
-		if (pSrc == NULL)
-			m_str = NULL;
+		if (pSrc == nullptr)
+			m_str = nullptr;
 		else
 		{
 			m_str = ::SysAllocString(pSrc);
@@ -80,7 +79,7 @@ public:
 	{
 		OLECHAR szGUID[64];
 		ATLPREFAST_SUPPRESS(6031)
-			::StringFromGUID2(guid, szGUID, 64);
+			::StringFromGUID2(guid, szGUID, sizeof(OLECHAR)/sizeof(wchar_t));
 		ATLPREFAST_UNSUPPRESS()
 			m_str = ::SysAllocString(szGUID);
 		if (!*this)
@@ -103,7 +102,7 @@ public:
 	{
 		if (pSrc != m_str)
 		{
-			if (pSrc != NULL)
+			if (pSrc != nullptr)
 			{
 				if (::SysReAllocString(&m_str, pSrc) == FALSE)				
 					AtlThrow(E_OUTOFMEMORY);
@@ -127,7 +126,7 @@ public:
 	CComBSTR2& operator=(decltype(__nullptr))  noexcept
 	{
 		::SysFreeString(m_str);
-		m_str = NULL;
+		m_str = nullptr;
 		return *this;
 	}
 	CComBSTR2& operator=(_Inout_ CComBSTR2&& src)
@@ -149,7 +148,7 @@ public:
 	static ULONG GetStreamSize(BSTR bstr)
 	{
 		ULONG ulSize = sizeof(ULONG);
-		if (bstr != NULL)
+		if (bstr != nullptr)
 		{
 			ulSize += SysStringByteLen(bstr) + sizeof(OLECHAR);
 		}
@@ -198,7 +197,7 @@ public:
 	BSTR __stdcall Copy() const  noexcept
 	{
 		if (*this == NULL)
-			return NULL;
+			return nullptr;
 
 		unsigned int copyLen = ByteLength();
 		BSTR retVal = ::SysAllocStringByteLen((char*)m_str, copyLen);			
@@ -208,14 +207,14 @@ public:
 	}
 	_Check_return_ HRESULT CopyTo(_Outptr_result_maybenull_ _Result_nullonfailure_ BSTR* pbstr) const  noexcept
 	{
-		ATLASSERT(pbstr != NULL);
-		if (pbstr == NULL)
+		ATLASSERT(pbstr != nullptr);
+		if (pbstr == nullptr)
 		{
 			return E_POINTER;
 		}
 		*pbstr = Copy();
 
-		if ((*pbstr == NULL) && (m_str != NULL))
+		if ((*pbstr == nullptr) && (m_str != nullptr))
 		{
 			return E_OUTOFMEMORY;
 		}
@@ -225,7 +224,7 @@ public:
 	// *** returns true if length equals zero characters or when unallocated(null pointer)
 	bool __stdcall IsEmpty (void) const  noexcept
 	{
-		return m_str == NULL || ByteLength() == 0;
+		return m_str == nullptr || ByteLength() == 0;
 	}
 	/* added by may 2005 e.n. needs #include 'wchar.h'*/
 	STDMETHODIMP Format(_In_ PCWSTR pszFormat, _In_ va_list args)  noexcept
@@ -256,7 +255,7 @@ private:
 	{
 		unsigned int curLen = Length();
 		HRESULT hr = S_OK;
-		if (atPosition > curLen || lpsz == NULL) 
+		if (atPosition > curLen || lpsz == nullptr) 
 			hr = E_INVALIDARG;
 		else
 			hr = SetLength(curLen + nLen);
@@ -279,18 +278,18 @@ public:
 		return Insert(atPosition, value.m_str, value.Length());
 	}
 
-	STDMETHODIMP TrimStart(_In_opt_ PCWSTR trimwhat = NULL)  noexcept
+	STDMETHODIMP TrimStart(_In_opt_ PCWSTR trimwhat = nullptr)  noexcept
 	{
-		PCWSTR trim = trimwhat == NULL? L" ": trimwhat;
+		PCWSTR trim = trimwhat == nullptr? L" ": trimwhat;
 		if (IsEmpty()) return S_OK;
 		unsigned int trimLen = (unsigned int)wcslen(trim);
 		while(StartsWith(trim))
 			Remove(0, trimLen);
 		return S_OK;
 	}
-	STDMETHODIMP TrimEnd(_In_opt_ PCWSTR trimwhat = NULL)  noexcept
+	STDMETHODIMP TrimEnd(_In_opt_ PCWSTR trimwhat = nullptr)  noexcept
 	{
-		PCWSTR trim = trimwhat == NULL? L" ": trimwhat;
+		PCWSTR trim = trimwhat == nullptr? L" ": trimwhat;
 		if (IsEmpty()) return S_OK;
 		unsigned int trimLen = (unsigned int)wcslen(trim);
 		while(EndsWith(trim))
@@ -335,7 +334,7 @@ public:
 	{
 
 		unsigned int maxIdx = Length();
-		if (startIndex > maxIdx || value == NULL) return; // illegal operation
+		if (startIndex > maxIdx || value == nullptr) return; // illegal operation
 		unsigned int mergeLen = SysStringLen(value);
 		if (mergeLen + startIndex > maxIdx)
 			mergeLen = maxIdx - startIndex;
@@ -344,12 +343,12 @@ public:
 	BSTR __stdcall Substring(_In_ unsigned int startIndex)  const  noexcept
 	{
 		unsigned int maxIdx = Length();
-		if (m_str != NULL && startIndex >= 0 && startIndex <= maxIdx)
+		if (m_str != nullptr && startIndex >= 0 && startIndex <= maxIdx)
 		{
 			return ::SysAllocStringLen(m_str + startIndex, maxIdx - startIndex);
 		}
 		else
-			return NULL;
+			return nullptr;
 	}
 	
 	STDMETHODIMP SetByteLength(_In_ unsigned int length)  noexcept
@@ -365,16 +364,16 @@ public:
 private:
 	static STDMETHODIMP _SetByteLength(_Inout_ BSTR *str, _In_ unsigned int length)  noexcept
 	{
-		BSTR Copy = NULL;
-		if (*str != NULL)
+		BSTR Copy = nullptr;
+		if (*str != nullptr)
 		{
 			if ((length % 2) == 0)
 			{
-				SysReAllocStringLen(str, NULL, length / 2);
+				SysReAllocStringLen(str, nullptr, length / 2);
 			}
 			else
 			{
-				Copy = SysAllocStringByteLen(NULL, length);
+				Copy = SysAllocStringByteLen(nullptr, length);
 				memset(Copy, 0, length);
 				auto oldLen = ::SysStringByteLen(*str);
 				memcpy(Copy, *str, min(oldLen, length));
@@ -384,13 +383,13 @@ private:
 		}
 		else
 		{
-			*str = SysAllocStringByteLen(NULL, length);
+			*str = SysAllocStringByteLen(nullptr, length);
 		}
-		return *str == NULL ? E_OUTOFMEMORY : S_OK;
+		return *str == nullptr ? E_OUTOFMEMORY : S_OK;
 	}
 	static STDMETHODIMP  _SetLength(_Inout_ BSTR * str, _In_ unsigned int length)  noexcept
 	{
-		return ::SysReAllocStringLen(str, NULL, length) == FALSE ? E_OUTOFMEMORY : S_OK;
+		return ::SysReAllocStringLen(str, nullptr, length) == FALSE ? E_OUTOFMEMORY : S_OK;
 		
 	}
 public:
@@ -425,7 +424,7 @@ public:
 	STDMETHODIMP Replace(_In_opt_ BSTR find, _In_opt_ BSTR replace, _In_ bool caseInsensitive)  noexcept
 	{
 		HRESULT hr = S_OK;
-		if (m_str == NULL || find == NULL || replace == NULL)
+		if (m_str == nullptr || find == nullptr || replace == nullptr)
 			hr = E_INVALIDARG;
 		else
 		{
@@ -499,9 +498,9 @@ public:
 	/// <returns>The example would return a safearray with 2 VT_BSTR elements containing "John" and "Smith"</returns>	
 	SAFEARRAY* __stdcall Split(_In_ const CComBSTR& expression, _In_ const bool caseInsensitive)  const
 	{
-		SAFEARRAY* retval = NULL;
+		SAFEARRAY* retval = nullptr;
 		HRESULT hr = S_OK;
-		if (m_str == NULL)
+		if (m_str == nullptr)
 			AtlThrow(E_POINTER);
 		else
 		{
@@ -523,7 +522,7 @@ public:
 				}				
 			}			
 			retval = ::SafeArrayCreateVector(VT_BSTR, 0, found + 1); 
-			if (retval == NULL)
+			if (retval == nullptr)
 				return retval;
 			
 			else if (mLen > 0)
@@ -537,7 +536,7 @@ public:
 					{
 						x = IndexOf(expression, x, caseInsensitive);					
 						paBSTR[curEl] = x < 0 ? Substring(prevPos) : Substring(prevPos, x - prevPos);
-						if (paBSTR[curEl] == NULL)
+						if (paBSTR[curEl] == nullptr)
 						{
 							hr = E_OUTOFMEMORY;
 							break;
@@ -551,9 +550,9 @@ public:
 			if (FAILED(hr))
 			{
 				AtlTrace(L"general split fail %x", hr);
-				if (retval != NULL) 
+				if (retval != nullptr) 
 					::SafeArrayDestroy(retval);
-				retval = NULL;
+				retval = nullptr;
 				AtlThrow(hr);
 			}				
 		}
@@ -578,9 +577,9 @@ public:
 	/// <returns>The example would return "John|Smith"</returns>	
 	static BSTR __stdcall Join(_In_opt_ SAFEARRAY *psa, _In_ const BSTR delimiter) // noexcept
 	{
-		BSTR retval = NULL;
+		BSTR retval = nullptr;
 		HRESULT hr = S_OK;
-		if (psa != NULL && psa != NULL)
+		if (psa != nullptr && psa != nullptr)
 		{
 			VARTYPE vt = VT_EMPTY;
 			unsigned int delLen = ::SysStringByteLen(delimiter);
@@ -604,7 +603,7 @@ public:
 			ULONG els = elements;
 			while(els != 0)
 			{
-				if (paBSTR[--els] != NULL)
+				if (paBSTR[--els] != nullptr)
 					totalLen += ::SysStringByteLen(paBSTR[els]);
 				if (els != 0)
 					totalLen += delLen;
@@ -623,7 +622,7 @@ public:
 				while (els != 0)
 				{
 					els--;
-					if (paBSTR[curel] != NULL)
+					if (paBSTR[curel] != nullptr)
 					{
 						unsigned int curLen = ::SysStringByteLen(paBSTR[curel]);
 						Checked::memcpy_s(((PSTR)retval) + totalLen, curLen, paBSTR[curel], curLen);
@@ -657,18 +656,18 @@ public:
 		//if (length < 0) length = 0;
 		if (startIndex + length > maxIdx) 
 			length = maxIdx - startIndex;
-		if (m_str != NULL && startIndex >= 0 && startIndex <= maxIdx)
+		if (m_str != nullptr && startIndex >= 0 && startIndex <= maxIdx)
 		{
 			return ::SysAllocStringLen(m_str + startIndex, length);
 		}
 		else
-			return NULL;
+			return nullptr;
 	}
 private:
 	bool __stdcall local_Test(_In_opt_ PCWSTR src, unsigned int startIndex, bool caseInsensitive)  const  noexcept
 	{
 		bool retval = false;
-		if (src != NULL)
+		if (src != nullptr)
 		{
 			unsigned int compLen = (unsigned int)wcslen(src);
 			unsigned int thisLen = Length();
@@ -707,7 +706,7 @@ public:
 	int __stdcall LastIndexOf(_In_opt_ const wchar_t *src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0)  const  noexcept
 	{
 		int result = -1;
-		if (m_str != NULL && src != NULL)
+		if (m_str != nullptr && src != nullptr)
 		{
 			LCID lcid = ::GetThreadLocale();
 			DWORD dwCmpFlags = caseInsensitive ? NORM_IGNORECASE : 0;
@@ -749,7 +748,7 @@ public:
 	{
 		int result = -1;
 		
-		if (m_str != NULL && src != NULL)
+		if (m_str != nullptr && src != nullptr)
 		{			
 			LCID lcid = ::GetThreadLocale();
 			DWORD dwCmpFlags = caseInsensitive ? NORM_IGNORECASE : 0;
@@ -780,14 +779,14 @@ public:
 	// copy BSTR to VARIANT
 	_Check_return_ HRESULT CopyTo(_Out_ VARIANT *pvarDest) const  noexcept
 	{
-		ATLASSERT(pvarDest != NULL);
+		ATLASSERT(pvarDest != nullptr);
 		HRESULT hRes = E_POINTER;
-		if (pvarDest != NULL)
+		if (pvarDest != nullptr)
 		{
 			pvarDest->vt = VT_BSTR;
 			pvarDest->bstrVal = Copy();
 
-			if (pvarDest->bstrVal == NULL && m_str != NULL)
+			if (pvarDest->bstrVal == nullptr && m_str != nullptr)
             {
 				hRes = E_OUTOFMEMORY;
             }
@@ -810,19 +809,19 @@ public:
 	BSTR Detach()  noexcept
 	{
 		BSTR s = m_str;
-		m_str = NULL;
+		m_str = nullptr;
 		return s;
 	}
 
 	void Empty()  noexcept
 	{
 		::SysFreeString(m_str);
-		m_str = NULL;
+		m_str = nullptr;
 	}
 
 	bool operator!() const  noexcept
 	{
-		return (m_str == NULL);
+		return (m_str == nullptr);
 	}
 	
 	_Check_return_ STDMETHODIMP Append(_In_ const CComBSTR2& bstrSrc)  noexcept
@@ -864,7 +863,7 @@ public:
 	}
 	_Check_return_ STDMETHODIMP Append(_In_opt_count_(nLen) LPCOLESTR lpsz, int nLen)  noexcept
 	{
-		if (lpsz == NULL || (m_str != NULL && nLen == 0))
+		if (lpsz == nullptr || (m_str != nullptr && nLen == 0))
 			return S_OK;
 		int n1 = Length();
 		HRESULT hr = SetLength(n1 + nLen);
@@ -887,16 +886,16 @@ public:
 
 	_Check_return_ STDMETHODIMP AppendBytes(_In_opt_count_(nLen) const char* lpsz, int nLen)  noexcept
 	{
-		if (lpsz == NULL || nLen == 0)
+		if (lpsz == nullptr || nLen == 0)
 			return S_OK;
 		int n1 = ByteLength();
 		BSTR b;
-		b = ::SysAllocStringByteLen(NULL, n1+nLen);
-		if (b == NULL)
+		b = ::SysAllocStringByteLen(nullptr, n1+nLen);
+		if (b == nullptr)
 			return E_OUTOFMEMORY;
 		memcpy_s(b, n1+nLen, m_str, n1);
 		memcpy_s(((char*)b)+n1, nLen, lpsz, nLen);
-		*((OLECHAR*)(((char*)b)+n1+nLen)) = NULL;
+		*((OLECHAR*)(((char*)b)+n1+nLen)) = '\0';
 		Empty();
 		m_str = b;
 		return S_OK;
@@ -904,11 +903,11 @@ public:
 	static int __stdcall CountChar(_In_ const BSTR a, _In_ wchar_t theChar)  noexcept
 	{
 		int retval = 0;
-		if (a != NULL) 
+		if (a != nullptr) 
 		{
 			unsigned int x  = ::SysStringLen(a);					
-			while (x != 0)			
-				if (a[--x] == theChar) retval++;		
+			while (x-- != 0)			
+				if (a[x] == theChar) retval++;		
 		}
 		return retval;
 	}
@@ -920,11 +919,11 @@ public:
 		if (ignoreDiacritics) compareFlags |= NORM_IGNORENONSPACE;
 		if (ignoreSymbols) compareFlags |= NORM_IGNORESYMBOLS;
 
-		if (a == NULL && b == NULL)
+		if (a == nullptr && b == nullptr)
 			retval = 0;
-		else if (a == NULL)
+		else if (a == nullptr)
 			retval = -1;
-		else if (b == NULL)
+		else if (b == nullptr)
 			retval = 1;
 		else
 		{
@@ -992,7 +991,7 @@ public:
 	GUID __stdcall ToGuid() const
 	{
 		GUID retval = { 0 };
-		HRESULT hr = IIDFromString(m_str, &retval);
+		const HRESULT hr = IIDFromString(m_str, &retval);
 		if (FAILED(hr))
 			AtlThrow(hr);
 		return retval;
@@ -1001,7 +1000,7 @@ public:
 	{
 		VARIANT_BOOL bogus;
 		if (Length() == 0) return false;
-		if (lstrcmpiW(L"true", m_str) == 0)	
+		if (lstrcmpiW(L"true", m_str) == 0 || lstrcmpiW(L"false", m_str) == 0)
 		{
 			return true;
 		}
@@ -1038,7 +1037,7 @@ public:
 				return VARIANT_TRUE;
 			}
 			VARIANT_BOOL retVal;
-			HRESULT hr = ::VarBoolFromStr(m_str, ::GetThreadLocale(), LOCALE_NOUSEROVERRIDE, &retVal);
+			const HRESULT hr = ::VarBoolFromStr(m_str, ::GetThreadLocale(), LOCALE_NOUSEROVERRIDE, &retVal);
 			if (FAILED(hr))
 			{
 				AtlThrow(hr);
@@ -1070,9 +1069,9 @@ public:
 		if (m_str != bstrSrc)
 		{
 
-			if (bstrSrc != NULL)
+			if (bstrSrc != nullptr)
 			{
-				INT len = ::SysStringByteLen(bstrSrc);
+				const INT len = ::SysStringByteLen(bstrSrc);
 				if (len % 2 == 0)
 				{
 					::SysReAllocStringLen(&m_str, bstrSrc, len / 2);
@@ -1101,18 +1100,17 @@ public:
 	{
 		if (!IsEmpty())
 		{	
-			UINT neededLen = 0;
-			auto len = Length();
-			BSTR pszA = NULL;  ;
+			const auto len = Length();
+			BSTR pszA = nullptr;  ;
 			//memset(pszA, 0, neededLen);
 			SetLastError(0);
-			int _convert = WideCharToMultiByte(codePage, 0, m_str, len, (PSTR)pszA, neededLen, NULL, NULL);
+			int _convert = WideCharToMultiByte(codePage, 0, m_str, len, (PSTR)pszA, 0, nullptr, nullptr);
 			auto err = GetLastError();
 			if (_convert > 0) //ERROR_INSUFFICIENT_BUFFER not always set, so do not check
 			{
-				auto hr = _SetByteLength(&pszA, _convert);
+				const auto hr = _SetByteLength(&pszA, _convert);
 				if (SUCCEEDED(hr))
-					_convert = WideCharToMultiByte(codePage, 0, m_str, len, (PSTR) pszA, _convert, NULL, NULL);
+					_convert = WideCharToMultiByte(codePage, 0, m_str, len, (PSTR) pszA, _convert, nullptr, nullptr);
 				else
 					AtlThrowImpl(hr);
 				
@@ -1125,18 +1123,18 @@ public:
 			return pszA;
 		}
 		else 
-			return NULL;
+			return nullptr;
 	}
 	//creates a copy to a wide-string
 	// optimal usage, attach to it...
 	BSTR ToWideString(_In_ UINT codePage=CP_UTF8)  noexcept
 	{
 		UINT len = ByteLength();
-		int _convert = MultiByteToWideChar(codePage, 0, (PSTR) m_str, len, NULL, 0);
-		BSTR pszW = SysAllocStringLen(NULL, _convert);
-		if (pszW != NULL && _convert > 0)
+		int _convert = MultiByteToWideChar(codePage, 0, (PSTR) m_str, len, nullptr, 0);
+		BSTR pszW = ::SysAllocStringLen(nullptr, _convert);
+		if (pszW != nullptr && _convert > 0)
 		{
-			MultiByteToWideChar(codePage, 0, (PSTR)m_str, len, pszW, _convert);
+			::MultiByteToWideChar(codePage, 0, (PSTR)m_str, len, pszW, _convert);
 		}
 		return pszW;
 
@@ -1144,109 +1142,20 @@ public:
 
 	_Check_return_ HRESULT ToLower()  noexcept
 	{
-		if (m_str != NULL)
+		if (m_str != nullptr)
 		{
-#ifdef _UNICODE
 			// Convert in place
-			CharLowerBuff(m_str, Length());
-#else
-			// Cannot use conversion macros due to possible embedded NULLs
-			UINT _acp = _AtlGetConversionACP();
-			int _convert = WideCharToMultiByte(_acp, 0, m_str, Length(), NULL, 0, NULL, NULL);
-			CTempBuffer<char> pszA;
-			ATLTRY(pszA.Allocate(_convert));
-			if (pszA == NULL)
-				return E_OUTOFMEMORY;
+			CharLowerBuffW(m_str, Length());
 
-			int nRet = WideCharToMultiByte(_acp, 0, m_str, Length(), pszA, _convert, NULL, NULL);
-			if (nRet == 0)
-			{
-				ATLASSERT(0);
-				return AtlHresultFromLastError();
-			}
-
-			CharLowerBuff(pszA, nRet);
-
-			_convert = MultiByteToWideChar(_acp, 0, pszA, nRet, NULL, 0);
-
-			CTempBuffer<WCHAR> pszW;
-			ATLTRY(pszW.Allocate(_convert));
-			if (pszW == NULL)
-				return E_OUTOFMEMORY;
-
-			nRet = MultiByteToWideChar(_acp, 0, pszA, nRet, pszW, _convert);
-			if (nRet <= 0)
-			{
-				ATLASSERT(0);
-				return AtlHresultFromLastError();
-			}
-
-			UINT nBytes=0;	
-			HRESULT hr=S_OK;
-			if( FAILED(hr=::ATL::AtlMultiply(&nBytes, static_cast<UINT>(nRet), static_cast<UINT>(sizeof(OLECHAR)))))
-			{
-				return hr;
-			}
-			BSTR b = ::SysAllocStringByteLen((LPCSTR) (LPWSTR) pszW, nBytes);
-			if (b == NULL)
-				return E_OUTOFMEMORY;
-			SysFreeString(m_str);
-			m_str = b;
-#endif
 		}
 		return S_OK;
 	}
 	_Check_return_ STDMETHODIMP ToUpper()  noexcept
 	{
-		if (m_str != NULL)
+		if (m_str != nullptr)
 		{
-#ifdef _UNICODE
 			// Convert in place
-			CharUpperBuff(m_str, Length());
-#else
-		// Cannot use conversion macros due to possible embedded NULLs
-			UINT _acp = _AtlGetConversionACP();
-			int _convert = WideCharToMultiByte(_acp, 0, m_str, Length(), NULL, 0, NULL, NULL);
-			CTempBuffer<char> pszA;
-			ATLTRY(pszA.Allocate(_convert));
-			if (pszA == NULL)
-				return E_OUTOFMEMORY;
-
-			int nRet = WideCharToMultiByte(_acp, 0, m_str, Length(), pszA, _convert, NULL, NULL);
-			if (nRet == 0)
-			{
-				ATLASSERT(0);
-				return AtlHresultFromLastError();
-			}
-
-			CharUpperBuff(pszA, nRet);
-
-			_convert = MultiByteToWideChar(_acp, 0, pszA, nRet, NULL, 0);
-
-			CTempBuffer<WCHAR> pszW;
-			ATLTRY(pszW.Allocate(_convert));
-			if (pszW == NULL)
-				return E_OUTOFMEMORY;
-
-			nRet = MultiByteToWideChar(_acp, 0, pszA, nRet, pszW, _convert);
-			if (nRet <= 0)
-			{
-				ATLASSERT(0);
-				return AtlHresultFromLastError();
-			}
-
-			UINT nBytes=0;
-			HRESULT hr=S_OK;
-			if( FAILED(hr=::ATL::AtlMultiply(&nBytes, static_cast<UINT>(nRet), static_cast<UINT>(sizeof(OLECHAR)))))
-			{		
-				return hr;
-			}
-			BSTR b = ::SysAllocStringByteLen((LPCSTR) (LPWSTR) pszW, nBytes);
-			if (b == NULL)
-				return E_OUTOFMEMORY;
-			SysFreeString(m_str);
-			m_str = b;
-#endif
+			CharUpperBuffW(m_str, Length());
 		}
 		return S_OK;
 	}
@@ -1273,7 +1182,7 @@ private:
 		
 		bool result = true;			
 
-		PWSTR myMessage = NULL;
+		PWSTR myMessage = nullptr;
 		LANGID langid = LANGIDFROMLCID(::GetThreadLocale());
 		LANGID id= PRIMARYLANGID(langid);
 		int trycnt = 0;
@@ -1309,7 +1218,7 @@ private:
 			if (bufSize > 0) bufSize -= 2;
 			m_str = ::SysAllocStringLen(myMessage, bufSize);
 		}
-		if (myMessage != NULL) 
+		if (myMessage != nullptr) 
 			::GlobalFree(myMessage);
 	
 		return result;
@@ -1417,25 +1326,25 @@ public:
 	
 	bool __stdcall operator==(int nNull) const  noexcept
 	{
-		ATLASSERT(nNull == NULL);
+		ATLASSERT(nNull == 0);
 		(void)nNull;
-		return (m_str == NULL);
+		return (m_str == nullptr);
 	}
 	CComBSTR2(_In_opt_ LPCSTR pSrc)
 	{
-		if (pSrc != NULL)
+		if (pSrc != nullptr)
 		{
 			m_str = A2WBSTR(pSrc);
-			if (m_str == NULL)
+			if (m_str == nullptr)
 				AtlThrow(E_OUTOFMEMORY);
 		}
 		else
-			m_str = NULL;
+			m_str = nullptr;
 	}
 
 	CComBSTR2(int nSize, _In_opt_count_(nSize) LPCSTR sz)
 	{
-		if (nSize != 0 && sz == NULL)
+		if (nSize != 0 && sz == nullptr)
 		{
 			HRESULT hr = SetLength(nSize);
 			if (FAILED(hr))
@@ -1444,19 +1353,19 @@ public:
 		else 
 		{
 			m_str = A2WBSTR(sz, nSize);
-			if (m_str == NULL && nSize != 0)
+			if (m_str == nullptr && nSize != 0)
 				AtlThrow(E_OUTOFMEMORY);
 		}
 	}
 
 	STDMETHODIMP Append(_In_opt_ LPCSTR lpsz)  noexcept
 	{
-		if (lpsz == NULL)
+		if (lpsz == nullptr)
 			return S_OK;
 
 		CComBSTR2 bstrTemp;
 		ATLTRY(bstrTemp = lpsz);
-		if (bstrTemp.m_str == NULL)
+		if (bstrTemp.m_str == nullptr)
 			return E_OUTOFMEMORY;
 		return Append(bstrTemp);
 	}
@@ -1474,7 +1383,7 @@ public:
 	ULONG __stdcall ToULong() const
 	{
 		ULONG retval = 0;
-		if (m_str != NULL)
+		if (m_str != nullptr)
 		{
 			HRESULT hr = ::VarUI4FromStr(m_str, ::GetThreadLocale(), LOCALE_NOUSEROVERRIDE, &retval);
 			if (FAILED(hr))
@@ -1639,7 +1548,7 @@ public:
 		
 		if (!pSrc.empty())
 		{
-			if (::SysReAllocStringLen(&m_str, pSrc.c_str(), pSrc.length()) == FALSE)
+			if (::SysReAllocStringLen(&m_str, pSrc.c_str(), static_cast<UINT>(pSrc.length())) == FALSE)
 				AtlThrow(E_OUTOFMEMORY);
 		}
 		else
@@ -1652,8 +1561,8 @@ public:
 	CComBSTR2& __stdcall operator=(_In_opt_ const std::string pSrc)
 	{
 		Empty();
-		m_str = A2WBSTR(pSrc.c_str(), pSrc.length());
-		if (m_str == NULL && !pSrc.empty())
+		m_str = A2WBSTR(pSrc.c_str(), static_cast<int>(pSrc.length()));
+		if (m_str == nullptr && !pSrc.empty())
 			AtlThrow(E_OUTOFMEMORY);
 		return *this;
 	}
@@ -1661,7 +1570,7 @@ public:
 	{
 		Empty();
 		m_str = A2WBSTR(pSrc);
-		if (m_str == NULL && pSrc != NULL)
+		if (m_str == nullptr && pSrc != nullptr)
 			AtlThrow(E_OUTOFMEMORY);
 		return *this;
 	}
@@ -1686,8 +1595,8 @@ public:
 	}
 	_Check_return_ STDMETHODIMP WriteToStream(_Inout_ IStream* pStream)  noexcept
 	{
-		ATLASSERT(pStream != NULL);
-		if(pStream == NULL)
+		ATLASSERT(pStream != nullptr);
+		if(pStream == nullptr)
 			return E_INVALIDARG;
 			
 		ULONG cb;
@@ -1700,8 +1609,8 @@ public:
 
 	_Check_return_ STDMETHODIMP ReadFromStream(_Inout_ IStream* pStream)  noexcept
 	{
-		ATLASSERT(pStream != NULL);
-		if(pStream == NULL)
+		ATLASSERT(pStream != nullptr);
+		if(pStream == nullptr)
 		{
 			return E_INVALIDARG;
 		}
@@ -1729,7 +1638,7 @@ public:
 				ATLTRACE(atlTraceCOM, 0, _T("Input stream is corrupted."));
 				hr = E_FAIL;
 			}
-			// read NULL string
+			// read nullptr string
 			else if (cbStrLen == 0)
 			{				
 			}
@@ -1747,10 +1656,10 @@ public:
 			}
 			else 
 			{
-				//subtract size for terminating NULL which we wrote out
+				//subtract size for terminating nullptr which we wrote out
 				cbStrLen -= sizeof(OLECHAR);
 
-				m_str = ::SysAllocStringByteLen(NULL, cbStrLen);
+				m_str = ::SysAllocStringByteLen(nullptr, cbStrLen);
 				if (!*this)
 				{
 					hr = E_OUTOFMEMORY;
@@ -1775,12 +1684,12 @@ public:
 							{								
 								if (cbRead != sizeof(OLECHAR)) 
 								{
-									ATLTRACE(atlTraceCOM, 0, _T("Cannot read NULL terminator from stream."));
+									ATLTRACE(atlTraceCOM, 0, _T("Cannot read nullptr terminator from stream."));
 									hr = E_FAIL; 									
 								}
 								else
 								{
-									//check if string is properly terminated with NULL
+									//check if string is properly terminated with nullptr
 									ATLASSERT(ch == L'\0');
 								}
 							}
@@ -1790,7 +1699,7 @@ public:
 					if (FAILED(hr))
 					{
 						::SysFreeString(m_str);
-						m_str = NULL;
+						m_str = nullptr;
 					}
 				}
 			}
@@ -1802,7 +1711,7 @@ public:
 		{
 			LARGE_INTEGER nOffset;
 			nOffset.QuadPart = static_cast<LONGLONG>(nBegOffset.QuadPart);
-			pStream->Seek(nOffset, STREAM_SEEK_SET, NULL);				
+			pStream->Seek(nOffset, STREAM_SEEK_SET, nullptr);				
 		}
 	
 		return hr;
@@ -1815,18 +1724,18 @@ public:
 		_In_ UINT uID,
 		_Inout_ _Pre_null_ _Post_z_ BSTR& bstrText)  noexcept
 	{
-		ATLASSERT(bstrText == NULL);
+		ATLASSERT(bstrText == nullptr);
 
 		const ATLSTRINGRESOURCEIMAGE* pImage = AtlGetStringResourceImage(hInstance, uID);
-		if (pImage != NULL)
+		if (pImage != nullptr)
 		{
 			bstrText = ::SysAllocStringLen(pImage->achString, pImage->nLength);
 		}
 		else
 		{
-			bstrText = NULL;
+			bstrText = nullptr;
 		}
-		return (bstrText != NULL) ? true : false;
+		return (bstrText != nullptr) ? true : false;
 	}
 
 	_Success_(return != false)
@@ -1834,19 +1743,19 @@ public:
 		_In_ UINT uID,
 		_Inout_ _Pre_null_ _Post_z_ BSTR& bstrText)  noexcept
 	{
-		ATLASSERT(bstrText == NULL);
+		ATLASSERT(bstrText == nullptr);
 
 		const ATLSTRINGRESOURCEIMAGE* pImage = AtlGetStringResourceImage(uID);
-		if (pImage != NULL)
+		if (pImage != nullptr)
 		{
 			bstrText = ::SysAllocStringLen(pImage->achString, pImage->nLength);
 		}
 		else
 		{
-			bstrText = NULL;
+			bstrText = nullptr;
 		}
 
-		return (bstrText != NULL) ? true : false;
+		return (bstrText != nullptr) ? true : false;
 	}
 
 #endif
@@ -2012,7 +1921,7 @@ public:
 		vt = VT_DISPATCH;
 		pdispVal = pSrc;
 		// Need to AddRef as VariantClear will Release
-		if (pdispVal != NULL)
+		if (pdispVal != nullptr)
 			pdispVal->AddRef();
 	}
 	CComVariant2(_In_opt_ IUnknown* pSrc)  noexcept
@@ -2020,7 +1929,7 @@ public:
 		vt = VT_UNKNOWN;
 		punkVal = pSrc;
 		// Need to AddRef as VariantClear will Release
-		if (punkVal != NULL)
+		if (punkVal != nullptr)
 			punkVal->AddRef();
 	}
 	CComVariant2(_In_ char cSrc)  noexcept
@@ -2062,8 +1971,8 @@ public:
 	}
 	CComVariant2(_In_ const SAFEARRAY *pSrc) ATLVARIANT_THROW()
 	{
-		ATLASSERT(pSrc != NULL);
-		if (pSrc == NULL)
+		ATLASSERT(pSrc != nullptr);
+		if (pSrc == nullptr)
 		{
 			vt = VT_ERROR;
 			scode = E_INVALIDARG;
@@ -2136,10 +2045,10 @@ public:
 			ClearThrow();
 			vt = VT_BSTR;
 		}
-		if (bstrSrc.m_str == NULL)		
+		if (bstrSrc.m_str == nullptr)		
 		{
 			::SysFreeString(bstrVal);		
-			bstrVal = NULL;
+			bstrVal = nullptr;
 			vt = VT_EMPTY;
 		}
 		else if (::SysReAllocStringLen(&bstrVal, bstrSrc.m_str, bstrSrc.Length()) == FALSE)
@@ -2288,7 +2197,7 @@ public:
 		vt = VT_DISPATCH;
 		pdispVal = pSrc;
 		// Need to AddRef as VariantClear will Release
-		if (pdispVal != NULL)
+		if (pdispVal != nullptr)
 			pdispVal->AddRef();
 		return *this;
 	}
@@ -2300,7 +2209,7 @@ public:
 		punkVal = pSrc;
 
 		// Need to AddRef as VariantClear will Release
-		if (punkVal != NULL)
+		if (punkVal != nullptr)
 			punkVal->AddRef();		
 		return *this;
 	}
@@ -2500,9 +2409,9 @@ public:
 
 	CComVariant2& operator=(_In_ const SAFEARRAY *pSrc) ATLVARIANT_THROW()
 	{
-		ATLASSERT(pSrc != NULL);
+		ATLASSERT(pSrc != nullptr);
 
-		if (pSrc == NULL)
+		if (pSrc == nullptr)
 		{
 			ClearThrow();
 			vt = VT_ERROR;
@@ -2608,13 +2517,13 @@ public:
 	HRESULT BuildVarArray(__in_ecount_opt(elements) VARIANT theArray[], int elements) noexcept
 	{
 		HRESULT hr = S_OK;
-		if (elements <= 0 || theArray == NULL)
+		if (elements <= 0 || theArray == nullptr)
 			hr = E_INVALIDARG;
 		else
 		{
 			SAFEARRAYBOUND rgsa = {(ULONG)elements, 0};
 			SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 1, &rgsa);
-			if (psa == NULL)
+			if (psa == nullptr)
 				hr = E_OUTOFMEMORY;
 			else
 			{
@@ -2641,13 +2550,13 @@ public:
 	HRESULT BuildVarArray(__in_ecount_opt(elements) PCWSTR theArray[], int elements)  noexcept
 	{
 		HRESULT hr = S_OK;
-		if (elements <= 0 || theArray == NULL)
+		if (elements <= 0 || theArray == nullptr)
 			hr = E_INVALIDARG;
 		else
 		{
 			SAFEARRAYBOUND rgsa = {(ULONG)elements, 0};
 			SAFEARRAY *psa = SafeArrayCreate(VT_VARIANT, 1, &rgsa);
-			if (psa == NULL)
+			if (psa == nullptr)
 				hr = E_OUTOFMEMORY;
 			else
 			{
@@ -2679,12 +2588,12 @@ public:
 	}
 	HRESULT CopyTo(_Outptr_result_z_ BSTR *pstrDest) const
 	{
-		ATLASSERT(pstrDest != NULL && vt == VT_BSTR);
+		ATLASSERT(pstrDest != nullptr && vt == VT_BSTR);
 		HRESULT hRes = E_POINTER;
-		if (pstrDest != NULL && vt == VT_BSTR)
+		if (pstrDest != nullptr && vt == VT_BSTR)
 		{
 			*pstrDest = ::SysAllocStringByteLen((char*)bstrVal, ::SysStringByteLen(bstrVal));
-			if (*pstrDest == NULL)
+			if (*pstrDest == nullptr)
 				hRes = E_OUTOFMEMORY;
 			else
 				hRes = S_OK;
@@ -2697,11 +2606,11 @@ public:
 
 	//Added by e.n.
 	//attaches to a BSTR
-	// clears its contents first, then copies pointer, then assigns NULL 
+	// clears its contents first, then copies pointer, then assigns nullptr 
 	// to your pSrc
 	HRESULT Attach(_In_ BSTR* pSrc)
 	{
-		if(pSrc == NULL)
+		if(pSrc == nullptr)
 			return E_INVALIDARG;
 			
 		// Clear out the variant
@@ -2712,14 +2621,14 @@ public:
 			bstrVal = *pSrc;
 			vt = VT_BSTR;
 
-			*pSrc = NULL;
+			*pSrc = nullptr;
 			hr = S_OK;
 		}
 		return hr;
 	}
 	HRESULT Attach(_In_ VARIANT* pSrc)  noexcept
 	{
-		if(pSrc == NULL)
+		if(pSrc == nullptr)
 			return E_INVALIDARG;
 			
 		HRESULT hr = S_OK;
@@ -2745,21 +2654,21 @@ public:
 	}
 	HRESULT Detach(_Inout_ BSTR* pDest)  noexcept
 	{
-		ATLASSERT(pDest != NULL);
-		if (*pDest != NULL) 
+		ATLASSERT(pDest != nullptr);
+		if (*pDest != nullptr) 
 			SysFreeString(*pDest);
 		HRESULT hr = S_OK;
 		if (vt != VT_BSTR)
 			hr = ChangeType(VT_BSTR);
 		*pDest = bstrVal;
 		vt = VT_EMPTY;
-		bstrVal = NULL;
+		bstrVal = nullptr;
 		return hr;
 	}
 	HRESULT Detach(_Inout_ VARIANT* pDest)
 	{
-		ATLASSERT(pDest != NULL);
-		if (pDest == NULL)
+		ATLASSERT(pDest != nullptr);
+		if (pDest == nullptr)
 			return E_POINTER;
 
 		// Clear out the variant
@@ -2774,12 +2683,12 @@ public:
 		return hr;
 	}
 
-	HRESULT ChangeType(_In_ VARTYPE vtNew, _In_ const VARIANT* pSrc = NULL) 
+	HRESULT ChangeType(_In_ VARTYPE vtNew, _In_ const VARIANT* pSrc = nullptr) 
 	{
-		// Convert in place if pSrc is NULL
+		// Convert in place if pSrc is nullptr
 		const VARIANT* pVar = const_cast<VARIANT*>(pSrc);
-		// Convert in place if pSrc is NULL
-		if (pVar == NULL)
+		// Convert in place if pSrc is nullptr
+		if (pVar == nullptr)
 			pVar = this;
 		// Do nothing if doing in place convert and vts not different change by E.N.
 		return ::VariantChangeTypeEx(this, pVar, ::GetThreadLocale(), 0, vtNew);
@@ -2875,10 +2784,10 @@ public:
 #pragma warning(disable: 4702)
 _Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStream) noexcept
 {
-	if(pStream == NULL)
+	if(pStream == nullptr)
 		return E_INVALIDARG;
 		
-	HRESULT hr = pStream->Write(&vt, sizeof(VARTYPE), NULL);
+	HRESULT hr = pStream->Write(&vt, sizeof(VARTYPE), nullptr);
 	if (FAILED(hr))
 		return hr;
 
@@ -2889,7 +2798,7 @@ _Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStre
 	case VT_DISPATCH:
 		{
 			CComPtr<IPersistStream> spStream;
-			if (punkVal != NULL)
+			if (punkVal != nullptr)
 			{
 				hr = punkVal->QueryInterface(__uuidof(IPersistStream), (void**)&spStream);
 				if (FAILED(hr))
@@ -2899,7 +2808,7 @@ _Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStre
 						return hr;
 				}
 			}
-			if (spStream != NULL)
+			if (spStream != nullptr)
 				return OleSaveToStream(spStream, pStream);
 			return pStream->Write(&CLSID_NULL, sizeof(GUID), nullptr);
 		}
@@ -2933,7 +2842,7 @@ _Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStre
 		break;
 	}
 	if (cbWrite != 0)
-		return pStream->Write((void*) &bVal, cbWrite, NULL);
+		return pStream->Write((void*) &bVal, cbWrite, nullptr);
 
 	CComBSTR bstrWrite;
 	CComVariant varBSTR;
@@ -2959,8 +2868,8 @@ _Check_return_ inline HRESULT CComVariant::ReadFromStream(
 	_In_ ClassesAllowedInStream rgclsidAllowed,
 	_In_ DWORD cclsidAllowed)
 {
-	ATLASSERT(pStream != NULL);
-	if (pStream == NULL)
+	ATLASSERT(pStream != nullptr);
+	if (pStream == nullptr)
 		return E_INVALIDARG;
 
 	HRESULT hr;
@@ -2987,7 +2896,7 @@ _Check_return_ inline HRESULT CComVariant::ReadFromStream(
 	case VT_UNKNOWN:
 	case VT_DISPATCH:
 	{
-		punkVal = NULL;
+		punkVal = nullptr;
 		hr = AtlInternalOleLoadFromStream(pStream,
 			(vtRead == VT_UNKNOWN) ? __uuidof(IUnknown) : __uuidof(IDispatch),
 			(void**)&punkVal, rgclsidAllowed, cclsidAllowed);
@@ -3028,7 +2937,7 @@ _Check_return_ inline HRESULT CComVariant::ReadFromStream(
 	}
 	if (cbRead != 0)
 	{
-		hr = pStream->Read((void*)&bVal, cbRead, NULL);
+		hr = pStream->Read((void*)&bVal, cbRead, nullptr);
 		if (hr == S_FALSE)
 			hr = E_FAIL;
 		return hr;
@@ -3042,7 +2951,7 @@ _Check_return_ inline HRESULT CComVariant::ReadFromStream(
 		// variant type.
 		LARGE_INTEGER nOffset;
 		nOffset.QuadPart = -(static_cast<LONGLONG>(sizeof(VARTYPE)));
-		pStream->Seek(nOffset, STREAM_SEEK_CUR, NULL);
+		pStream->Seek(nOffset, STREAM_SEEK_CUR, nullptr);
 		vt = VT_EMPTY;
 		return hr;
 	}
@@ -3055,8 +2964,8 @@ _Check_return_ inline HRESULT CComVariant::ReadFromStream(
 
 inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 {
-	ATLASSERT(pcbSize != NULL);
-	if (pcbSize == NULL)
+	ATLASSERT(pcbSize != nullptr);
+	if (pcbSize == nullptr)
 	{
 		return E_INVALIDARG;
 	}
@@ -3072,7 +2981,7 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 		{	
 			nSize.LowPart += sizeof(CLSID);
 			
-			if (punkVal != NULL)
+			if (punkVal != nullptr)
 			{
 				CComPtr<IPersistStream> spStream;
 				
@@ -3089,7 +2998,7 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 				ULARGE_INTEGER nPersistSize;
 				nPersistSize.QuadPart = 0;
 				
-				ATLASSERT(spStream != NULL);
+				ATLASSERT(spStream != nullptr);
 				hr = spStream->GetSizeMax(&nPersistSize);				
 				if (SUCCEEDED(hr))
 				{
@@ -3127,7 +3036,7 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 	default:
 		{
 			VARTYPE vtTmp = vt;
-			BSTR bstr = NULL;
+			BSTR bstr = nullptr;
 			CComVariant varBSTR;
 			if (vtTmp != VT_BSTR)
 			{
@@ -3145,7 +3054,7 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 
 			if (vtTmp == VT_BSTR)
 			{
-				// Add the size of the length + string (in bytes) + NULL terminator.				
+				// Add the size of the length + string (in bytes) + nullptr terminator.				
 				nSize.QuadPart += CComBSTR::GetStreamSize(bstr);
 			}
 		}		

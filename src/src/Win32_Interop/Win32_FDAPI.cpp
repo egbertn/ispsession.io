@@ -113,34 +113,41 @@ auto f_socket = dllfunctor_stdcall<SOCKET, int, int, int>("ws2_32.dll", "socket"
 const DWORD SIO_LOOPBACK_FAST_PATH = 0x98000010;	// from Win8 SDK
 #endif
 
-void EnableFastLoopback(SOCKET socket) {
-    // If Win8+ (6.2), use fast path option on loopback
-    if (WindowsVersion::getInstance().IsAtLeast_6_2()) {
-        int enabled = 1;
-        DWORD result_byte_count = -1;
-        int result = f_WSAIoctl(socket, SIO_LOOPBACK_FAST_PATH, &enabled, sizeof(enabled), NULL, 0, &result_byte_count, NULL, NULL);
-        if (result != 0) {
-            throw std::system_error(f_WSAGetLastError(), system_category(), "WSAIoctl failed");
-        }
-    }
-}
+//void EnableFastLoopback(SOCKET socket) {
+//    // If Win8+ (6.2), use fast path option on loopback
+//    if (WindowsVersion::getInstance().IsAtLeast_6_2()) {
+//        int enabled = 1;
+//        DWORD result_byte_count = -1;
+//        int result = f_WSAIoctl(socket, SIO_LOOPBACK_FAST_PATH, &enabled, sizeof(enabled), NULL, 0, &result_byte_count, NULL, NULL);
+//        if (result != 0) {
+//            auto err = FDAPI_WSAGetLastError();
+//            throw std::system_error(err, system_category(), "WSAIoctl failed");
+//        }
+//    }
+//}
 
 static fnWSIOCP_CloseSocketStateRFD* wsiocp_CloseSocketState;
 void FDAPI_SetCloseSocketState(fnWSIOCP_CloseSocketStateRFD* func) {
     wsiocp_CloseSocketState = func;
 }
 
-int win32_ioctl(SOCKET fd, unsigned long request, unsigned long* argp) {
-    int ret = f_ioctlsocket(fd, (long)request, argp);
-   
+int win32_ioctl(int rfd, unsigned long request, unsigned long* argp) {
+    SOCKET socket = RFDMap::getInstance().lookupSocket(rfd);
+    int ret = f_ioctlsocket(socket, (long)request, argp);
+    if (ret == SOCKET_ERROR)
+    {
+        auto err = FDAPI_WSAGetLastError();
+   }
     return ret != SOCKET_ERROR ? ret : -1;
 }
-int win32_recv(SOCKET sockfd, void* buf, size_t len, int flags) {
-    int ret = f_recv(sockfd, (char*)buf, (int)len, flags);
+int win32_recv(int rfd, void* buf, size_t len, int flags) {
+    SOCKET socket = RFDMap::getInstance().lookupSocket(rfd);
+    int ret = f_recv(socket, (char*)buf, (int)len, flags);
     return ret != SOCKET_ERROR ? ret : -1;
 }
-int win32_send(SOCKET sockfd, const void* buf, size_t len, int flags) {
-    int ret = f_send(sockfd, (const char*)buf, (int)len, flags);
+int win32_send(int rfd, const void* buf, size_t len, int flags) {
+    SOCKET socket = RFDMap::getInstance().lookupSocket(rfd);
+    int ret = f_send(socket, (const char*)buf, (int)len, flags);
     return ret != SOCKET_ERROR ? ret : -1;
 }
 
@@ -346,7 +353,7 @@ BOOL FDAPI_ConnectEx(int rfd, const struct sockaddr *name, int namelen, PVOID lp
                 return FALSE;
             }
 
-            EnableFastLoopback(socket);
+            //EnableFastLoopback(socket);
 
             return connectex(socket, 
                              name,namelen,
@@ -749,7 +756,7 @@ int FDAPI_connect(int rfd, const struct sockaddr *addr, size_t addrlen) {
     try {
         SOCKET socket = RFDMap::getInstance().lookupSocket(rfd);
         if (socket != INVALID_SOCKET) {
-            EnableFastLoopback(socket);
+           // EnableFastLoopback(socket);
             int result = f_connect(socket, addr, (int) addrlen);
             errno = f_WSAGetLastError();
             if ((errno == WSAEINVAL) || (errno == WSAEWOULDBLOCK) || (errno == WSA_IO_PENDING)) {
@@ -886,7 +893,7 @@ int FDAPI_listen(int rfd, int backlog) {
     try {
         SOCKET socket = RFDMap::getInstance().lookupSocket(rfd);
         if (socket != INVALID_SOCKET) {
-            EnableFastLoopback(socket);
+            //EnableFastLoopback(socket);
             int result = f_listen(socket, backlog);
             if (result != 0){
                 errno = f_WSAGetLastError();

@@ -37,7 +37,9 @@
 #include <assert.h>
 #include <errno.h>
 #include <ctype.h>
-#include "..\..\src\Win32_Interop\Win32_FDAPI.h"
+
+//#include "..\..\src\Win32_Interop\Win32_FDAPI.h"
+#include "sockcompat.h"
 #include "hiredis.h"
 #include "net.h"
 #include "sds.h"

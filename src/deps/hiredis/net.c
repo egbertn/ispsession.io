@@ -48,7 +48,9 @@
  
 
 #define _WIN32_WINNT 0x0603  
-#include "..\..\src\Win32_Interop\Win32_FDAPI.h"
+//#include "..\..\src\Win32_Interop\Win32_FDAPI.h"
+
+#include "sockcompat.h"
 //#include <winsock2.h>
 //#include <WS2tcpip.h>
 /* Defined in hiredis.c */

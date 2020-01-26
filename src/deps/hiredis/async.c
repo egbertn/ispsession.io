@@ -42,7 +42,9 @@
 #include "net.h"
 #include "dict.c"
 #include "sds.h"
-#include "..\..\src\Win32_Interop\Win32_FDAPI.h"
+
+//#include "..\..\src\Win32_Interop\Win32_FDAPI.h"
+#include "sockcompat.h"
 #include "win32.h"
 
 #include "async_private.h"

@@ -111,9 +111,9 @@ typedef struct pollfd {
 
 // API prototypes must match the unix implementation
 
-typedef int (*fdapi_ioctl)(SOCKET fd, unsigned long request, unsigned long* argp);
-typedef int (*fdapi_recv)(SOCKET sockfd, void* buf, size_t len, int flags);
-typedef int (*fdapi_send)(SOCKET s, const void* buf, size_t len,int flags);
+typedef int (*fdapi_ioctl)(int sockfd, unsigned long request, unsigned long* argp);
+typedef int (*fdapi_recv)(int sockfd, void* buf, size_t len, int flags);
+typedef int (*fdapi_send)(int sockfd, const void* buf, size_t len,int flags);
 typedef int (*fdapi_pipe)(int pipefd[2]);
 typedef int (*fdapi_socket)(int af,int type,int protocol);
 typedef int (*fdapi_open)(const char * _Filename, int _OpenFlag, int flags);

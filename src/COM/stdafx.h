@@ -4,10 +4,10 @@
 
 #pragma once
 #include "message.h"
-#define Demo
+//#define Demo
 // defines for ISP Session tiny edition
 //TODO: GLOG implementation
-#define EXPIREAT ( 43889) // ie: 28/feb/2020
+//#define EXPIREAT ( 43889) // ie: 28/feb/2020
 #pragma warning( disable : 4840 )
 
 #define MAXINSTANCES 1000
@@ -31,7 +31,7 @@
 using namespace ATL;
 #define NO_BOOST
 #include "redis3m.hpp"
-#include <iostream> 
+//#include <iostream> 
 #include <cctype>
 #include <clocale>
 using namespace redis3m;
@@ -48,22 +48,13 @@ using namespace redis3m;
 
 constexpr auto ONEMINUTE = 0.00069444444444444F;
 
-#define CHECKHR2 if (FAILED(hr)) {/* ReportComError2(hr, location);*/ goto error; }
 #define CHECKHR if (FAILED(hr)) goto error;
 
 #define RELEASE(lpUnk)  if (lpUnk != nullptr) { lpUnk->Release(); lpUnk = nullptr; } 
-//#define ZERO(any) memset(&any, 0, sizeof(any));
 #define ERROR_READONLY  L"Session is set readonly"
-#define ERROR_INPUT  L"Expecting string input"
+
 
 #define _OFF_T_DEFINED
-
-#define FreeVariant(var) ::VariantClear(var); ZeroMemory(var, sizeof(VARIANT));
-#define CHECK_ERR(err, msg) { \
-    if (err != Z_OK) { \
-        AtlTrace(L"%s error: %d\n", msg, err); \
-    } \
-}
 
 #include "ADClogModule.h"
 

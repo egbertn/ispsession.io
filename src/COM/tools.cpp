@@ -710,7 +710,7 @@ bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) noexcept
 	ULONG hashcode = buf.GetHashCode(),
 		checkCode, checkCode2;
 	//offset 4
-	memcpy(&checkCode, static_cast<void*>(license + sizeof(unsigned char)),
+	memcpy(&checkCode, (PBYTE)license + sizeof(unsigned char),
 		sizeof(checkCode));
 	//offset 5
 	memcpy(&checkCode2,

@@ -3,7 +3,8 @@
 #include "stdafx.h"
 #include "connection_pool.h"
 #include "command.h"
-#include "utils/resolv.h"
+#include "..\deps\hiredis\sockcompat.h"
+#include "..\deps\hiredis\hiredis.h"
 #ifndef NO_BOOST
 #include <boost/format.hpp>
 #include <boost/algorithm/string/join.hpp>
@@ -119,7 +120,7 @@ void connection_pool::put(connection::ptr_t conn)
         connections.insert(conn);
     }
 }
-std::vector<std::string> resolv::get_addresses(const std::string& hostname)
+std::vector<std::string> connection_pool::get_addresses(const std::string& hostname)
 {
     std::vector<std::string> ret_v;
     struct addrinfo hints, * ret_addrinfo;
@@ -131,7 +132,7 @@ std::vector<std::string> resolv::get_addresses(const std::string& hostname)
     const int addrinfo_ret = getaddrinfo(hostname.c_str(), NULL, &hints, &ret_addrinfo);
     if (addrinfo_ret != 0)
     {
-        throw resolv::cannot_resolve_hostname("getaddrinfo returned != 0");
+        throw cannot_resolve_hostname("getaddrinfo returned != 0");
     }
 
     struct addrinfo* ret_ptr = ret_addrinfo;
@@ -150,7 +151,7 @@ connection::ptr_t connection_pool::sentinel_connection()
 {
     for(const std::string& host : sentinel_hosts)
     {
-        std::vector<std::string> real_sentinels = resolv::get_addresses(host);
+        std::vector<std::string> real_sentinels = connection_pool::get_addresses(host);
 #ifndef NO_BOOST
         logging::debug(boost::str(
                            boost::format("Found %d redis sentinels: %s")

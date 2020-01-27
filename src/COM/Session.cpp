@@ -946,7 +946,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 			lngTimeout = lngTimeOutSetting; //default
 			logModule.Write(L"CSessionDL.SessionInsert(g_dc) %x", hr);
 			
-			CHECKHR2
+			CHECKHR
 
 			bDidInsert = true;
 
@@ -963,7 +963,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 	temp2.Attach(sHexFromBt(m_dbTimeStamp, 8));
 	logModule.Write(L"timestamp %s", temp2);
 #endif
-	CHECKHR2
+	CHECKHR
 
 	if ((blnNew == FALSE) && (blnExpired == FALSE))
 	{

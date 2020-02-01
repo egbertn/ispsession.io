@@ -1,0 +1,18 @@
+// OleAutoTestPad2.idl : IDL source for OleAutoTestPad2
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (OleAutoTestPad2.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	uuid(13AC75B3-F819-4EE7-B49B-0A88BF956DC2),
+	version(1.0),
+]
+library OleAutoTestPad2Lib
+{
+	importlib("stdole2.tlb");
+};
+

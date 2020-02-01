@@ -13,16 +13,21 @@ using namespace redis3m;
 #define KEEPCONNECTION_IN_POOL_SEC 20
 DWORD __stdcall  redis3m::TimerThread(void*)	
 {
-
-	_timer.Attach(::CreateWaitableTimer(NULL, TRUE, NULL));
+	auto handle = ::CreateWaitableTimerA(nullptr, TRUE, "ISP Session Timer");
+	if (handle == nullptr)
+	{
+		auto error = ::GetLastError();
+		logModule.Write(L"timer fails with %d", error);
+		return 0;
+	}
+	_timer.Attach(handle);
 
 	LARGE_INTEGER liDueTime;
 
-	liDueTime.QuadPart = -10 * _SECOND;
-
-	::SetWaitableTimer(_timer, &liDueTime, 2000, NULL, NULL, 0);
+	liDueTime.QuadPart = -2 * _SECOND;
 	for(;;)
 	{
+		::SetWaitableTimer(_timer, &liDueTime, 0, nullptr, nullptr, 0);
 		if (::WaitForSingleObject(_timer, INFINITE) != WAIT_OBJECT_0)
 		{
 			auto err = ::GetLastError();//should be 6
@@ -79,10 +84,9 @@ void __stdcall redis3m::TimerAPCProc() noexcept
 	{
 		if (_timer.m_h != nullptr)
 		{
-			auto success = ::CancelWaitableTimer(_timer);
 			_timer.Close();
 			_threadHandle.Close();
-			logModule.Write(L"Canceling timer thread %d", success);
+			logModule.Write(L"TimerProc canceled");
 		}
 	}
 	_access_mutex.Leave();
@@ -102,7 +106,7 @@ connection::ptr_t simple_pool::get()
 		connections.pop_back();
 		
 	}
-	if (_timer == nullptr)
+	if (_timer.m_h == nullptr)
 	{
 		auto handle  = ::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL);
 		_threadHandle.Attach(handle);

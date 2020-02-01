@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OleAutoTestPad2", "OleAutoTestPad2.vcxproj", "{A8F4CD81-25E7-4352-9D7B-23D50E7897B6}"
+EndProject
+Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 2
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://adccure.visualstudio.com/defaultcollection
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = OleAutoTestPad2.vcxproj
+		SccLocalPath1 = .
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A8F4CD81-25E7-4352-9D7B-23D50E7897B6}.Debug|Win32.ActiveCfg = Debug|Win32
+		{A8F4CD81-25E7-4352-9D7B-23D50E7897B6}.Debug|Win32.Build.0 = Debug|Win32
+		{A8F4CD81-25E7-4352-9D7B-23D50E7897B6}.Release|Win32.ActiveCfg = Release|Win32
+		{A8F4CD81-25E7-4352-9D7B-23D50E7897B6}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

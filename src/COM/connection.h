@@ -25,7 +25,6 @@ class connection: utils::noncopyable
 {
 public:
     typedef std::shared_ptr<connection> ptr_t;
-
     /**
      * @brief Create and open a new connection
      * @param host hostname or ip of redis server, default localhost

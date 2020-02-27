@@ -11,7 +11,8 @@
 using namespace redis3m;
 #define _SECOND 10000000
 #define KEEPCONNECTION_IN_POOL_SEC 20
-DWORD __stdcall  redis3m::TimerThread(void*)	
+
+static DWORD __stdcall  redis3m::TimerThread(void*)
 {
 	auto handle = ::CreateWaitableTimerA(nullptr, TRUE, "ISP Session Timer");
 	if (handle == nullptr)
@@ -20,7 +21,13 @@ DWORD __stdcall  redis3m::TimerThread(void*)
 		logModule.Write(L"timer fails with %d", error);
 		return 0;
 	}
-	_timer.Attach(handle);
+	if (_timer != nullptr)
+	{
+		logModule.Write(L"Should not happen timer was called while it existed");
+		CloseHandle(handle);
+		return 0;
+	}
+	_timer = handle;
 
 	LARGE_INTEGER liDueTime;
 
@@ -35,9 +42,12 @@ DWORD __stdcall  redis3m::TimerThread(void*)
 		}
 		else
 		{
-			TimerAPCProc();
+			if (TimerAPCProc() == false)
+			{
+				break;
+			}
 		}
-	} 
+	}
 	return 0;
 }
 bool isExpired(const shared_ptr<redis3m::connection> n) noexcept
@@ -48,12 +58,13 @@ bool isExpired(const shared_ptr<redis3m::connection> n) noexcept
 //we must clean up connections before Redis disconnects itself
 // todo find out if we can optimize this
 // so, what's the problem Redisfree(c) in Connection.cpp delivers a system exception if Redis closed it already
-void __stdcall redis3m::TimerAPCProc() noexcept
+static bool _stdcall redis3m::TimerAPCProc() noexcept
 {
+	bool result = true;
 	_access_mutex.Enter();
+	auto erased = false;
 	if (connections.size() > 0)
 	{
-		auto erased = false;
 		try {
 			
 			/* s.erase(s.begin(), std::find_if(s.begin(), s.end(),
@@ -69,8 +80,7 @@ void __stdcall redis3m::TimerAPCProc() noexcept
 			
 			}
 			if (erased)
-				logModule.Write(L"Removed Redis conn from pool, left over %d", connections.size());
-		
+				logModule.Write(L"Removed Redis conn from pool, left over %d", connections.size());		
 
 		}
 		catch (...)
@@ -80,16 +90,20 @@ void __stdcall redis3m::TimerAPCProc() noexcept
 
 	}
 	
-	if (connections.size() ==0)
+	if (connections.size() == 0 && erased && _timer != nullptr)
 	{
-		if (_timer.m_h != nullptr)
-		{
-			_timer.Close();
-			_threadHandle.Close();
-			logModule.Write(L"TimerProc canceled");
-		}
+		result = false;
+		::CloseHandle(_timer);
+		::CloseHandle(_threadHandle);
+		_timer = nullptr;
+		_threadHandle = nullptr;
+		//_timer.Close();
+		//_threadHandle.Close();
+		logModule.Write(L"TimerProc canceled");
+		
 	}
 	_access_mutex.Leave();
+	return result;
 };
 
 connection::ptr_t simple_pool::get()
@@ -106,12 +120,11 @@ connection::ptr_t simple_pool::get()
 		connections.pop_back();
 		
 	}
-	if (_timer.m_h == nullptr)
+	if (_timer == nullptr)
 	{
-		auto handle  = ::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL);
-		_threadHandle.Attach(handle);
+		auto handle = ::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL);
+		_threadHandle =handle;
 		logModule.Write(L"Created TimerThread %d", handle);
-		//std::thread trh(TimerThread);
 	}
 	_access_mutex.Leave();
 	if (!ret)
@@ -136,7 +149,7 @@ connection::ptr_t simple_pool::get()
 				{
 					logModule.Write(L"AUTH failed");
 					ret.reset();
-					throw "AUTH failed";
+					return redis3m::connection::ptr_t();
 				}
 			}
 			if (_database != 0 && ret != connection::ptr_t())
@@ -162,12 +175,12 @@ connection::ptr_t simple_pool::get()
 
 void simple_pool::put(connection::ptr_t conn)
 {
+	_access_mutex.Enter();
     if (conn->is_valid())
     {
-    	_access_mutex.Enter();
         connections.push_back(conn);
-		_access_mutex.Leave();
     }
+	_access_mutex.Leave();
 }
 
 simple_pool::simple_pool(const std::string &host, unsigned int port, const std::string& password):

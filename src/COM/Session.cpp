@@ -939,13 +939,19 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 			blnNew = TRUE;
 			hr = NewID();
 			oldGuid = guid;
-			
-			hr = CSessionDL::SessionInsert(pool, &btAppKey, &guid, lngTimeOutSetting,
-				blnReEntrance , 
-				blnLiquid, bNoConnectionPooling);				
-			lngTimeout = lngTimeOutSetting; //default
-			logModule.Write(L"CSessionDL.SessionInsert(g_dc) %x", hr);
-			
+			try {
+				hr = CSessionDL::SessionInsert(pool, &btAppKey, &guid, lngTimeOutSetting,
+					blnReEntrance,
+					blnLiquid, bNoConnectionPooling);
+				lngTimeout = lngTimeOutSetting; //default
+				logModule.Write(L"CSessionDL.SessionInsert(g_dc) %x", hr);
+			}
+			catch (...)
+			{
+				this->bErrState = TRUE;
+				logModule.Write(L"db: insert failed, %x", E_FAIL);
+				return E_FAIL;
+			}
 			CHECKHR
 
 			bDidInsert = true;

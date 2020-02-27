@@ -9,7 +9,7 @@
 #include <functional> 
 #include <cctype>
 #include <locale>
-
+#include <DSRole.h>
 
 std::wstring& __stdcall ltrim(std::wstring &s);
 std::string& __stdcall ltrim(std::string &s);

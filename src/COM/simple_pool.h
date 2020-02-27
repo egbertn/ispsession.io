@@ -7,20 +7,22 @@
 #include "connection.h"
 #include <set>
 #include <memory>
-//#include <mutex>
+#include <mutex>
 #include <atlsync.h>
 namespace redis3m
 {
 	static std::vector<connection::ptr_t> connections;
 	static ATL::CCriticalSection _access_mutex;
-	static ATL::CHandle _timer;
-	static ATL::CHandle _threadHandle;
+	//static ATL::CHandle _timer;
+    static HANDLE _timer = nullptr;
+	//static ATL::CHandle _threadHandle;
+    static HANDLE _threadHandle = nullptr;
 	/*DWORD(WINAPI *PTHREAD_START_ROUTINE)(
 		LPVOID lpThreadParameter
 		);*/
-	DWORD __stdcall  TimerThread(void* param);
-	void __stdcall TimerAPCProc() noexcept;
-/**
+	static DWORD __stdcall  TimerThread(void* param);
+	static bool __stdcall TimerAPCProc() noexcept;
+	/**
  * @brief Manages a pool of connections to a single Redis server
  */
 class simple_pool: utils::noncopyable

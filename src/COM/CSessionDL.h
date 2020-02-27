@@ -442,18 +442,14 @@ public:
 		ansi.append(sAppkey).append(":").append(sGuid);
 
 		std::shared_ptr<redis3m::connection> c;
-		try {
-			c = pool->get();
-			if (c == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
-			{
-				return E_ACCESSDENIED;
-			}
-		}
-		catch (...)
+		
+		c = pool->get();
+		if (c == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
 		{
-			logModule.Write(L"SessionSave could not get connection");
-			return E_FAIL;
+			return E_ACCESSDENIED;
 		}
+		
+		
 		//newguid? Then rename the key
 		if (guidNewPar != nullptr)
 		{
@@ -623,16 +619,13 @@ public:
 		ansi.reserve(sizeof(GUID) * 2 + 1);
 		ansi.append(appkey).append(":").append(skey);
 		std::shared_ptr<redis3m::connection> conn;
-		try {
-			conn = pool->get();			
-		}
-		catch (...)
-		{
-			throw L"Could not get connection from pool";
-		}
+
+		conn = pool->get();			
+
 		if (conn == redis3m::connection::ptr_t()) // authentication happens DURING pool-get
 		{ 
 			
+			logModule.Write(L"could not get a connection");
 			return E_ACCESSDENIED;
 		}
 		reply repl ;
@@ -640,9 +633,10 @@ public:
 			
 			repl = conn->run(command("GET")(ansi));
 		}
-		catch (...)
+		catch (unable_to_connect e)
 		{
-			throw L"Could not get session";
+			logModule.Write(L"connection failed with %s", s2ws(e.what()).c_str());
+			return E_ACCESSDENIED;
 		}
 		auto result = S_OK;
 		switch (repl.type())

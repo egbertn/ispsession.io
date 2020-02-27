@@ -3,7 +3,6 @@
 #include <string>
 #include "tools.h"
 #include <LM.h>
-#include <DsGetDC.h>
 #include "CStream.h"
 #include "ConfigurationManager.h"
 //#include <sys/stat.h>
@@ -165,20 +164,17 @@ BSTR __stdcall GetModulePath() noexcept
 }
 BSTR __stdcall GetDCDomain() noexcept
 {
-	PWSTR wgname = nullptr;
-	NETSETUP_JOIN_STATUS status;
-	auto result = ::NetGetJoinInformation(nullptr, &wgname, &status);
-	if (result == NERR_Success && status == NETSETUP_JOIN_STATUS::NetSetupDomainName)
+	DSROLE_PRIMARY_DOMAIN_INFO_BASIC* info;
+	DWORD dw;
+
+	dw = DsRoleGetPrimaryDomainInformation(NULL,
+		DsRolePrimaryDomainInfoBasic,
+		(PBYTE*)&info);
+	if (dw == ERROR_SUCCESS)
 	{
-		::NetApiBufferFree(wgname);
-		PDOMAIN_CONTROLLER_INFO pdomainInfo;
-		auto result1 = ::DsGetDcName(nullptr, nullptr, nullptr, nullptr, DS_DIRECTORY_SERVICE_PREFERRED | DS_RETURN_DNS_NAME | DS_BACKGROUND_ONLY, &pdomainInfo);
-		if (result1 == ERROR_SUCCESS)
-		{
-			BSTR retVal = SysAllocString(pdomainInfo->DomainName);
-			::NetApiBufferFree(pdomainInfo);
-			return retVal;
-		}
+		BSTR retVal = SysAllocString(info->DomainNameDns);
+		DsRoleFreeMemory(info);
+		return retVal;
 	}
 	return nullptr;
 }

@@ -4,10 +4,10 @@
 
 #pragma once
 #include "message.h"
-//#define Demo
+#define Demo
 // defines for ISP Session tiny edition
 //TODO: GLOG implementation
-//#define EXPIREAT ( 43889) // ie: 28/feb/2020
+#define EXPIREAT ( 43920) // ie: 28/feb/2020
 #pragma warning( disable : 4840 )
 
 #define MAXINSTANCES 1000

@@ -94,7 +94,7 @@ BSTR ConfigurationManager::AppSettings(const BSTR key, PCWSTR defaultValue) noex
 	//note: GetValueAt returns by reference, and does not Copy()	
 	if (found != _map.end() && found->first == key) 
 	{
-		return ::SysAllocStringLen(found->second.c_str(), static_cast<UINT>( found->second.length()));
+		return CComBSTR(static_cast<INT>( found->second.length()), found->second.c_str()).Detach();
 	}
 	else if (defaultValue != nullptr)
 	{

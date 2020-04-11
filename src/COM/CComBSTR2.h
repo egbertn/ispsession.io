@@ -224,7 +224,7 @@ public:
 	// *** returns true if length equals zero characters or when unallocated(null pointer)
 	bool __stdcall IsEmpty (void) const  noexcept
 	{
-		return m_str == nullptr || ByteLength() == 0;
+		return m_str == nullptr || (Length() == 0 && ByteLength() == 0);
 	}
 	/* added by may 2005 e.n. needs #include 'wchar.h'*/
 	STDMETHODIMP Format(_In_ PCWSTR pszFormat, _In_ va_list args)  noexcept

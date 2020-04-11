@@ -2,7 +2,7 @@
 
 class ATL_NO_VTABLE  CCEnum: 
 	public IEnumVARIANT ,
-	public CComObjectRootEx<CComMultiThreadModel>
+	public CComObjectRoot
 {
 private:
 	ULONG curel, maxel;

@@ -27,6 +27,7 @@ static DWORD __stdcall  redis3m::TimerThread(void*)
 		CloseHandle(handle);
 		return 0;
 	}
+	logModule.Write(L"Created TimerThread %d", _threadHandle);
 	_timer = handle;
 
 	LARGE_INTEGER liDueTime;
@@ -95,7 +96,7 @@ static bool _stdcall redis3m::TimerAPCProc() noexcept
 		result = false;
 		::CloseHandle(_timer);
 		::CloseHandle(_threadHandle);
-		_timer = nullptr;
+		_timer =
 		_threadHandle = nullptr;
 		//_timer.Close();
 		//_threadHandle.Close();
@@ -124,7 +125,6 @@ connection::ptr_t simple_pool::get()
 	{
 		auto handle = ::CreateThread(NULL, NULL, TimerThread, NULL, NULL, NULL);
 		_threadHandle =handle;
-		logModule.Write(L"Created TimerThread %d", handle);
 	}
 	_access_mutex.Leave();
 	if (!ret)

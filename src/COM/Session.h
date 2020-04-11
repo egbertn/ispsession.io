@@ -5,7 +5,7 @@
 #include "CSession.h"
 #include "message.h"
 #include "CVariantDictionary.h"
-
+#include "WriteSessionCookie.h"
 
 // NWCSession
 class ATL_NO_VTABLE NWCSession : 
@@ -33,6 +33,7 @@ public:
 		lngTimeout = 0;
 		m_bstrToken = L"GUID";
 		m_OnStartPageCalled = false;
+		m_pWriteCookie = nullptr;
 		m_piVarDict = nullptr;
 		dtExpires = 0;
 		bHashsessionID =
@@ -73,10 +74,7 @@ public:
 
 	void FinalRelease() throw()
 	{
-		m_piResponse.Release();
-		m_piServer.Release();
-		m_piSession.Release();
-		m_piRequest.Release();
+		
 		m_pictx.Release();
 		PersistSession();//normally already executed by OnEndPage
 		logModule.Close();
@@ -101,14 +99,11 @@ public:
 
 // INWCSession
 private:
-	CComPtr<IRequest> m_piRequest;
-	CComPtr<IResponse> m_piResponse;
-	CComPtr<IServer> m_piServer;	
-	CComPtr<ISessionObject> m_piSession;	
+	
 	CComObject<CVariantDictionary> *m_piVarDict;
 	//passed by IIS ASP Runtime to our COM component in DISP invoked OnStartPage
 	CComPtr<IScriptingContext> m_pictx;
-
+	CComPtr<IWriteSessionCookie> m_pWriteCookie;
 	bool m_OnStartPageCalled;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 
@@ -135,7 +130,7 @@ private:
 		bReadonly,
 		bIsDirty, bIsDBOpen, bNoConnectionPooling; //for the application
 
-	DATE dtExpires;
+	LONG dtExpires;
 	
 	// keeps track of the original record
 	// to avoid concurrency problems

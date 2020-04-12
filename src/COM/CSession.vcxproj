@@ -514,6 +514,7 @@
     <ClInclude Include="Resource.h" />
     <ClInclude Include="CStream.h" />
     <ClInclude Include="Session.h" />
+    <ClInclude Include="TextComparer.h" />
     <ClInclude Include="tools.h" />
     <ClInclude Include="CSession.h" />
     <ClInclude Include="unistd.h" />

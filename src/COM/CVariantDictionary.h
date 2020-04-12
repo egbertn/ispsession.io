@@ -5,15 +5,7 @@
 #include "tools.h"
 
 
-struct TextComparer
-{
-public:
-	bool operator()(CComBSTR x, CComBSTR y) const throw()
-	{
-		return x.CompareTo(y, true) == -1;		
-	}
-};
-
+#include "TextComparer.h"
 
 // CVariantDictionary
 class ATL_NO_VTABLE CVariantDictionary : 

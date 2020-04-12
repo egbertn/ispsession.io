@@ -4,7 +4,7 @@
 #include "CSessionDL.h"
 #include "ConfigurationManager.h"
 #include "session.h"
-
+#include "ReadSessionCookie.h"
 #include "CStream.h"
 #include "tools.h"
 #include <chrono>
@@ -384,47 +384,36 @@ STDMETHODIMP NWCSession::Initialize()
 
 	if (blnFoundURLGuid == FALSE) 
 	{
-		CComPtr<IRequestDictionary> oReqDict;
-		CComPtr<IRequest> m_piRequest;
-		hr = this->m_pictx->get_Request(&m_piRequest);
-		hr = m_piRequest->get_Cookies(&oReqDict);	
-		VARIANT vkey;
-		vkey.vt = VT_BSTR;
-		vkey.bstrVal = m_bstrToken;
-		hr = oReqDict->get_Item(vkey, &vitem);			
-		vkey.vt = VT_EMPTY;
 		
-		if (SUCCEEDED(hr) && vitem.pdispVal != nullptr)
+		CComPtr<IRequest> piRequest;
+		hr = this->m_pictx->get_Request(&piRequest);		
+	
+		CComPtr<IReadSessionCookie> pReadCookie;
+		CComObject<ReadSessionCookie>* factory;
+		CComObject<ReadSessionCookie>::CreateInstance(&factory);
+		hr = factory->QueryInterface(&pReadCookie);
+		pReadCookie->Initialize(piRequest, m_bstrToken);
+			
+		VARIANT_BOOL hasKeys;
+		pReadCookie->get_HasKeys(&hasKeys);
+		if (hasKeys == VARIANT_TRUE)
 		{
-			CComPtr<IReadCookie> pReadCookie;
-			hr = vitem.pdispVal->QueryInterface(&pReadCookie);
-			vitem.Clear();
-			VARIANT_BOOL hasKeys;
-			pReadCookie->get_HasKeys(&hasKeys);
-			if (hasKeys == VARIANT_TRUE)
-			{
-				INT cnt;
-				pReadCookie->get_Count(&cnt);
-				logModule.Write(L"IReadCookie found more cookies! %d", cnt);
-				//ignore other keys, read the first one.
-				VARIANT key = {0};
-				key.vt = VT_I4;
-				key.intVal = 1; // collections in classic asp are one based, not zero
-				hr = pReadCookie->get_Item(key, &vitem);
-			}
-			else
-			{
-				hr = pReadCookie->get_Item(vMissing, &vitem);
-			}
-			if (SUCCEEDED(hr) && vitem.vt == VT_BSTR)				
-				vitem.Detach(&strGUID);
-				
-			logModule.Write(L"get_Cookies with token %s Item: %s %x", m_bstrToken, strGUID, hr);
+			INT cnt;
+			pReadCookie->get_Count(&cnt);
+			logModule.Write(L"found more session cookies! %d", cnt);
+			//ignore other keys, read the first one.
+			VARIANT key = {0};
+			key.vt = VT_I4;
+			key.intVal = 1; // collections in classic asp are one based, not zero
+			hr = pReadCookie->get_Item(key, &strGUID);
 		}
 		else
 		{
-			hr = S_OK;//they don't support cookies
-		}
+			hr = pReadCookie->get_Item(vMissing, &strGUID);
+		}		
+				
+		logModule.Write(L"get_Cookies with token %s Item: %s %x", m_bstrToken, strGUID, hr);
+	
 	}
 
 	#ifdef Demo 
@@ -479,7 +468,7 @@ STDMETHODIMP NWCSession::Initialize()
 			hr = E_FAIL;
 		}
 		logModule.Write(L"dbInit %x", hr);
-		this->m_pWriteCookie->Flush(piResponse);
+		
 	}
 
 	error:
@@ -756,10 +745,10 @@ STDMETHODIMP NWCSession::Abandon(void) throw()
 
 	if (SUCCEEDED(hr))
 	{	
-		dtExpires = -Now();
+		dtExpires = -1;
 		hr = WriteCookie(strGUID);
-		dtExpires = 0;
 
+	
 		if (FAILED(hr)) //headers already written if Response.Buffer == false
 		{
 			::SetErrorInfo(0, nullptr); // Clear out any stale ErrorInfos
@@ -1061,7 +1050,10 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 		
 
 	}
-	WriteCookie(strGUID);
+	if (blnLiquid == TRUE || bDidInsert == TRUE || blnNew == TRUE || blnExpired == TRUE)
+	{
+		WriteCookie(strGUID);
+	}
 
 	{
 		VARIANT testel = { VT_EMPTY };
@@ -1174,20 +1166,19 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookie) throw()
 	//m_piResponse->put_Expires(-1); classic asp already does this
 	HRESULT hr = S_OK;
 	// just one time!
-	if (m_pWriteCookie == nullptr)
-	{
-		CComPtr<IResponse> piResponse;
-		hr = this->m_pictx->get_Response(&piResponse);
-
-		CComBSTR noCache(L"no-cache");// , pragma(L"Pragma");
-		piResponse->put_CacheControl(noCache);
-		CComObject<WriteSessionCookie>* wsc;
-		hr = CComObject<WriteSessionCookie>::CreateInstance(&wsc);
-		hr = wsc->QueryInterface(&m_pWriteCookie); // we really need to do that, CreateInstance does not do AddRef
+	CComPtr<IResponse> piResponse;
+	hr = this->m_pictx->get_Response(&piResponse);
+	CComBSTR noCache(L"no-cache");// , pragma(L"Pragma");
+	piResponse->put_CacheControl(noCache);
+	
+	CComPtr<IWriteSessionCookie> m_pWriteCookie;
+	CComObject<WriteSessionCookie>* wsc;
+	hr = CComObject<WriteSessionCookie>::CreateInstance(&wsc);
+	hr = wsc->QueryInterface(&m_pWriteCookie); // we really need to do that, CreateInstance does not do AddRef
 
 		//m_piResponse->AddHeader(pragma, noCache); causes duplicates no-cache, nocache etc	
 		
-	}
+	
 	//set item now to 'optional param' type
 	vMissing.vt = VT_ERROR;
 	vMissing.scode = DISP_E_PARAMNOTFOUND;
@@ -1246,9 +1237,9 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookie) throw()
 				hr = m_pWriteCookie->put_Secure(fSecure);
 			}
 			pStringList->Release();
-		}	
-		
+		}			
 	}
+	m_pWriteCookie->Flush(piResponse);
 	/*if (FAILED(hr))
 	{
 		ReportComError2(hr, L"WriteCookie");

@@ -33,7 +33,6 @@ public:
 		lngTimeout = 0;
 		m_bstrToken = L"GUID";
 		m_OnStartPageCalled = false;
-		m_pWriteCookie = nullptr;
 		m_piVarDict = nullptr;
 		dtExpires = 0;
 		bHashsessionID =
@@ -103,7 +102,7 @@ private:
 	CComObject<CVariantDictionary> *m_piVarDict;
 	//passed by IIS ASP Runtime to our COM component in DISP invoked OnStartPage
 	CComPtr<IScriptingContext> m_pictx;
-	CComPtr<IWriteSessionCookie> m_pWriteCookie;
+
 	bool m_OnStartPageCalled;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 

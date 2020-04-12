@@ -10,6 +10,7 @@ STDMETHODIMP WriteSessionCookie::put_Item(const BSTR key, const BSTR bstrValue) 
 	}
 	m_CookieKey.AssignBSTR(key);
 	m_CookieValue.AssignBSTR(bstrValue);
+	
 	return S_OK;
 }
 // in minutes
@@ -98,6 +99,7 @@ STDMETHODIMP WriteSessionCookie::Flush(IResponse* response) noexcept
 	items.Add(CComBSTR(L"SameSite=Lax"));
 	
 	buf.Attach(CComBSTR::Join(items.m_psa, CComBSTR(L"; ")));
+	
 	response->AddHeader(CComBSTR(L"Set-Cookie"), buf);
 	return S_OK;
 }

@@ -483,7 +483,7 @@ public:
 		return Replace(find, replace, false);
 	}
 
-	SAFEARRAY* __stdcall Split(_In_opt_ PCWSTR expression, _In_ const bool caseInsenstive)  const  noexcept
+	SAFEARRAY* __stdcall Split(_In_opt_ PCWSTR expression, _In_ const bool caseInsenstive)  const  
 	{
 		return Split(CComBSTR(expression), caseInsenstive);
 	}

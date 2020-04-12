@@ -3,7 +3,7 @@
 
 STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, CComBSTR& token) noexcept
 {
-	auto hr = S_OK;
+	auto hr = S_FALSE;
 	if (request == nullptr)
 	{
 		return E_INVALIDARG;
@@ -11,76 +11,96 @@ STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, CComBSTR& token) n
 	CComPtr<IRequestDictionary> req;
 
 	hr = request->get_ServerVariables(&req);
-	VARIANT ret = { 0 };
+	CComVariant ret;
 	if (SUCCEEDED(req->get_Item(CComVariant(L"HTTP_COOKIE"), &ret)))
 	{
-		CComBSTR splitter;
-		splitter.Attach(ret.bstrVal); // steal the data
-		ATL::CComSafeArray<BSTR> cookies;
-		cookies.Attach(splitter.Split(L"; ", true));
-		CComBSTR line;
-		for (LONG x = 0; x < cookies.GetCount(); x++)
+		if (ret.vt != VT_DISPATCH)
 		{
-			ATL::CComSafeArray<BSTR> keyvalue;
-			line.Attach(keyvalue.GetAt(x));
-			keyvalue.Attach(line.Split(L'=', true));
-			line.Detach();
-			if (keyvalue.GetCount() == 2)
+			return S_FALSE;
+		}
+		CComPtr<IStringList> pstringList;
+		ret.pdispVal->QueryInterface(&pstringList);
+		int itemsFound = 0;
+		bool found = false;
+		pstringList->get_Count(&itemsFound);
+		// we could have theoretically more HTTP headers having Cookie: 
+		for (auto item = 1; item <= itemsFound && found == false; item++)
+		{
+			VARIANT vItemIndex, vItemVal;
+			vItemIndex.vt = VT_I4;
+			vItemIndex.intVal = item;
+			pstringList->get_Item(vItemIndex, &vItemVal);
+			CComBSTR splitter;
+			splitter.Attach(vItemVal.bstrVal); // steal the data, no memory issue here
+			ATL::CComSafeArray<BSTR> cookies;
+			cookies.Attach(splitter.Split(L"; ", true));
+
+			CComBSTR line;
+			for (LONG x = 0; x < static_cast<LONG>(cookies.GetCount()); x++)
 			{
-				//this->_dictionary.insert(keyvalue.GetAt(0), keyvalue.GetAt(1));
-				if (token.CompareTo(keyvalue.GetAt(0)) == 0)
+				ATL::CComSafeArray<BSTR> keyvaluePair;
+				line.Attach(cookies.GetAt(x));
+				keyvaluePair.Attach(line.Split(L"=", true));
+				line.Detach();
+				if (keyvaluePair.GetCount() == 2)
 				{
-					m_CookieValue.AssignBSTR(keyvalue.GetAt(1));
-					if (m_CookieValue.IndexOf(L"&", 0U, true) > 0)
+					if (token.CompareTo(keyvaluePair.GetAt(0)) == 0)
 					{
-						CComSafeArray<BSTR> lines;
-						CComSafeArray<BSTR> keyvalue2;
-						lines.Attach(m_CookieValue.Split(L"&", true));						
-						for (LONG y = 0; y < lines.GetCount(); y++)
+						m_CookieValue.AssignBSTR(keyvaluePair.GetAt(1));
+						if (m_CookieValue.IndexOf(L"&", 0U, true) > 0)
 						{
-							keyvalue2.Attach(line.Split(L'=', true));
-							if (keyvalue2.GetCount() == 2)
+							CComSafeArray<BSTR> lines;
+							CComSafeArray<BSTR> keyvaluePair2;
+							lines.Attach(m_CookieValue.Split(L"&", true));
+							for (LONG y = 0; y < static_cast<LONG>(lines.GetCount()); y++)
 							{
-								_dictionary.insert(keyvalue2.GetAt(0), keyvalue2.GetAt(1));
+								line.Attach(lines.GetAt(y));
+								keyvaluePair2.Attach(line.Split(L"=", true));
+								line.Detach();
+								if (keyvaluePair2.GetCount() == 2)
+								{
+									_dictionary.insert(pair<CComBSTR, CComBSTR>(keyvaluePair2.GetAt(0), keyvaluePair2.GetAt(1)));
+								}
 							}
 						}
+						found = true;
+						hr = S_OK;
+						break;
 					}
-					break;
 				}
 			}
 		}
-	}
-	
+	}	
 	return hr;
 }
 
 STDMETHODIMP ReadSessionCookie::get_Item(const VARIANT item, BSTR* strRet) noexcept
 {
-	auto hr = S_OK;
-	auto isMissing = (item.vt == VT_ERROR && item.vt == DISP_E_PARAMNOTFOUND);
+	auto isMissing = (item.vt == VT_ERROR && item.scode == DISP_E_PARAMNOTFOUND);
 	if (isMissing)
 	{
-		hr = m_CookieValue.CopyTo(strRet);
+		m_CookieValue.CopyTo(strRet);
+		return S_OK;
 	}
-	else if (item.vt == VT_I4 || item.vt == VT_I2)
+	else if (item.vt == VT_I4)
 	{
-		INT here =0;
-		
+		INT here = 1;		
 		for (auto it = _dictionary.begin(); it != _dictionary.end(); ++it)
 		{
-			if (++here == item.intVal)
+			if (here++ == item.intVal)
 			{
 				it->first.CopyTo(strRet);
-				break;
+				return S_OK;
 			}
 		}
 	}
 	else if (item.vt == VT_BSTR)
 	{
 		auto findK = _dictionary.find(item.bstrVal);
-		findK->second.CopyTo(strRet);
+		if (findK != _dictionary.end())
+			findK->second.CopyTo(strRet);
 	}
-	return hr;
+	return S_FALSE;
 }
 
 STDMETHODIMP ReadSessionCookie::get_HasKeys(VARIANT_BOOL* ret) noexcept
@@ -91,11 +111,6 @@ STDMETHODIMP ReadSessionCookie::get_HasKeys(VARIANT_BOOL* ret) noexcept
 	return hr;
 }
 
-STDMETHODIMP ReadSessionCookie::get__NewEnum(IUnknown** ppEnumReturn) noexcept
-{
-	return E_NOTIMPL;
-}
-
 STDMETHODIMP ReadSessionCookie::get_Count(int* cStrRet) noexcept
 {
 	auto hr = S_OK;
@@ -104,8 +119,7 @@ STDMETHODIMP ReadSessionCookie::get_Count(int* cStrRet) noexcept
 }
 STDMETHODIMP ReadSessionCookie::get_Key(const VARIANT key, VARIANT* pvar) noexcept
 {
-	auto hr = S_OK;
-	if (key.vt == VT_I2 || key.vt == VT_I4)
+	if (key.vt == VT_I4)
 	{
 		INT here = 1;
 		for (auto it = _dictionary.begin(); it != _dictionary.end(); ++it)
@@ -113,9 +127,9 @@ STDMETHODIMP ReadSessionCookie::get_Key(const VARIANT key, VARIANT* pvar) noexce
 			if (here++ == key.intVal)
 			{
 				it->first.CopyTo(pvar);
-				break;
+				return S_OK;
 			}
 		}
 	}
-	return hr;
+	return S_FALSE;
 }

@@ -44,7 +44,12 @@ class ATL_NO_VTABLE  WriteSessionCookie:
 		STDMETHOD(put_SameSite)(const SAMESITEPOLICY pfHasKeys) noexcept;
 		// writes the cookie to Set-Header 
 		STDMETHOD(Flush)(IResponse* response) noexcept;
-
+		HRESULT FinalConstruct() noexcept
+		{
+			m_Expires = 0;
+			m_secure = VARIANT_FALSE;
+			return S_OK;
+		}
 	private:
 
 		CComBSTR m_CookieValue;

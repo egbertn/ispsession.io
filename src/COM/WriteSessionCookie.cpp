@@ -98,7 +98,7 @@ STDMETHODIMP WriteSessionCookie::Flush(IResponse* response) noexcept
 	}
 	items.Add(CComBSTR(L"SameSite=Lax"));
 	
-	buf.Attach(CComBSTR::Join(items.m_psa, CComBSTR(L"; ")));
+	buf.Attach(CComBSTR::Join(items, CComBSTR(L"; ")));
 	
 	response->AddHeader(CComBSTR(L"Set-Cookie"), buf);
 	return S_OK;

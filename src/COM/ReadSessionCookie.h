@@ -37,8 +37,6 @@ public:
 private:
 	std::map<CComBSTR, CComBSTR, TextComparer> _dictionary;
 	CComBSTR m_CookieValue;
-	VARIANT_BOOL m_hasKeys;
-	int m_Count;
 
 };
 

@@ -98,7 +98,11 @@ STDMETHODIMP ReadSessionCookie::get_Item(const VARIANT item, BSTR* strRet) noexc
 	{
 		auto findK = _dictionary.find(item.bstrVal);
 		if (findK != _dictionary.end())
+		{
 			findK->second.CopyTo(strRet);
+			return S_OK;
+		}
+
 	}
 	return S_FALSE;
 }

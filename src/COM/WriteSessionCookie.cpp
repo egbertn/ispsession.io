@@ -37,9 +37,9 @@ STDMETHODIMP WriteSessionCookie::put_Secure(const VARIANT_BOOL fSecure) noexcept
 	return S_OK;
 
 }
-STDMETHODIMP WriteSessionCookie::put_SameSite(const SAMESITEPOLICY ) noexcept
+STDMETHODIMP WriteSessionCookie::put_SameSite(const SAMESITEPOLICY sameSitePolicy) noexcept
 {
-	
+	this->m_sameSitePolicy = sameSitePolicy;
 	return S_OK;
 
 }
@@ -84,22 +84,36 @@ STDMETHODIMP WriteSessionCookie::Flush(IResponse* response) noexcept
 		Number of seconds until the cookie expires. A zero or negative number will expire the cookie immediately. If both Expires and Max-Age are set, Max-Age has precedence.
 		*/
 		buf.Format(L"Max-Age=%d", (m_Expires * 60)); //convert to seconds
-
 		items.Add(buf);
 	}
 	else if (m_Expires < 0)
 	{
-		buf.Format(L"Max-Age=0");
+		buf = L"Max-Age=0";
 		items.Add(buf);
 	}
 	if (m_secure == VARIANT_TRUE)
 	{
-		items.Add(CComBSTR(L"Secure"));
+		buf = L"Secure";
+		items.Add(buf);
 	}
-	items.Add(CComBSTR(L"SameSite=Lax"));
-	
-	buf.Attach(CComBSTR::Join(items, CComBSTR(L"; ")));
-	
-	response->AddHeader(CComBSTR(L"Set-Cookie"), buf);
+	switch (m_sameSitePolicy)
+	{
+	case SAMESITEPOLICY::None:
+		buf = L"None";
+		break;
+	case SAMESITEPOLICY::Strict:
+		buf = L"Strict";
+		break;
+	case SAMESITEPOLICY::Lax:
+		buf = L"Lax";
+		break;
+	}
+	buf.Insert(0, L"SameSite=");
+	items.Add(buf);
+	CComBSTR str(L"; ");
+	buf.Attach(CComBSTR::Join(items, str));
+
+	str = L"Set-Cookie";
+	response->AddHeader(str, buf);
 	return S_OK;
 }

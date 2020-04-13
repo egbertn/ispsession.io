@@ -21,8 +21,8 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) noexcept
 		this->bErrState = TRUE;
 		return hr;
 	}
-	CComPtr<IResponse> m_piResponse;
-	m_pictx->get_Response(&m_piResponse);
+	CComPtr<IResponse> piResponse;
+	m_pictx->get_Response(&piResponse);
 	if (FAILED(hr))
 	{
 		this->Error(L"Could not get Request, Response or Server pointer", this->GetObjectCLSID(), hr);
@@ -48,6 +48,8 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) noexcept
 
 	
 	logModule.Write(L"OnStartPage");
+	CComBSTR noCache(L"no-cache");// , pragma(L"Pragma");
+	piResponse->put_CacheControl(noCache);
 
 	m_OnStartPageCalled = true;
 	try {
@@ -66,14 +68,14 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) noexcept
 	}
 	if (hr == S_FALSE) 
 	{
-		m_piResponse->Write(CComVariant(L"Redis Server is not running."));
+		piResponse->Write(CComVariant(L"Redis Server is not running."));
 		this->bErrState = TRUE;
 		hr = E_FAIL;
 	}
 #ifndef Demo
 	if (licenseOK == false)
 	{
-		m_piResponse->Write(CComVariant(L"The license for this server is invalid. Please contact ADC Cure for an updated license at information@adccure.nl"));
+		piResponse->Write(CComVariant(L"The license for this server is invalid. Please contact ADC Cure for an updated license at information@adccure.nl"));
 	}
 #endif
 	return hr;
@@ -388,28 +390,25 @@ STDMETHODIMP NWCSession::Initialize()
 		CComPtr<IRequest> piRequest;
 		hr = this->m_pictx->get_Request(&piRequest);		
 	
-		CComPtr<IReadSessionCookie> pReadCookie;
-		CComObject<ReadSessionCookie>* factory;
-		CComObject<ReadSessionCookie>::CreateInstance(&factory);
-		hr = factory->QueryInterface(&pReadCookie);
-		pReadCookie->Initialize(piRequest, m_bstrToken);
+		ReadSessionCookie pReadCookie;
+		pReadCookie.Initialize(piRequest, m_bstrToken);
 			
 		VARIANT_BOOL hasKeys;
-		pReadCookie->get_HasKeys(&hasKeys);
+		pReadCookie.get_HasKeys(&hasKeys);
 		if (hasKeys == VARIANT_TRUE)
 		{
 			INT cnt;
-			pReadCookie->get_Count(&cnt);
+			pReadCookie.get_Count(&cnt);
 			logModule.Write(L"found more session cookies! %d", cnt);
 			//ignore other keys, read the first one.
 			VARIANT key = {0};
 			key.vt = VT_I4;
 			key.intVal = 1; // collections in classic asp are one based, not zero
-			hr = pReadCookie->get_Item(key, &strGUID);
+			hr = pReadCookie.get_Item(key, &strGUID);
 		}
 		else
 		{
-			hr = pReadCookie->get_Item(vMissing, &strGUID);
+			hr = pReadCookie.get_Item(vMissing, &strGUID);
 		}		
 				
 		logModule.Write(L"get_Cookies with token %s Item: %s %x", m_bstrToken, strGUID, hr);
@@ -1156,94 +1155,81 @@ STDMETHODIMP NWCSession::put_ReEntrance(VARIANT_BOOL newVal) throw()
 	return S_OK;
 }
 
-STDMETHODIMP NWCSession::WriteCookie(BSTR cookie) throw()
+STDMETHODIMP NWCSession::WriteCookie(BSTR cookieValue) throw()
 {
 		
-	VARIANT vMissing = { 0 };
 	CComVariant vRet;
 	CComPtr<IRequestDictionary> pReq;
 
 	//m_piResponse->put_Expires(-1); classic asp already does this
 	HRESULT hr = S_OK;
-	// just one time!
+	
+	WriteSessionCookie m_pWriteCookie;
+	
+	if (!strCookieDOM.IsEmpty())
+	{
+		hr = m_pWriteCookie.put_Domain(strCookieDOM);
+		logModule.Write(L"CookieDomain written %s %x", strCookieDOM, hr);
+	}
+	if (!strAppPath.IsEmpty())
+	{
+		hr = m_pWriteCookie.put_Path(strAppPath);
+		logModule.Write(L"CookiePath %s %x", strAppPath, hr);
+	}
+		
+	if (dtExpires != 0)
+		hr = m_pWriteCookie.put_Expires(dtExpires);
+	CComBSTR bstrOn;
+	if (logModule.get_Logging() != 0 && dtExpires> 0)
+	{			
+		bstrOn.AssignDate(dtExpires);			
+		logModule.Write(L"put_Expires %s %x", bstrOn, hr);
+	}
+		
+	hr = m_pWriteCookie.put_Item(m_bstrToken, cookieValue);
+	logModule.Write( L"Cookie: %s %x", cookieValue, hr);			
+		
+
+	// be sure if it was 'secure' to keep it like that.
+	//if (SUCCEEDED(hr)) 		
+	CComPtr<IRequest> piRequest;
+	hr = this->m_pictx->get_Request(&piRequest);
+
+	hr = piRequest->get_ServerVariables(&pReq);
+	CComVariant vHTTPS (L"HTTPS");
+	bstrOn = L"on"; 
+
+	//returns IStringList pointer
+	hr = pReq->get_Item(vHTTPS, &vRet);
+
+	if (vRet.vt == VT_DISPATCH)
+	{
+		IStringList* pStringList;
+		vRet.pdispVal->QueryInterface(&pStringList);
+		vHTTPS.Clear();
+
+		//set item now to 'optional param' type
+		VARIANT vMissing = { 0 };
+		vMissing.vt = VT_ERROR;
+		vMissing.scode = DISP_E_PARAMNOTFOUND;
+
+		hr = pStringList->get_Item(vMissing, &vHTTPS);
+		logModule.Write(L"pStringList %s", vHTTPS.bstrVal);
+		if (vHTTPS.vt == VT_BSTR)
+		{
+			VARIANT_BOOL fSecure = (bstrOn.CompareTo(vHTTPS.bstrVal, true) == 0
+				&& blnCookieNoSSL == FALSE) ?
+						VARIANT_TRUE : VARIANT_FALSE;
+			logModule.Write(L"IWriteCookie->put_Secure(%d)", fSecure); 
+			hr = m_pWriteCookie.put_Secure(fSecure);
+		}
+		pStringList->Release();
+	}			
+	
 	CComPtr<IResponse> piResponse;
 	hr = this->m_pictx->get_Response(&piResponse);
-	CComBSTR noCache(L"no-cache");// , pragma(L"Pragma");
-	piResponse->put_CacheControl(noCache);
-	
-	CComPtr<IWriteSessionCookie> m_pWriteCookie;
-	CComObject<WriteSessionCookie>* wsc;
-	hr = CComObject<WriteSessionCookie>::CreateInstance(&wsc);
-	hr = wsc->QueryInterface(&m_pWriteCookie); // we really need to do that, CreateInstance does not do AddRef
+	m_pWriteCookie.Flush(piResponse);
 
-		//m_piResponse->AddHeader(pragma, noCache); causes duplicates no-cache, nocache etc	
-		
-	
-	//set item now to 'optional param' type
-	vMissing.vt = VT_ERROR;
-	vMissing.scode = DISP_E_PARAMNOTFOUND;
-
-	if (SUCCEEDED(hr) && m_pWriteCookie != nullptr)
-	{	
-		if (!strCookieDOM.IsEmpty())
-		{
-			hr = m_pWriteCookie->put_Domain(strCookieDOM);
-			logModule.Write(L"CookieDomain written %s %x", strCookieDOM, hr);
-		}
-		if (!strAppPath.IsEmpty())
-		{
-			hr = m_pWriteCookie->put_Path(strAppPath);
-			logModule.Write(L"CookiePath %s %x", strAppPath, hr);
-		}
-		
-		if (dtExpires != 0)
-			hr = m_pWriteCookie->put_Expires(dtExpires);
-		CComBSTR bstrOn;
-		if (logModule.get_Logging() != 0 && dtExpires> 0)
-		{			
-			bstrOn.AssignDate(dtExpires);			
-			logModule.Write(L"put_Expires %s %x", bstrOn, hr);
-		}
-		
-		hr = m_pWriteCookie->put_Item(m_bstrToken, cookie);
-		logModule.Write( L"Cookie: %s %x", cookie, hr);			
-		
-
-		// be sure if it was 'secure' to keep it like that.
-		//if (SUCCEEDED(hr)) 		
-		CComPtr<IRequest> piRequest;
-		hr = this->m_pictx->get_Request(&piRequest);
-
-		hr = piRequest->get_ServerVariables(&pReq);
-		CComVariant vHTTPS (L"HTTPS");
-		bstrOn = L"on"; 
-
-		//returns IStringList pointer
-		hr = pReq->get_Item(vHTTPS, &vRet);
-
-		if (vRet.vt == VT_DISPATCH)
-		{
-			IStringList* pStringList;
-			vRet.pdispVal->QueryInterface(&pStringList);
-			vHTTPS.Clear();
-			hr = pStringList->get_Item(vMissing, &vHTTPS);
-			logModule.Write(L"pStringList %s", vHTTPS.bstrVal);
-			if (vHTTPS.vt == VT_BSTR)
-			{
-				VARIANT_BOOL fSecure = (bstrOn.CompareTo(vHTTPS.bstrVal, true) == 0
-					&& blnCookieNoSSL == FALSE) ?
-							VARIANT_TRUE : VARIANT_FALSE;
-				logModule.Write(L"IWriteCookie->put_Secure(%d)", fSecure); 
-				hr = m_pWriteCookie->put_Secure(fSecure);
-			}
-			pStringList->Release();
-		}			
-	}
-	m_pWriteCookie->Flush(piResponse);
-	/*if (FAILED(hr))
-	{
-		ReportComError2(hr, L"WriteCookie");
-	}*/
 	return hr;
 }
 /*/////

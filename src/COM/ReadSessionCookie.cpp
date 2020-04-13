@@ -20,6 +20,7 @@ STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, CComBSTR& token) n
 		}
 		CComPtr<IStringList> pstringList;
 		ret.pdispVal->QueryInterface(&pstringList);
+		ret.Clear();
 		int itemsFound = 0;
 		bool found = false;
 		pstringList->get_Count(&itemsFound);
@@ -121,19 +122,18 @@ STDMETHODIMP ReadSessionCookie::get_Count(int* cStrRet) noexcept
 	*cStrRet = (int)_dictionary.size();
 	return hr;
 }
-STDMETHODIMP ReadSessionCookie::get_Key(const VARIANT key, VARIANT* pvar) noexcept
+STDMETHODIMP ReadSessionCookie::get_Key(const int key, BSTR* pvar) noexcept
 {
-	if (key.vt == VT_I4)
+	
+	INT here = 1;
+	for (auto it = _dictionary.begin(); it != _dictionary.end(); ++it)
 	{
-		INT here = 1;
-		for (auto it = _dictionary.begin(); it != _dictionary.end(); ++it)
+		if (here++ == key)
 		{
-			if (here++ == key.intVal)
-			{
-				it->first.CopyTo(pvar);
-				return S_OK;
-			}
+			it->first.CopyTo(pvar);
+			return S_OK;
 		}
 	}
+	
 	return S_FALSE;
 }

@@ -4,7 +4,7 @@
 STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, CComBSTR& token) noexcept
 {
 	auto hr = S_FALSE;
-	if (request == nullptr)
+	if (request == nullptr || token.IsEmpty())
 	{
 		return E_INVALIDARG;
 	}
@@ -18,6 +18,7 @@ STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, CComBSTR& token) n
 		{
 			return S_FALSE;
 		}
+		req.Release();
 		CComPtr<IStringList> pstringList;
 		ret.pdispVal->QueryInterface(&pstringList);
 		ret.Clear();
@@ -103,7 +104,6 @@ STDMETHODIMP ReadSessionCookie::get_Item(const VARIANT item, BSTR* strRet) noexc
 			findK->second.CopyTo(strRet);
 			return S_OK;
 		}
-
 	}
 	return S_FALSE;
 }
@@ -111,20 +111,17 @@ STDMETHODIMP ReadSessionCookie::get_Item(const VARIANT item, BSTR* strRet) noexc
 STDMETHODIMP ReadSessionCookie::get_HasKeys(VARIANT_BOOL* ret) noexcept
 {
 	//First=firstkeyvalue&Second=secondkeyvalue 
-	auto hr = S_OK;
 	*ret = _dictionary.size() > 0 ? VARIANT_TRUE : VARIANT_FALSE;
-	return hr;
+	return S_OK;
 }
 
 STDMETHODIMP ReadSessionCookie::get_Count(int* cStrRet) noexcept
 {
-	auto hr = S_OK;
 	*cStrRet = (int)_dictionary.size();
-	return hr;
+	return S_OK;
 }
 STDMETHODIMP ReadSessionCookie::get_Key(const int key, BSTR* pvar) noexcept
-{
-	
+{	
 	INT here = 1;
 	for (auto it = _dictionary.begin(); it != _dictionary.end(); ++it)
 	{

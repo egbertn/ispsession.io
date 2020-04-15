@@ -35,6 +35,7 @@ public:
 		m_OnStartPageCalled = false;
 		m_piVarDict = nullptr;
 		dtExpires = 0;
+		m_onEndPageDone =
 		bHashsessionID =
 		bIsDBOpen = 
         bNoConnectionPooling = bErrState = blnPersistDoneByOnEndPage=	blnCancel = blnNew = blnExpired =
@@ -73,7 +74,11 @@ public:
 
 	void FinalRelease() throw()
 	{
-		
+		if (m_onEndPageDone == FALSE)
+		{
+			m_onEndPageDone = TRUE;
+			this->OnEndPage();
+		}
 		m_pictx.Release();
 		PersistSession();//normally already executed by OnEndPage
 		logModule.Close();
@@ -127,7 +132,7 @@ private:
 		blnPersistDoneByOnEndPage,
 		bHashsessionID,
 		bReadonly,
-		bIsDirty, bIsDBOpen, bNoConnectionPooling; //for the application
+		bIsDirty, bIsDBOpen, bNoConnectionPooling, m_onEndPageDone; //for the application
 
 	LONG dtExpires;
 	
@@ -179,6 +184,7 @@ public:
 	STDMETHOD( Statistics)(VARIANT App_Key, VARIANT sessionID, INWCVariantDictionary** retval);
 	STDMETHOD( EnsureURLCookie) ();
 	STDMETHOD( get_OldSessionID)(BSTR *pVal);
+	STDMETHOD(Initialize)(IDispatch* iRequest, IDispatch* iSErver, IDispatch* iResponse);
 
 private:	
 	// non TLB exposed methods

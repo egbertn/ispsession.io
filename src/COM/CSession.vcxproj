@@ -383,6 +383,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ReadSessionCookie.cpp" />
+    <ClCompile Include="ScriptingContext.cpp" />
     <ClCompile Include="WriteSessionCookie.cpp" />
     <None Include="connection_pool.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdafx.h</PrecompiledHeaderFile>
@@ -497,6 +498,7 @@
     <ClInclude Include="IWriteSessionCookie.h" />
     <ClInclude Include="ReadSessionCookie.h" />
     <ClInclude Include="resolv.h" />
+    <ClInclude Include="ScriptingContext.h" />
     <ClInclude Include="simple_pool.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="ADCLogModule.h" />

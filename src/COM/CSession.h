@@ -7,8 +7,8 @@
 /* at Tue Jan 19 04:14:07 2038
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0622 
-    protocol : all , ms_ext, app_config, c_ext, robust
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622 
+    protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -939,6 +939,11 @@ EXTERN_C const IID IID_INWCSession;
         
         virtual /* [hidden] */ HRESULT STDMETHODCALLTYPE OnEndPage( void) = 0;
         
+        virtual HRESULT STDMETHODCALLTYPE Initialize( 
+            /* [in] */ IDispatch *iRequest,
+            /* [in] */ IDispatch *iSErver,
+            /* [in] */ IDispatch *iResponse) = 0;
+        
     };
     
     
@@ -1117,6 +1122,12 @@ EXTERN_C const IID IID_INWCSession;
         /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
             INWCSession * This);
         
+        HRESULT ( STDMETHODCALLTYPE *Initialize )( 
+            INWCSession * This,
+            /* [in] */ IDispatch *iRequest,
+            /* [in] */ IDispatch *iSErver,
+            /* [in] */ IDispatch *iResponse);
+        
         END_INTERFACE
     } INWCSessionVtbl;
 
@@ -1239,6 +1250,9 @@ EXTERN_C const IID IID_INWCSession;
 
 #define INWCSession_OnEndPage(This)	\
     ( (This)->lpVtbl -> OnEndPage(This) ) 
+
+#define INWCSession_Initialize(This,iRequest,iSErver,iResponse)	\
+    ( (This)->lpVtbl -> Initialize(This,iRequest,iSErver,iResponse) ) 
 
 #endif /* COBJMACROS */
 

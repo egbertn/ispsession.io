@@ -8,11 +8,27 @@
 #include "CStream.h"
 #include "tools.h"
 #include <chrono>
+#include "ScriptingContext.h"
 //TODO: consider optimistic locking http://www.redis.io/topics/transactions
 
+STDMETHODIMP NWCSession::Initialize(IDispatch* Request, IDispatch* server, IDispatch* response) noexcept
+{
+	if (m_OnStartPageCalled == FALSE)
+	{
+		CComPtr<IScriptingContext> context;
+		CComObject<ScriptingContext>* ctx;
+		CComObject<ScriptingContext>::CreateInstance(&ctx);
+		ctx->QueryInterface(&context);
+		ctx->Initialize(Request, server, response);
+		this->OnStartPage(context);
+	}
+	return S_OK;
+
+}
 // will be called if from asp Server.CreateObject is used
 STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) noexcept
 {
+	m_OnStartPageCalled = true;
 
 	HRESULT hr = aspsvc->QueryInterface(&m_pictx);
 	if (FAILED(hr))
@@ -51,7 +67,6 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) noexcept
 	CComBSTR noCache(L"no-cache");// , pragma(L"Pragma");
 	piResponse->put_CacheControl(noCache);
 
-	m_OnStartPageCalled = true;
 	try {
 		hr = Initialize();
 	}
@@ -116,7 +131,7 @@ STDMETHODIMP_( void) NWCSession::InvokeOnStartPage() throw()
 STDMETHODIMP NWCSession::OnEndPage() noexcept
 {
 	try {
-
+		this->m_onEndPageDone = true;
 		HRESULT hr = PersistSession();
 		return hr;
 	}
@@ -388,11 +403,15 @@ STDMETHODIMP NWCSession::Initialize()
 	{
 		
 		CComPtr<IRequest> piRequest;
-		hr = this->m_pictx->get_Request(&piRequest);		
-	
+		hr = this->m_pictx->get_Request(&piRequest);
 		ReadSessionCookie pReadCookie;
-		pReadCookie.Initialize(piRequest, m_bstrToken);
-			
+		hr = pReadCookie.Initialize(piRequest, m_bstrToken);
+		if (hr != S_OK)
+		{
+			logModule.Write(L"Initializing Cookie had issues");
+		}
+		piRequest.Release();
+
 		VARIANT_BOOL hasKeys;
 		pReadCookie.get_HasKeys(&hasKeys);
 		if (hasKeys == VARIANT_TRUE)

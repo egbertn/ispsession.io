@@ -132,6 +132,7 @@ interface INWCSession : IDispatch
 	//called internally by IIS when used with Server.CreateObject
 	[hidden] HRESULT OnStartPage([in] IUnknown* p);
 	[hidden] HRESULT OnEndPage();
+	HRESULT Initialize([in] IDispatch* iRequest, [in] IDispatch* iSErver, [in] IDispatch* iResponse);
 	// end IIS
 
 

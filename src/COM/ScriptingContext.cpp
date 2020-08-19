@@ -30,3 +30,15 @@ STDMETHODIMP ScriptingContext::Initialize(IDispatch* iRequest, IDispatch* iSErve
 	iResponse->QueryInterface(&this->m_piREsponse);
 	return S_OK;
 }
+void ScriptingContext::FinalRelease() 
+{
+	try {
+		m_piRequest.Release();
+		m_piServer.Release();
+		m_piREsponse.Release();
+	}
+	catch (...)
+	{
+
+	}
+}

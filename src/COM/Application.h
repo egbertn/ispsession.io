@@ -38,7 +38,7 @@ struct ElementModel
 	// meaning if VT == VT_UNKNOWN or VT_DISPATCH. If TRUE we have an IStream if FALSE we have an object instance
 	BOOL IsSerialized;
 	//milliseconds
-	INT ExpireAt;	
+	INT ExpireAt;
 ~ElementModel() noexcept
 {
 	val.ClearToZero();
@@ -48,7 +48,7 @@ struct ElementModel
 struct KeyComparer
 {
 public:
-	bool operator()(BSTR x, BSTR y) const 
+	bool operator()(BSTR x, BSTR y) const
 	{
 		return ::VarBstrCmp(x, y, ::GetThreadLocale(), NORM_IGNORECASE) == VARCMP_LT;
 	}
@@ -67,10 +67,10 @@ public:
 
 	BEGIN_COM_MAP(CApplication)
 		COM_INTERFACE_ENTRY(IDispatch)
-		COM_INTERFACE_ENTRY(ISupportErrorInfo)	
+		COM_INTERFACE_ENTRY(ISupportErrorInfo)
 		COM_INTERFACE_ENTRY(IApplicationCache)
 		COM_INTERFACE_ENTRY(IKeySerializer)
-		
+
 	END_COM_MAP()
 
 	HRESULT FinalConstruct() throw()
@@ -84,15 +84,9 @@ public:
 		//dlm = new CRedLock();
 		return S_OK;
 	}
-	void FinalRelease() throw()
-	{
-		/*if (dlm != NULL) {
-		delete dlm;
-		}*/
 
-	}
 private:
-	
+
 	//CRedLock  * dlm;
 	//CLock my_lock;
 	//redis connection pool
@@ -103,11 +97,11 @@ private:
 	BOOL m_OnStartPageCalled ;
     BOOL NoConnectionPooling;
 	GUID m_AppKey;
-	BOOL m_licenseOK;
+	//BOOL m_licenseOK;
 	std::chrono::time_point<std::chrono::system_clock, std::chrono::system_clock::duration> m_startSessionRequest;
 	std::map<CComBSTR, ElementModel, KeyComparer> _dictionary;
 	std::vector<string> _removed; // do not change to char* for some unknown reason, this gets corrupted
-	LARGE_INTEGER SEEK_NULL;	
+	LARGE_INTEGER SEEK_NULL;
 	CHeapPtr<unsigned char> m_lpstrMulti; // used for UTF-16 <-> UTF-8 operations contains multibytes do not use SysString* operations on it
 	INT m_currentBufLen;
 
@@ -136,7 +130,7 @@ public:
 		std::vector<std::pair<string, INT>> & expireKeys,
 		std::vector<string> &removed_keys) noexcept;
 	STDMETHOD(SerializeKey)(BSTR key, IStream* binaryString) noexcept;
-	//unpacks key & value from the blob       
+	//unpacks key & value from the blob
 	STDMETHOD (DeserializeKey)(const std::string& binaryString) noexcept;
 
 	static STDMETHODIMP SerializeKeys(const std::vector<string> &keys, __in IKeySerializer* pDictionary, command& cmd, const string& appkeyPrefix) noexcept;
@@ -145,11 +139,11 @@ public:
 private:
 
 	STDMETHOD( HasOnStartPageBeenCalled)();
-	//IIS specific 
+	//IIS specific
 	STDMETHOD(OnStartPage)(IUnknown* pctx) noexcept;
 	STDMETHOD(OnEndPage)() noexcept;
 	//End IIS Specific
-	///<summary> 
+	///<summary>
 	/// finds element by specified key if result is S_FALSE it is not found
 	///</summary>
 
@@ -165,11 +159,11 @@ private:
 	// converts an IStream to an instance of a COM class
 	STDMETHOD(ConvertVStreamToObject)(ElementModel& val) noexcept;
 
-	
+
 	STDMETHOD(InitializeDataSource)(IServer* pServer) noexcept;
 	STDMETHOD(PersistApplication)() noexcept;
 	STDMETHOD(EnsureBuffer)(INT newBuffer) noexcept;
-	
+
 };
 
 OBJECT_ENTRY_AUTO(CLSID_NWCApplication, CApplication)

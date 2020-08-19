@@ -10,7 +10,7 @@ public:
 
 	DECLARE_NO_REGISTRY()
 	DECLARE_NOT_AGGREGATABLE(ScriptingContext)
-
+	void FinalRelease();
 
 	BEGIN_COM_MAP(ScriptingContext)
 		COM_INTERFACE_ENTRY(IDispatch)
@@ -25,9 +25,9 @@ public:
 	STDMETHODIMP Initialize(IDispatch* iRequest, IDispatch* iSErver, IDispatch* iResponse) noexcept;
 
 private:
-	IRequest* m_piRequest;
-	IServer* m_piServer;
-	IResponse* m_piREsponse;
+	CComPtr<IRequest> m_piRequest;
+	CComPtr<IServer> m_piServer;
+	CComPtr<IResponse> m_piREsponse;
 
 
 

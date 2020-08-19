@@ -28,7 +28,7 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc)  noexcept
 	{
 		return E_POINTER;
 	}
-#ifdef EXPIREAT 
+#ifdef EXPIREAT
 	DATE MAXTIME = EXPIREAT;
 #endif
 	CComPtr<IScriptingContext> m_pScriptContext;
@@ -41,12 +41,12 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc)  noexcept
 		return hr;
 	}
 	if (FAILED(m_pScriptContext->get_Server(&m_piServer))) return E_FAIL;
-	
+
 	if (FAILED(hr))
 	{
 		return hr;
 	}
-	
+
 	hr = InitializeDataSource(m_piServer);
 
 
@@ -54,40 +54,40 @@ STDMETHODIMP CApplication::OnStartPage(IUnknown *aspsvc)  noexcept
 	{
 		hr = E_FAIL;
 		Error(L"Application: Redis Server is not running or invalid connection string in web.Config.", this->GetObjectCLSID(), hr);
-	}	
-	
+	}
+
 	else
 	{
 		m_OnStartPageCalled = TRUE;
 	}
-#ifndef Demo
-	if (m_licenseOK == false)
-	{
-		CComPtr<IResponse> pResponse;
-		m_pScriptContext->get_Response(&pResponse);
-		pResponse->Write(CComVariant(L"The Cache Module License for this server is invalid. Please contact ADC Cure for an updated license at informationATadccure.nl"));
-	}
-#else
-
-	CComBSTR strTemp;
-	int t;
-	double tmpdate;
-
-	tmpdate = Now();
-	CComPtr<IResponse> pResponse;
-	m_pScriptContext->get_Response(&pResponse);
-	strTemp = L"NWCTools.CSession DEMO Compatible ISP Session Application Cache expired! We would welcome your order at <a href=\"https://ispsession.io/purchase\">order here</a>";
-	if (tmpdate > MAXTIME)
-	{
-		pResponse->Write(CComVariant(strTemp));
-	}
-	t = strTemp.Length();
-	t = t / t;
-	if (t == 0)
-	{
-		return E_ABORT;
-	}
-#endif
+//#ifndef Demo
+//	if (m_licenseOK == false)
+//	{
+//		CComPtr<IResponse> pResponse;
+//		m_pScriptContext->get_Response(&pResponse);
+//		pResponse->Write(CComVariant(L"The Cache Module License for this server is invalid. Please contact ADC Cure for an updated license at informationATadccure.nl"));
+//	}
+//#else
+//
+//	CComBSTR strTemp;
+//	int t;
+//	double tmpdate;
+//
+//	tmpdate = Now();
+//	CComPtr<IResponse> pResponse;
+//	m_pScriptContext->get_Response(&pResponse);
+//	strTemp = L"NWCTools.CSession DEMO Compatible ISP Session Application Cache expired! We would welcome your order at <a href=\"https://ispsession.io/purchase\">order here</a>";
+//	if (tmpdate > MAXTIME)
+//	{
+//		pResponse->Write(CComVariant(strTemp));
+//	}
+//	t = strTemp.Length();
+//	t = t / t;
+//	if (t == 0)
+//	{
+//		return E_ABORT;
+//	}
+//#endif
 	return hr;
 
 }
@@ -135,10 +135,10 @@ STDMETHODIMP CApplication::PersistApplication()  noexcept
 	BOOL blnIsDirty;
 	hr = IsDirty(&blnIsDirty);
 	logModule.Write(L"PersistApplication err=%d, dirty=%d", m_bErrState, blnIsDirty);
-	
+
 
 	if (blnIsDirty == TRUE)
-	{	
+	{
 		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - m_startSessionRequest).count();
 		CComPtr<IKeySerializer> database = this;
 		hr = CApplicationDL::ApplicationSave(pool, m_AppKey, database,  m_dbTimeStamp, (LONG)totalRequestTimeMS, NoConnectionPooling);
@@ -146,7 +146,7 @@ STDMETHODIMP CApplication::PersistApplication()  noexcept
 		logModule.Write(L"CApplicationDL::ApplicationSave  time(%d), hr(%x)", totalRequestTimeMS, hr);
 
 	}
-	
+
 	return hr;
 }
 STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal)  noexcept
@@ -172,17 +172,17 @@ STDMETHODIMP CApplication::get_Value(BSTR Key, VARIANT* pVal)  noexcept
 	if (origType == VT_UNKNOWN || origType == VT_DISPATCH)
 	{
 		// first test whether or not this already was unpacked b
-		
+
 		if (pos->second.IsSerialized == TRUE)
-		{		
+		{
 			hr = ConvertVStreamToObject(pos->second);
-		}		
+		}
 		if (hr == S_OK)
 		{
 			pos->second.val.punkVal->QueryInterface(&pVal->punkVal);
 			pVal->vt = origType;
 		}
-	}	
+	}
 	else
 	{
 		hr = pos->second.val.CopyTo(pVal);
@@ -224,7 +224,7 @@ STDMETHODIMP CApplication::put_Value(BSTR key, VARIANT newVal)  noexcept
 	{
 		ElementModel v;
 		v.IsNew = TRUE;
-		
+
 		//add it with an empty value and find it again
 		logModule.Write(L"A: add key %s", key);
 
@@ -302,7 +302,7 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal)  noexcept
 			pos->second.IsDirty = TRUE;//going to change
 			pos->second.IsSerialized = FALSE; // do not to forget to undo, otherwise it stays 'serialized'
 		}
-		
+
 		CComQIPtr<IPersistStream> l_ptestForCapability(vDeref.pdispVal);
 		CComQIPtr<IPersistStreamInit> l_ptestForCapability2(vDeref.pdispVal);
 		if (l_ptestForCapability == nullptr && l_ptestForCapability2 == nullptr)
@@ -311,8 +311,8 @@ STDMETHODIMP CApplication::putref_Value(BSTR key, VARIANT newVal)  noexcept
 		}
 		else
 		{
-			pos->second.val = vDeref;		
-		
+			pos->second.val = vDeref;
+
 		}
 
 		if (FAILED(hr))
@@ -450,16 +450,16 @@ STDMETHODIMP CApplication::Remove(BSTR Key)  noexcept
 		ansiKey.Detach();//give back
 
 		auto found = std::find_if(_removed.begin(), _removed.end(),
-			[=](string  &l){ 
+			[=](string  &l){
 			return  l.compare(k) == 0; });
 		if (found == _removed.end())
 		{
 			_removed.push_back(k);
-			
+
 		}
-		logModule.Write(L"A: remove key %s", Key);		
+		logModule.Write(L"A: remove key %s", Key);
 	}
-	
+
 	return hr;
 }
 STDMETHODIMP CApplication::RemoveAll()  noexcept
@@ -469,12 +469,12 @@ STDMETHODIMP CApplication::RemoveAll()  noexcept
 	{
 		return hr;
 	}
-	
+
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); )
 	{
 		// avoid duplicate entries in the _removed vector
 		auto ansiKey = k->first.ToString();
-		
+
 		auto found = std::find_if(_removed.begin(), _removed.end(),
 			[=](string  &l){
 			return l.compare(ansiKey) == 0; });
@@ -489,7 +489,7 @@ STDMETHODIMP CApplication::RemoveAll()  noexcept
 
 STDMETHODIMP  CApplication::LockKey(BSTR Key)  noexcept
 {//will perform a PUT [Guid]:lock 1 command to redis 2.2+
-	
+
 	auto hr = HasOnStartPageBeenCalled();
 	if (FAILED(hr))
 	{
@@ -497,12 +497,12 @@ STDMETHODIMP  CApplication::LockKey(BSTR Key)  noexcept
 	}
 	CComBSTR appkey(m_AppKey);
 	auto  bytesAppKey = appkey.ToString();
-	
+
 	//https://github.com/jacket-code/redlock-cpp/blob/master/LockExample.cpp
 	//dlm->Lock((PSTR)bytesAppKey, 100000, myLock);
 	//CComBSTR appKey(m_AppKey);
 
-	return hr;	
+	return hr;
 }
 
 STDMETHODIMP CApplication::UnlockKey(BSTR key)  noexcept
@@ -522,7 +522,7 @@ STDMETHODIMP CApplication::ExpireKeyAt(BSTR Key, INT ms)  noexcept
 	{
 		pos->second.ExpireAt = ms;
 		//avoid duplicates the vector is not a unique dictionary
-		
+
 		logModule.Write(L"A: remove key %s", Key);
 	}
 	return hr;
@@ -592,7 +592,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 	bstrProp.Insert(0, prefix);
 
 	strConstruct = _wgetenv(bstrProp);
-	
+
 	if (strConstruct.IsEmpty()) // not in environment, then web.Config
 	{
 		strConstruct.Attach(config.AppSettings(bstrProp));
@@ -651,16 +651,16 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 		return E_INVALIDARG;
 	}
 
-	m_licenseOK = LicentieCheck(&license, strLicensedFor);
+	//m_licenseOK = LicentieCheck(&license, strLicensedFor);
 
-#ifndef Demo	
+#ifndef Demo
 	/*if (licenseOK == false)
 	{
 		hr = CLASS_E_NOTLICENSED;
 		Error(L"No valid License Found", CLSID_NWCSession, hr);
 		return hr;
 	}*/
-	
+
 #endif
 
 	bstrProp = L"APP_KEY";
@@ -686,15 +686,15 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 		CApplicationDL applicationDl;
 		hr = applicationDl.ApplicationGet(pool, m_AppKey, database, NoConnectionPooling);
 	}
-	
-	
+
+
 	return hr;
 }
 STDMETHODIMP CApplication::ReadString(IStream* pStream, BSTR *retval)  noexcept
 {
 	HRESULT hr = S_OK;
 	UINT lTempSize = 0;
-	
+
 	// size excludes the terminating zero!
 	hr = pStream->Read((char*)&lTempSize, sizeof(UINT), nullptr);
 	if (hr == S_OK)
@@ -712,10 +712,10 @@ STDMETHODIMP CApplication::ReadString(IStream* pStream, BSTR *retval)  noexcept
 			//warning! This is a multibyte encoded string!
 			//realloc
 			auto result = EnsureBuffer(lTempSize);
-			
+
 			if (hr == S_OK)
 			{
-				
+
 				pStream->Read((char*)m_lpstrMulti.m_pData, lTempSize, nullptr);
 				//because we specify the exact length, writtenbytes is excluding the terminating 0
 				UINT writtenbytes = ::MultiByteToWideChar(CP_UTF8, 0, (PSTR) m_lpstrMulti.m_pData, lTempSize, nullptr, 0);
@@ -728,7 +728,7 @@ STDMETHODIMP CApplication::ReadString(IStream* pStream, BSTR *retval)  noexcept
 					else
 						hr = E_OUTOFMEMORY;
 				}
-				
+
 				logModule.Write(L"A: ReadString %d, %d, %x", lTempSize, writtenbytes, hr);
 			} //enough memory
 			else
@@ -774,7 +774,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 		vtype ^= VT_ARRAY; // mask out
 		auto isJagged = false;
 
-		//WARNING on Windows x64 and x86, the variant size array differs		
+		//WARNING on Windows x64 and x86, the variant size array differs
 		auto doGetType = (vtype == VARENUM::VT_UNKNOWN || vtype == VARENUM::VT_ERROR || vtype == VARENUM::VT_VARIANT); //VT_VARIANT because we have object arrays with a specific type?
 		if (doGetType)
 		{
@@ -845,7 +845,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 				::SafeArrayUnaccessData(psa);
 			}
 		}
-		
+
 		else if ((vtype == VARENUM::VT_VARIANT || vtype == VT_BSTR || vtype == VT_DECIMAL) && lElements > 0)
 		{
 			std::vector<SAFEARRAYBOUND> psaBound;
@@ -865,7 +865,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 			}
 			int backup = logModule.get_Logging(); // disable for the moment
 			logModule.set_Logging(0);
-			
+
 			while(hr == S_OK)
 			{
 				if (rgIndices[dimPointer] < (LONG)psaBound[dimPointer].cElements + psaBound[dimPointer].lLbound)
@@ -880,10 +880,10 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 							{
 								VARTYPE vt2;
 								if (vtype == VT_VARIANT)
-								{								
+								{
 									pStream->Read((char*)&vt2, sizeof(VARTYPE), nullptr);
 								}
-								else 
+								else
 								{
 									vt2 = vtype;
 								}
@@ -896,7 +896,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 							hr = ReadString(pStream, pBstr);
 							break;
 					}
-					
+
 					rgIndices[dimPointer]++;
 					if (++findEl == lElements)
 					{
@@ -916,7 +916,7 @@ STDMETHODIMP CApplication::ReadValue(IStream* pStream, VARIANT* TheValue, VARTYP
 						}
 					}
 
-					//reset previous cols to initial lowerbound from left to 
+					//reset previous cols to initial lowerbound from left to
 					// most right carry position
 					for (LONG z = 0; z < dimPointer; z++)
 						rgIndices[z] = psaBound[z].lLbound;
@@ -1026,19 +1026,19 @@ STDMETHODIMP CApplication::WriteString(BSTR TheVal, IStream* pStream)  noexcept
 	// lTempSize must be + 1 because of the terminating 0!
 	if (lTempSize > 0)
 	{
-		
+
 		UINT byteswritten = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, nullptr, 0, nullptr, nullptr);
 		if (byteswritten == 0)
 			hr = ATL::AtlHresultFromLastError();
 		else
 		{
-			
+
 			hr = EnsureBuffer(byteswritten);
-			
+
 		    test = ::WideCharToMultiByte(CP_UTF8, 0, TheVal, lTempSize + 1, (PSTR)m_lpstrMulti.m_pData, byteswritten, nullptr, nullptr);
 			if (test > 0)
 			{
-				test--; //exclude terminating zero				
+				test--; //exclude terminating zero
 				pStream->Write(&test, sizeof(test), nullptr);
 				pStream->Write(m_lpstrMulti.m_pData,  test, nullptr);
 				logModule.Write(L"A: WriteString Bytes %d", test);
@@ -1060,7 +1060,7 @@ STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var)  noexcept
 	var.val.punkVal->Release();//remove the IStream, it is not the object itself
 	hr = OleLoadFromStream(l_pIStr, IID_IUnknown, (void**)&var.val.punkVal);
 	bool doPersist2 = false;
-	
+
 	if (hr == E_NOINTERFACE) //IPersistStream not found!
 	{
 		doPersist2 = true;
@@ -1072,8 +1072,8 @@ STDMETHODIMP CApplication::ConvertVStreamToObject(ElementModel &var)  noexcept
 	}
 	logModule.Write(L"A: ConvertVStreamToObject%s %x", doPersist2 ? L"2" : L"", hr);
 	var.IsSerialized= FALSE; //don't deserialize next time
-	
-	
+
+
 	return hr;
 }
 STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var)  noexcept
@@ -1082,7 +1082,7 @@ STDMETHODIMP CApplication::ConvertObjectToStream( VARIANT &var)  noexcept
 	{
 		return E_INVALIDARG;
 	}
-	
+
 	CComQIPtr<IPersistStream> pPersist(var.punkVal);
 	CComPtr<IStream> pStream;
 	HRESULT hr = CreateStreamOnHGlobal(nullptr, TRUE, &pStream);
@@ -1226,18 +1226,18 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 						for (; els < lElements && hr == S_OK; els++)
 							hr = WriteString(myarray[els], pStream);
 					}
-					
+
 					logModule.set_Logging(backup);
 					logModule.Write(L"A: written VT_BSTR array length=%d %x", els, hr);
 					::SafeArrayUnaccessData(psa);
 				}
 			}
 		}
-		//write a variant array of type VT_VARIANT		
+		//write a variant array of type VT_VARIANT
 		else if (vcopy == VARENUM::VT_VARIANT || vcopy == VARENUM::VT_DECIMAL)
 		{
-			// the VARIANT allocation area is contigious, but on Windows X64, 
-			// each element is 24 in size, instead of 16! So, the carry over indice 
+			// the VARIANT allocation area is contigious, but on Windows X64,
+			// each element is 24 in size, instead of 16! So, the carry over indice
 			// in combination with SafeArrayPtrOfIndex built had to be made
 			if (lElements > 0 && psa != nullptr)
 			{
@@ -1296,7 +1296,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 							}
 						}
 
-						//reset previous cols to initial lowerbound from left to 
+						//reset previous cols to initial lowerbound from left to
 						// most right carry position
 						for (LONG z = 0; z < dimPointer; z++)
 							rgIndices[z] = psaBound[z].lLbound;
@@ -1322,7 +1322,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 	{
 		// empty and null {0,1} need not be written
 		//mask out using xor
-		
+
 		switch (vtype & (VT_ARRAY - 1))
 		{
 		case VT_NULL: case VT_EMPTY:
@@ -1340,7 +1340,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 		case VT_I8:	case VT_UI8: case VT_CY: case VT_R8: case VT_DATE:
 			cBytes = sizeof(LONGLONG);
 			break;
-			
+
 		case VT_DECIMAL:
 			//correct because decimal eats the whole variant !
 			cBytes = sizeof(DECIMAL);
@@ -1358,7 +1358,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 			CComPtr<IStream> l_pIStr;
 			//it is already serialized to IStream, just get the pointer
 			hr = TheVal.punkVal->QueryInterface(&l_pIStr);
-			
+
 			if (hr == S_OK)
 			{
 				//get size of stream and write the size
@@ -1369,7 +1369,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 				cBytes = pstatstg.cbSize.LowPart;
 				logModule.Write(L"A: Streamsize %d", cBytes);
 				hr = pStream->Write(&cBytes, sizeof(pstatstg.cbSize.LowPart), nullptr);
-				// copy the persisted object as bytestream to the main stream		
+				// copy the persisted object as bytestream to the main stream
 				l_pIStr->Seek(SEEK_NULL, STREAM_SEEK_SET, nullptr);
 				hr = l_pIStr->CopyTo(pStream, pstatstg.cbSize, nullptr, nullptr);
 				if (hr == E_NOTIMPL) //ISequentialStream does not support it, or just not impl.
@@ -1381,7 +1381,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 			    if (FAILED(hr))
 				{
 					logModule.Write(L"A FATAL: cannot copy stream %x", hr);
-				
+
 					Error(L"While trying to serialize this object an error ocurred", this->GetObjectCLSID(), hr);
 				}
 			}
@@ -1439,7 +1439,7 @@ STDMETHODIMP CApplication::WriteValue(VARTYPE vtype, VARIANT& TheVal, IStream* p
 
 		bstrKey = keys[saddKey];
 		hr = pDictionary->SerializeKey(bstrKey, stream);
-		stream->Commit(STATFLAG_DEFAULT);//must be IStream thus 
+		stream->Commit(STATFLAG_DEFAULT);//must be IStream thus
 		hr = stream->Seek(set, STREAM_SEEK_CUR, &newpos);
 		auto cBytes = newpos.LowPart;
 		logModule.Write(L"A: Serialize key %s %x len %d", bstrKey, hr, cBytes);
@@ -1482,7 +1482,7 @@ STDMETHODIMP CApplication::SerializeKey(BSTR Key, IStream* binaryString)  noexce
 		//write variant type
 		VARTYPE vtype = pos->second.val.vt;
 		if (SUCCEEDED(hr))
-		{			
+		{
 			binaryString->Write((char*)&vtype, sizeof(VARTYPE), nullptr);
 			if ((pos->second.val.vt == VT_UNKNOWN || pos->second.val.vt == VT_DISPATCH) && pos->second.IsSerialized == FALSE)
 			{
@@ -1542,7 +1542,7 @@ STDMETHODIMP CApplication::DeserializeKey(const std::string& binaryString)  noex
 		{
 			pos->second.IsSerialized = TRUE;
 		}
-		val.Detach(&pos->second.val);	
+		val.Detach(&pos->second.val);
 	}
 	else
 	{
@@ -1568,13 +1568,13 @@ STDMETHODIMP CApplication::get_KeyStates(
 	for (auto k = _dictionary.begin(); k != _dictionary.end(); ++k)
 	{
 		auto ansi = (*k).first.ToString();
-		
+
 		if (ansi.empty())
 		{
 			logModule.Write(L"A: Severe error, empty key found");
 			continue;
-		}				
-		
+		}
+
 		if (k->second.IsNew == TRUE)
 		{
 			new_keys.push_back(ansi);

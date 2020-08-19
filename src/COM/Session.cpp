@@ -13,14 +13,15 @@
 
 STDMETHODIMP NWCSession::Initialize(IDispatch* Request, IDispatch* server, IDispatch* response) noexcept
 {
-	if (m_OnStartPageCalled == FALSE)
+	if (m_OnStartPageCalled == false)
 	{
-		CComPtr<IScriptingContext> context;
+		IScriptingContext* context;
 		CComObject<ScriptingContext>* ctx;
 		CComObject<ScriptingContext>::CreateInstance(&ctx);
-		ctx->QueryInterface(&context);
+		CComPtr<IUnknown> punk;
+		punk = context;
 		ctx->Initialize(Request, server, response);
-		this->OnStartPage(context);
+		this->OnStartPage(punk);
 	}
 	return S_OK;
 
@@ -62,7 +63,7 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) noexcept
 		return E_FAIL;
 	}
 
-	
+
 	logModule.Write(L"OnStartPage");
 	CComBSTR noCache(L"no-cache");// , pragma(L"Pragma");
 	piResponse->put_CacheControl(noCache);
@@ -70,7 +71,7 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) noexcept
 	try {
 		hr = Initialize();
 	}
-	
+
 	catch (...) {
 		logModule.Write(L"Initialize failed");
 		Error(L"Initialize failed", this->GetObjectCLSID(), E_FAIL);
@@ -81,57 +82,57 @@ STDMETHODIMP NWCSession::OnStartPage(IUnknown* aspsvc) noexcept
 	{
 		InvokeOnStartPage();
 	}
-	if (hr == S_FALSE) 
+	if (hr == S_FALSE)
 	{
 		piResponse->Write(CComVariant(L"Redis Server is not running."));
 		this->bErrState = TRUE;
 		hr = E_FAIL;
 	}
-#ifndef Demo
-	if (licenseOK == false)
-	{
-		piResponse->Write(CComVariant(L"The license for this server is invalid. Please contact ADC Cure for an updated license at information@adccure.nl"));
-	}
-#endif
+//#ifndef Demo
+//	if (licenseOK == false)
+//	{
+//		piResponse->Write(CComVariant(L"The license for this server is invalid. Please contact ADC Cure for an updated license at information@adccure.nl"));
+//	}
+//#endif
 	return hr;
 }
 //for each object type, we need to see if there is an OnStartPage event
 STDMETHODIMP_( void) NWCSession::InvokeOnStartPage() throw()
 {
-	HRESULT hr = S_OK;	
+	HRESULT hr = S_OK;
 
 	//m_piVarDict->get_Key(idx, &valKey); //works, but performancewise worse than Enum
 	CComPtr<IEnumVARIANT> pEnum;
 	CComPtr<IUnknown> punk ;
-	CComVariant v;
+	CComVariant vkey;
 	m_piVarDict->_NewEnum(&punk);
 	pEnum = punk;
 	punk.Release();
 	punk = m_pictx;
 	CComVariant arg(punk);
-	while (pEnum->Next(1, &v, nullptr) == S_OK)
+	while (pEnum->Next(1, &vkey, nullptr) == S_OK)
 	{
 		SHORT vt;
 		CComVariant valVal;
-		m_piVarDict->get_VarType(v, &vt);
+		m_piVarDict->get_VarType(vkey, &vt);
 		if (vt == VT_DISPATCH || vt == VT_UNKNOWN) //sloppy, should only be VT_DISPATCH
 		{
-			m_piVarDict->get_Item(v, &valVal);
+			m_piVarDict->get_Item(vkey, &valVal);
 			CComPtr<IDispatch> pdisp;
 			hr = valVal.punkVal->QueryInterface(&pdisp);
 			if (hr == S_OK)
 			{
 				hr = pdisp.Invoke1(L"OnStartPage", &arg);
-				logModule.Write(L"Invoke key %s. OnStartPage result %x", v.bstrVal, hr);
+				logModule.Write(L"Invoke key %s. OnStartPage result %x", vkey.bstrVal, hr);
 			}
-		}	
-		v.Clear();
-	}	
+		}
+		vkey.Clear();
+	}
 }
 STDMETHODIMP NWCSession::OnEndPage() noexcept
 {
 	try {
-		this->m_onEndPageDone = true;
+		this->m_onEndPageDone = TRUE;
 		HRESULT hr = PersistSession();
 		return hr;
 	}
@@ -140,24 +141,24 @@ STDMETHODIMP NWCSession::OnEndPage() noexcept
 		logModule.Write(L"OnEndPage unexpected");
 		return E_FAIL;
 	}
-	
+
 }
 
-STDMETHODIMP NWCSession::ReadConfigFromWebConfig() 
+STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 {
 	HRESULT hr = S_OK;
 	CComBSTR retVal, configFile(L"/web.Config");
 	///traverse back to root if necessary, note, UNC paths are not advisable
 	CComBSTR root;
-	bool exists = false;	
-	
+	bool exists = false;
+
 	CComPtr<IServer> m_piServer;
 	m_pictx->get_Server(&m_piServer);
 	hr = m_piServer->MapPath(configFile, &root);
 	configFile.Insert(0, L".");
 	//IIS Setting 'enable parent paths' must be enabled
 	for (;;)
-	{		
+	{
 		retVal.Empty();
 		hr = m_piServer->MapPath(configFile, &retVal);
 		if (FAILED(hr))
@@ -179,10 +180,10 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 			configFile.Remove(0, 2);
 		}
 		configFile.Insert(0, L"../");
-	}	
+	}
 	if (exists == FALSE)
 	{
-		
+
 		exists = FileExists(root);
 		if (exists == TRUE)
 		{//last resort
@@ -197,7 +198,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	}
 	ConfigurationManager config(retVal);
 	const PWSTR prefix = L"ispsession_io:";
-	CComBSTR bstrProp ( L"EnableLogging"), temp, strLicensedFor;	
+	CComBSTR bstrProp ( L"EnableLogging"), temp, strLicensedFor;
 	GUID license = { 0 };
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
@@ -224,8 +225,8 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 		strLicensedFor.Attach(bstrProp.Detach());//move
 	}
 
-	licenseOK = LicentieCheck(&license, strLicensedFor);
-#ifndef Demo	
+	/*licenseOK = LicentieCheck(&license, strLicensedFor);
+#ifndef Demo
 	if (licenseOK == false)
 	{
 		hr = CLASS_E_NOTLICENSED;
@@ -234,23 +235,23 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	}if (licenseOK == false)
 	{
 		Sleep(200);
-	}
-#endif
-	
+	}*/
+//#endif
+
 
 	bstrProp = L"AD_PATH";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0)
 	{
-		strAppPath.Attach(bstrProp.Detach()); 
+		strAppPath.Attach(bstrProp.Detach());
 	}
 	bstrProp = L"AD_DOMAIN";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0)
-	{		
-		strCookieDOM.Attach(bstrProp.Detach());		
+	{
+		strCookieDOM.Attach(bstrProp.Detach());
 	}
     bstrProp = L"NoConnectionPool";
     bstrProp.Insert(0, prefix);
@@ -292,7 +293,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	{
 		lngTimeOutSetting = 20;//?? too small
 	}
-	
+
 
 	bstrProp = L"CookieName";
 	bstrProp.Insert(0, prefix);
@@ -324,29 +325,29 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0 && bstrProp.IsBool())
-	{	
+	{
 		blnSnifQueryStringFirst = bstrProp.ToBool()  == VARIANT_TRUE ? TRUE : FALSE;
 	}
 	logModule.Write(L"SnifQueryStringFirst (%d)", blnSnifQueryStringFirst);
 
-	
+
 	bstrProp = L"CookieNoSSL";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	if (bstrProp.Length() > 0 && bstrProp.IsBool())
-	{	
+	{
 		blnCookieNoSSL = bstrProp.ToBool() == VARIANT_TRUE ? TRUE : FALSE;
-	}	
+	}
 
 	bstrProp = L"CookieExpires";
 	bstrProp.Insert(0, prefix);
 	bstrProp.Attach(config.AppSettings(bstrProp));
 	logModule.Write(L"CookieNoSSL (%d), expiration in minutes %s", blnCookieNoSSL, bstrProp);
 	if (bstrProp.Length() > 0 && bstrProp.IsNumeric())
-	{// could be VT_I2 or VT_I4			
-		
-		// equivalent to DateAdd("n", vExpires, Now()) 
-		dtExpires = bstrProp.ToLong();	
+	{// could be VT_I2 or VT_I4
+
+		// equivalent to DateAdd("n", vExpires, Now())
+		dtExpires = bstrProp.ToLong();
 	}
 
 	bstrProp = L"APP_KEY";
@@ -367,26 +368,26 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 		hr = E_INVALIDARG;
 		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);
 	}
-	
+
 
 	return hr;
 }
-STDMETHODIMP NWCSession::Initialize() 
+STDMETHODIMP NWCSession::Initialize()
 {
 	HRESULT hr = S_OK;
 	CComVariant vitem;
 	CComBSTR bstrProp;
 	m_startSessionRequest = std::chrono::system_clock::now();
-	
-	#ifdef Demo 
+
+	#ifdef Demo
 	CComBSTR strTemp;
-	int t;        
+	int t;
 	double tmpdate;
-	
+
 	tmpdate = Now();
 	strTemp = L"NWCTools.CSession DEMO Compatible ISP Session - Session replacer expired! We would welcome your order at <a href=\"https://ispsession.io/purchase\">order here</a>";
-	
-	t = strTemp.Length();	
+
+	t = strTemp.Length();
 	#endif
 	if (blnSnifQueryStringFirst == TRUE)
 	{
@@ -399,9 +400,9 @@ STDMETHODIMP NWCSession::Initialize()
 	vMissing.vt = VT_ERROR;
 	vMissing.scode = DISP_E_PARAMNOTFOUND;
 
-	if (blnFoundURLGuid == FALSE) 
+	if (blnFoundURLGuid == FALSE)
 	{
-		
+
 		CComPtr<IRequest> piRequest;
 		hr = this->m_pictx->get_Request(&piRequest);
 		ReadSessionCookie pReadCookie;
@@ -428,14 +429,14 @@ STDMETHODIMP NWCSession::Initialize()
 		else
 		{
 			hr = pReadCookie.get_Item(vMissing, &strGUID);
-		}		
-				
+		}
+
 		logModule.Write(L"get_Cookies with token %s Item: %s %x", m_bstrToken, strGUID, hr);
-	
+
 	}
 
-	#ifdef Demo 
-	if (tmpdate <= MAXTIME) strTemp.Empty();    
+	#ifdef Demo
+	if (tmpdate <= MAXTIME) strTemp.Empty();
 	#endif
 
 	if ((strGUID.IsEmpty() || IsValidHex(strGUID)==FALSE) && blnFoundURLGuid == FALSE)
@@ -445,13 +446,13 @@ STDMETHODIMP NWCSession::Initialize()
 
 	g_blnValid = setstring(reinterpret_cast<PUCHAR>(&guid), strGUID);
 	logModule.Write(L"cookie valid: %d", g_blnValid);
-		
+
 	if (guid == GUID_NULL)
 		g_blnValid = FALSE;
 
-	blnExpired = 
+	blnExpired =
 	blnCancel = FALSE;
-	#ifdef Demo 
+	#ifdef Demo
 	if (tmpdate > MAXTIME)
 	{
 		vitem.Clear();
@@ -460,21 +461,21 @@ STDMETHODIMP NWCSession::Initialize()
 		piResponse->Write (vitem);
 		vitem.vt = VT_EMPTY;
 	}
-	#endif 		
-		
+	#endif
+
 	if (g_blnValid  == FALSE)
 	{
 		blnNew = TRUE;
 		RtlZeroMemory(&guid, sizeof(GUID));
 	}
-	else 
+	else
 		oldGuid = guid;
-	
+
 #ifdef Demo
 	t = t / t;
 #endif
-	
-	// if it *is* nullptr it should be done using put_SessionID () = "02003 etc"	
+
+	// if it *is* nullptr it should be done using put_SessionID () = "02003 etc"
 	if (SUCCEEDED(hr))
 	{	logModule.Write(L"trying dbInit");
 		try {
@@ -486,7 +487,7 @@ STDMETHODIMP NWCSession::Initialize()
 			hr = E_FAIL;
 		}
 		logModule.Write(L"dbInit %x", hr);
-		
+
 	}
 
 	error:
@@ -519,21 +520,21 @@ STDMETHODIMP NWCSession::get_SessionID(BSTR* pVal) throw()
 	{
 		if (bHashsessionID == TRUE)
 		{
-			//put return in pVal using a temp BSTR copy			
+			//put return in pVal using a temp BSTR copy
 			CComBSTR temp;
 			temp =strGUID.GetHashCode();
 			*pVal = temp.Detach();
 		}
 		else
 			*pVal = strGUID.Copy();
-				
+
 	}
 	return S_OK;
 }
 
 
 STDMETHODIMP NWCSession::get_CodePage(LONG* pVal) throw()
-{	
+{
 	VARIANT vt = { 0 };
 	m_piVarDict->get_Item(CComVariant(L"__cp"), &vt);
 
@@ -551,17 +552,17 @@ STDMETHODIMP NWCSession::put_CodePage(LONG newVal) throw()
 }
 
 STDMETHODIMP NWCSession::get_LCID(LONG* pVal) throw()
-{	
+{
 	VARIANT vt = { 0 };
 	m_piVarDict->get_Item(CComVariant(L"__lcid"), &vt);
-	
+
 	*pVal = vt.vt == VT_I4 ? vt.intVal : GetThreadLocale();
 	return S_OK;
 }
 
 STDMETHODIMP NWCSession::put_LCID(LONG newVal) throw()
 {
-	
+
 	HRESULT hr = S_OK;
 	if (this->bReadonly == TRUE)
 	{
@@ -598,7 +599,7 @@ STDMETHODIMP NWCSession::get_Contents(INWCVariantDictionary** pVal) throw()
 	return hr;
 }
 
-STDMETHODIMP NWCSession::Execute(BSTR ToPage) throw() 
+STDMETHODIMP NWCSession::Execute(BSTR ToPage) throw()
 {
 	BOOL saveliquid = blnLiquid;
 	if (ToPage == nullptr || ::SysStringLen(ToPage) == 0)
@@ -610,10 +611,10 @@ STDMETHODIMP NWCSession::Execute(BSTR ToPage) throw()
     HRESULT hr = PersistSession();
 	m_piVarDict->RemoveAll();
 	//RELEASE(papp)
-	blnNew = FALSE; // if we don't set this flag...	
-	
+	blnNew = FALSE; // if we don't set this flag...
+
 	blnExpired = FALSE;
-	
+
 	if (SUCCEEDED(hr))
 	{
 		CComPtr<IServer> m_piServer;
@@ -635,8 +636,8 @@ STDMETHODIMP NWCSession::Transfer(BSTR ToPage) throw()
     HRESULT hr = PersistSession();
 	m_piVarDict->RemoveAll();
 	//RELEASE(papp)
-	blnNew = FALSE; // if we don't set this flag...	
-	
+	blnNew = FALSE; // if we don't set this flag...
+
 	blnExpired = FALSE;
 
 	if (SUCCEEDED(hr))
@@ -644,7 +645,7 @@ STDMETHODIMP NWCSession::Transfer(BSTR ToPage) throw()
 		CComPtr<IServer> m_piServer;
 		hr = this->m_pictx->get_Server(&m_piServer);
 		hr = m_piServer->Transfer (ToPage);
-		if (SUCCEEDED(hr)) 
+		if (SUCCEEDED(hr))
 			hr = dbInit();
 	}
 
@@ -659,7 +660,7 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 	HRESULT hr = S_OK;
 	CComVariant vcopy;
 	GUID testValid;
-	if (strCheckA.vt  != VT_BSTR)	
+	if (strCheckA.vt  != VT_BSTR)
 	{
 		hr = vcopy.ChangeType(VT_BSTR, &strCheckA);
 		if (FAILED(hr)) return hr;
@@ -669,16 +670,16 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 	{
 		vcopy.bstrVal = strCheckA.bstrVal; //steal data
 		vcopy.vt = VT_BSTR;
-	}	
+	}
 
 	CComBSTR workbuf (vcopy.bstrVal);
-	
-	bool found  =  workbuf.IndexOf('?') >= 0;  
+
+	bool found  =  workbuf.IndexOf('?') >= 0;
 	CComBSTR findthis(m_bstrToken);
 	findthis.Append(L'='); //find GUID=
 	int foundGUID = workbuf.IndexOf(findthis);
 
-	
+
 //if GUID is already equal and included
 	// do NOT add the GUID again!
 	//URL = (strCheckA + strPar + m_bstrToken + "=" + strGUID);
@@ -710,17 +711,17 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 			}
 		}
 	}
-	
-	
+
+
 	if (replaceDone == false)
 	{
-		PWSTR strPar = found ? L"&amp;" : L"?"; 	
+		PWSTR strPar = found ? L"&amp;" : L"?";
 		workbuf.Append(strPar);
 		workbuf.AppendBSTR(m_bstrToken);
 		workbuf.Append(L'=');
 		workbuf += strGUID;
 	}
-	
+
 	pVal->vt = VT_BSTR;
 	pVal->bstrVal = workbuf.Detach();
 	if (!docleanup) vcopy.vt = VT_EMPTY;
@@ -730,7 +731,7 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 STDMETHODIMP NWCSession::get_CreateInstance(BSTR progid, IDispatch** pVal) throw()
 {
 	CComPtr<IDispatch>pTemp;
-	
+
 	HRESULT hr = pTemp.CoCreateInstance(progid, nullptr,CLSCTX_INPROC_HANDLER | CLSCTX_INPROC_SERVER | CLSCTX_NO_CODE_DOWNLOAD);
 	if (SUCCEEDED(hr))
 	{
@@ -738,7 +739,7 @@ STDMETHODIMP NWCSession::get_CreateInstance(BSTR progid, IDispatch** pVal) throw
 		auto hr2 = pTemp->QueryInterface(&pper);
 		if (hr2 == S_OK)
 		{
-			hr = pper->InitNew();		
+			hr = pper->InitNew();
 		};
 		CComPtr<IDispatch> pdisp; // Script clients always will get a IDispatch
 		hr2 = pTemp->QueryInterface(&pdisp);
@@ -753,27 +754,22 @@ STDMETHODIMP NWCSession::get_CreateInstance(BSTR progid, IDispatch** pVal) throw
 	return hr;
 }
 
-STDMETHODIMP NWCSession::Abandon(void) throw() 
+STDMETHODIMP NWCSession::Abandon(void) throw()
 {
     blnCancel = TRUE;
     // extra to secure that the session cookie
     // wont be reused
-	CComPtr<IResponse> piResponse;
-	HRESULT hr = this->m_pictx->get_Response(&piResponse);
+	dtExpires = -1;
+	auto hr = WriteCookie(strGUID);
 
-	if (SUCCEEDED(hr))
-	{	
-		dtExpires = -1;
-		hr = WriteCookie(strGUID);
 
-	
-		if (FAILED(hr)) //headers already written if Response.Buffer == false
-		{
-			::SetErrorInfo(0, nullptr); // Clear out any stale ErrorInfos
-			hr = S_OK;
-		}
-		m_piVarDict->RemoveAll();
+	if (FAILED(hr)) //headers already written if Response.Buffer == false
+	{
+		::SetErrorInfo(0, nullptr); // Clear out any stale ErrorInfos
+		hr = S_OK;
 	}
+	m_piVarDict->RemoveAll();
+
 	return hr;
 }
 
@@ -788,10 +784,10 @@ STDMETHODIMP NWCSession::put_TimeOut(LONG pVal) throw()
 	if (bReadonly == TRUE)
 	{
 		hr = E_FAIL;
-		//ReportComError2(hr ,ERROR_READONLY);		
-		
+		//ReportComError2(hr ,ERROR_READONLY);
+
 	}
-	else 
+	else
 		lngTimeout = pVal;
 	return hr;
 }
@@ -808,7 +804,7 @@ STDMETHODIMP NWCSession::put_LiquidCookie(VARIANT_BOOL newVal) throw()
 	if (bReadonly == TRUE)
 	{
 		hr = E_FAIL;
-		//ReportComError2(hr ,ERROR_READONLY);	
+		//ReportComError2(hr ,ERROR_READONLY);
 	}
 	else if (newVal == VARIANT_TRUE)
 	{
@@ -821,9 +817,9 @@ STDMETHODIMP NWCSession::put_LiquidCookie(VARIANT_BOOL newVal) throw()
 			WriteCookie(strGUID);
 		}
 	}
-	else 
+	else
 	{
-		if (blnLiquid == TRUE) 
+		if (blnLiquid == TRUE)
 		{
 			blnLiquid = FALSE;
 			guid = oldGuid;
@@ -834,7 +830,7 @@ STDMETHODIMP NWCSession::put_LiquidCookie(VARIANT_BOOL newVal) throw()
 				WriteCookie(strGUID);
 			}
 		}
-		
+
 	}
 	return hr;
 }
@@ -851,7 +847,7 @@ STDMETHODIMP NWCSession::get_Value(BSTR vkey, VARIANT* pVal) throw()
 	}
 	else
 		hr = E_POINTER;
-	return hr;	
+	return hr;
 }
 
 STDMETHODIMP NWCSession::put_Value(BSTR vkey, VARIANT newVal) throw()
@@ -862,7 +858,7 @@ STDMETHODIMP NWCSession::put_Value(BSTR vkey, VARIANT newVal) throw()
 		hr = E_FAIL;
 		//ReportComError2(hr ,ERROR_READONLY);
 		Error(ERROR_READONLY);
-		
+
 	}
 	else if (m_piVarDict != nullptr)
 	{
@@ -871,14 +867,14 @@ STDMETHODIMP NWCSession::put_Value(BSTR vkey, VARIANT newVal) throw()
 		vtemp.bstrVal = vkey;
 		hr = m_piVarDict->put_Item(vtemp, newVal);
 
-		//if (bSessionSyncON == TRUE)		
+		//if (bSessionSyncON == TRUE)
 		//	m_piSession->put_Value(vkey, newVal);
-		
+
 	}
 	else
 		hr = E_POINTER;
 	return hr;
-	
+
 }
 STDMETHODIMP NWCSession::putref_Value(BSTR vkey, VARIANT newVal) throw()
 {
@@ -887,7 +883,7 @@ STDMETHODIMP NWCSession::putref_Value(BSTR vkey, VARIANT newVal) throw()
 	if (bReadonly == TRUE)
 	{
 		hr = E_FAIL;
-		//ReportComError2(hr ,ERROR_READONLY);		
+		//ReportComError2(hr ,ERROR_READONLY);
 		Error(ERROR_READONLY);
 	}
 	else if (m_piVarDict != nullptr)
@@ -896,7 +892,7 @@ STDMETHODIMP NWCSession::putref_Value(BSTR vkey, VARIANT newVal) throw()
 		vtemp.vt = VT_BSTR;
 		vtemp.bstrVal = vkey;
 		hr = m_piVarDict->putref_Item(vtemp, newVal);
-		//if (bSessionSyncON == TRUE)		
+		//if (bSessionSyncON == TRUE)
 		//	hr = m_piVarDict->putref_Item(vtemp, newVal);
 	}
 	else
@@ -928,10 +924,10 @@ STDMETHODIMP NWCSession::put_Readonly(VARIANT_BOOL newVal)  throw()
 STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 {
     if (bErrState == TRUE) return E_FAIL;
-	
+
     HRESULT hr = S_OK;
-	
-	
+
+
 	bool bDidInsert = false;
 #ifdef DEBUG
 	CComBSTR temp2;
@@ -943,7 +939,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 		try {
 			hr = pgetSession.OpenRowset(pool, btAppKey, guid, bNoConnectionPooling);
 		}
-		
+
 		catch (...)
 		{
 			logModule.Write(L"db: pgetSession.OpenRowset undefined, %x", E_FAIL);
@@ -957,14 +953,14 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 			//ReportComError2(hr, location);
 			this->Error(L"Cannot open or initiate a connection to Redis %x", this->GetObjectCLSID(), hr);
 			goto error;
-		}		
+		}
 		logModule.Write(L"db: found existing session %s", hr == S_FALSE ? L"false": L"true");
 		//S_FALSE means go and insert
 		if (hr == S_FALSE && bDidInsert == false)
 		{
 			logModule.Write(L"db: Insert new record");
 			if (blnNew == FALSE)
-				blnExpired = TRUE;			
+				blnExpired = TRUE;
 			blnNew = TRUE;
 			hr = NewID();
 			oldGuid = guid;
@@ -990,11 +986,11 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 		{
 			break;
 		}
-		
+
 	}
 	//we always must read the timestamp, because 'did insert' might be set to true at the very first time
 	memcpy(m_dbTimeStamp, pgetSession.m_timest, sizeof(m_dbTimeStamp));
-#ifdef DEBUG	
+#ifdef DEBUG
 	temp2.Attach(sHexFromBt(m_dbTimeStamp, 8));
 	logModule.Write(L"timestamp %s", temp2);
 #endif
@@ -1013,11 +1009,11 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 		}
 	}
 	//always write a cookie
-	
-    //read persisted record   
-	if (bDidInsert == false ) 
+
+    //read persisted record
+	if (bDidInsert == false )
 	{
-		logModule.Write(L"CSessionDL.SessionGet expires(%d), reentrance(%d), liquid(%d), size(%d)", 
+		logModule.Write(L"CSessionDL.SessionGet expires(%d), reentrance(%d), liquid(%d), size(%d)",
 							pgetSession.m_Expires,
 							-pgetSession.m_ReEntrance,
 							-pgetSession.m_Liquid,
@@ -1025,11 +1021,11 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 
 	    lngTimeout = pgetSession.m_Expires;
 		blnReEntrance = -pgetSession.m_ReEntrance;
-		blnLiquid = -pgetSession.m_Liquid;	
+		blnLiquid = -pgetSession.m_Liquid;
 
 	/*	int z_result = -1;*/
 		//int z_result = Z_OK;
-	
+
 		if (pgetSession.IsNULL == FALSE && pgetSession.m_blobLength > 0)
 		{
 			CComObject<CStream>* cseqs;
@@ -1041,13 +1037,13 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 			hr = S_OK;
 			do
 			{
-				hr = pgetSession.m_pStream->Read(buf, bufSize, &read);				
+				hr = pgetSession.m_pStream->Read(buf, bufSize, &read);
 				if (read > 0)
 				{
 					cseqs->Write(buf, read, nullptr);
 				}
 			} while (read != 0 && hr == S_OK);
-			
+
 			hr = S_OK;
 			LARGE_INTEGER nl = { 0 };
 			cseqs->Seek(nl, STREAM_SEEK_SET, nullptr);
@@ -1057,15 +1053,15 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 				logModule.Write(L"loading Session failed %x", hr);
 			}
 			cseqs->Release();
-		}		
+		}
 
 		// so this is a workaround
-		if (blnLiquid == TRUE) 
+		if (blnLiquid == TRUE)
 		{
 			hr = NewID();
 			CHECKHR
 		}
-		
+
 
 	}
 	if (blnLiquid == TRUE || bDidInsert == TRUE || blnNew == TRUE || blnExpired == TRUE)
@@ -1081,10 +1077,10 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 			::SetThreadLocale(testel.iVal);
 		}
 	}
-	
+
 
 error:
-	if (FAILED(hr)) 	
+	if (FAILED(hr))
 		bErrState = TRUE;
 
 	return hr;
@@ -1101,9 +1097,9 @@ STDMETHODIMP NWCSession::NewID(void) throw()
 	}
 	if ((blnLiquid == TRUE) || (blnNew == TRUE))
 	{
-		hr = this->NewGuid(&guid);		
+		hr = this->NewGuid(&guid);
 	}
-	
+
 	sHexFromBt(&guid, &strGUID);
 	return hr;
 }
@@ -1117,7 +1113,7 @@ STDMETHODIMP NWCSession::PersistSession(void) noexcept
 	logModule.Write(L"PersistSession %d", bErrState);
 	if (bErrState == TRUE) return S_OK;
 	DWORD lSize =0;
-	
+
 	HRESULT hr = S_OK;
 //	PWCHAR location = L"PersistSession";
 	if (bReadonly == TRUE)
@@ -1131,33 +1127,33 @@ STDMETHODIMP NWCSession::PersistSession(void) noexcept
 		CComPtr<IStream> pStream;
 	/*	LONG compressedSize = 0;*/
 		// new in ISP Session 5.1
-		if (blnIsDirty == TRUE || blnNew == TRUE || blnExpired == TRUE) 
-		{			
+		if (blnIsDirty == TRUE || blnNew == TRUE || blnExpired == TRUE)
+		{
 			hr = m_piVarDict->LocalContents(&lSize, &pStream);
 		}
 		/* calculate the number of MS that have expired since m_startSessionRequest*/
-		
+
 		auto totalRequestTimeMS = std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::system_clock::now() - m_startSessionRequest).count();
 		hr = CSessionDL::SessionSave(pool, (PUCHAR)&btAppKey, (PUCHAR)&oldGuid,
-				lngTimeout, 
-				blnReEntrance, 
-				blnLiquid, 
-				blnLiquid == FALSE ? nullptr : &guid, 
+				lngTimeout,
+				blnReEntrance,
+				blnLiquid,
+				blnLiquid == FALSE ? nullptr : &guid,
 				pStream,
 				lSize, m_dbTimeStamp, (LONG)totalRequestTimeMS, bNoConnectionPooling);
 		logModule.Write(L"CSessionDL.SessionSave timeOut (%d), reEntrance(%d), Liquid(%d), size(%d) time(%d), hr(%x)", lngTimeout, blnReEntrance, blnLiquid, lSize, totalRequestTimeMS, hr);
 		pStream.Release();
-	
+
 	}
 	else if (blnCancel == TRUE)
-	{  
-		
+	{
+
 		hr = CSessionDL::SessionDelete(pool, (PUCHAR)&btAppKey, (PUCHAR)&oldGuid, bNoConnectionPooling);
 		logModule.Write(L"CSessionDL.SessionDelete %x", hr);
-	
+
 	}
 	blnPersistDoneByOnEndPage = TRUE;
-	if (FAILED(hr)) 
+	if (FAILED(hr))
 			bErrState = TRUE;
 	logModule.Write(L"db: PersistSession result %x", hr);
 	return hr;
@@ -1176,15 +1172,15 @@ STDMETHODIMP NWCSession::put_ReEntrance(VARIANT_BOOL newVal) throw()
 
 STDMETHODIMP NWCSession::WriteCookie(BSTR cookieValue) throw()
 {
-		
+
 	CComVariant vRet;
 	CComPtr<IRequestDictionary> pReq;
 
 	//m_piResponse->put_Expires(-1); classic asp already does this
 	HRESULT hr = S_OK;
-	
+
 	WriteSessionCookie m_pWriteCookie;
-	
+
 	if (!strCookieDOM.IsEmpty())
 	{
 		hr = m_pWriteCookie.put_Domain(strCookieDOM);
@@ -1195,28 +1191,28 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookieValue) throw()
 		hr = m_pWriteCookie.put_Path(strAppPath);
 		logModule.Write(L"CookiePath %s %x", strAppPath, hr);
 	}
-		
+
 	if (dtExpires != 0)
 		hr = m_pWriteCookie.put_Expires(dtExpires);
 	CComBSTR bstrOn;
 	if (logModule.get_Logging() != 0 && dtExpires> 0)
-	{			
-		bstrOn.AssignDate(dtExpires);			
+	{
+		bstrOn.AssignDate(dtExpires);
 		logModule.Write(L"put_Expires %s %x", bstrOn, hr);
 	}
-		
+
 	hr = m_pWriteCookie.put_Item(m_bstrToken, cookieValue);
-	logModule.Write( L"Cookie: %s %x", cookieValue, hr);			
-		
+	logModule.Write( L"Cookie: %s %x", cookieValue, hr);
+
 
 	// be sure if it was 'secure' to keep it like that.
-	//if (SUCCEEDED(hr)) 		
+	//if (SUCCEEDED(hr))
 	CComPtr<IRequest> piRequest;
 	hr = this->m_pictx->get_Request(&piRequest);
 
 	hr = piRequest->get_ServerVariables(&pReq);
 	CComVariant vHTTPS (L"HTTPS");
-	bstrOn = L"on"; 
+	bstrOn = L"on";
 
 	//returns IStringList pointer
 	hr = pReq->get_Item(vHTTPS, &vRet);
@@ -1239,12 +1235,12 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookieValue) throw()
 			VARIANT_BOOL fSecure = (bstrOn.CompareTo(vHTTPS.bstrVal, true) == 0
 				&& blnCookieNoSSL == FALSE) ?
 						VARIANT_TRUE : VARIANT_FALSE;
-			logModule.Write(L"IWriteCookie->put_Secure(%d)", fSecure); 
+			logModule.Write(L"IWriteCookie->put_Secure(%d)", fSecure);
 			hr = m_pWriteCookie.put_Secure(fSecure);
 		}
 		pStringList->Release();
-	}			
-	
+	}
+
 	CComPtr<IResponse> piResponse;
 	hr = this->m_pictx->get_Response(&piResponse);
 	m_pWriteCookie.Flush(piResponse);
@@ -1258,13 +1254,13 @@ STDMETHODIMP NWCSession::NewGuid(GUID *val) throw ()
 {
 	auto max = sizeof(GUID) / sizeof(int);
 	auto  guidAccessor = reinterpret_cast<PINT>(val);
-	for (UINT i = 0; i < max; i++) 
+	for (UINT i = 0; i < max; i++)
 	{
 		unsigned int number;
 
 		if (rand_s(&number) == 0)
-		{			
-			guidAccessor[i] = number;			
+		{
+			guidAccessor[i] = number;
 		}
 		else
 		{
@@ -1297,7 +1293,7 @@ STDMETHODIMP NWCSession::Statistics(VARIANT vAppKey, VARIANT vSessionID, INWCVar
 			Error(L"vSesionID must be a string", GetObjectCLSID(), hr);
 			return hr;
 		}
-		
+
 		BOOL isValid = setstring((const PUCHAR)&session, vSessionID.bstrVal);
 		if (isValid != TRUE)
 		{
@@ -1305,7 +1301,7 @@ STDMETHODIMP NWCSession::Statistics(VARIANT vAppKey, VARIANT vSessionID, INWCVar
 		}
 	}
 	if (!isMissing && vAppKey.vt== VT_BSTR)
-	{		
+	{
 		BOOL isValid = setstring((const PUCHAR)&guid, vAppKey.bstrVal);
 		if (isValid != TRUE)
 			hr = E_INVALIDARG;
@@ -1315,10 +1311,10 @@ STDMETHODIMP NWCSession::Statistics(VARIANT vAppKey, VARIANT vSessionID, INWCVar
 	{
 		guid = btAppKey;
 	}
-	
-	
+
+
 	hr = getStats.OpenRowset(pool, isMissing ? (PBYTE)& btAppKey: (PBYTE)&guid, isMissingSession ? nullptr : (PBYTE)&session);
-	
+
 
 	if (SUCCEEDED(hr))
 	{
@@ -1330,34 +1326,34 @@ STDMETHODIMP NWCSession::Statistics(VARIANT vAppKey, VARIANT vSessionID, INWCVar
 		val.vt = VT_I4;
 		val.intVal = getStats.m_SessionCount;
 		pdir->put_Item(key, val);
-		
+
 		key = L"AvgStateLength";
 		val.intVal = getStats.m_AvgStateLength;
 		pdir->put_Item(key, val);
 		val.intVal = getStats.m_AvgSessionDuration;
-		
+
 		key = L"AvgSessionDuration";
 		pdir->put_Item(key, val);
 		val.intVal = getStats.m_AvgSessionDuration;
 		pdir->put_Item(key, val);
-		
+
 		key = L"CountExpired";
 		val.intVal = getStats.m_CountExpired;
 		pdir->put_Item(key, val);
-		
-		key = L"MaxStateLength";		
+
+		key = L"MaxStateLength";
 		val.intVal = getStats.m_MaxStateLength;
 		pdir->put_Item(key, val);
-		
+
 		key = L"MinStateLength";
 		val.intVal = getStats.m_MinStateLength;
-		pdir->put_Item(key, val);		
-		
+		pdir->put_Item(key, val);
+
 		key = L"AvgCompressionRate";
 		val.vt = VT_R4;
 		val.fltVal = getStats.m_AvgCompressionRate;
 		pdir->put_Item(key, val);
-		
+
 		val.vt = VT_I4;
 		key = L"AverageRequestTime";
 		val.intVal = getStats.m_AverageRequestTime;
@@ -1394,7 +1390,7 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 	    url = url + "?" + QS
 	End If
 	Guid = Request.QueryString("GUID")
-	If Len(Guid) <> 32 Then 
+	If Len(Guid) <> 32 Then
 	    url = Replace(Session.Url(url), "&amp;", "&")
 	    Response.Redirect url
 	End If
@@ -1409,13 +1405,13 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 	CComPtr<IRequestDictionary> pQueryString;
 	piRequest->get_QueryString(&pQueryString);
 	CComVariant varReturn;
-	CComVariant key(m_bstrToken.m_str);	
+	CComVariant key(m_bstrToken.m_str);
 	pQueryString->get_Item(key, &varReturn); //key = Request.QueryString(m_bstrToken)
-	
+
 	//VT_DISPATCH to VT_BSTR
 	// because otherwise we would have to QI from
-	// IDispatch to IStringList		
-	
+	// IDispatch to IStringList
+
 	CComPtr<IStringList> pStringList;
 	varReturn.pdispVal->QueryInterface(&pStringList);
 	int intListCount = 0;
@@ -1423,27 +1419,27 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 	vtIdx.vt = VT_I4;
 	vtIdx.intVal = 1;
 	pStringList->get_Count(&intListCount);
-	
+
 	varReturn.Clear();
 	if (intListCount == 1)
-	{		
+	{
 		pStringList->get_Item(vtIdx, &varReturn);
 	}
 	pStringList.Release();
-	if (intListCount !=1 || strGUID.CompareTo(varReturn.bstrVal, true) != 0) 
+	if (intListCount !=1 || strGUID.CompareTo(varReturn.bstrVal, true) != 0)
 	{
 		varReturn.Clear();
 
 		CComPtr<IRequestDictionary> pDict;
 		hr = piRequest->get_ServerVariables(&pDict);
-		
+
 		key = L"URL"; //Request.QueryString("URL")
-		
+
 		pDict->get_Item(key, &varReturn);
 		//VT_DISPATCH to VT_BSTR
 		//varReturn.ChangeType(VT_BSTR); would be a shortcut.
 		varReturn.pdispVal->QueryInterface(&pStringList);
-		varReturn.Clear();	
+		varReturn.Clear();
 		pStringList->get_Item(vtIdx, &varReturn);
 		pStringList.Release();
 		CComBSTR bstrUrl;
@@ -1459,7 +1455,7 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 		CComPtr<IEnumVARIANT> pVarEnum;
 		pEnum->QueryInterface(&pVarEnum);
 		pEnum->Release();
-		
+
 		ULONG fetched = 0;
 		key.Clear();
 		while(pVarEnum->Next(1, &key, &fetched) == S_OK && fetched > 0)
@@ -1469,17 +1465,17 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 			// if guid <> "GUID" then
 			if (m_bstrToken.CompareTo(key.bstrVal, true) != 0)
 			{
-				
+
 				if (varValue.vt != VT_DISPATCH) return E_UNEXPECTED;
-				
+
 				varValue.pdispVal->QueryInterface(&pStringList);
 				pStringList->get_Count(&intListCount);
-				
+
 				for (vtIdx.intVal = 1; vtIdx.intVal <= intListCount; vtIdx.intVal++)
-				{				
+				{
 					bstrUrl.Append(L'&');
 					bstrUrl.AppendBSTR(key.bstrVal);
-					bstrUrl.Append(L'=');				
+					bstrUrl.Append(L'=');
 					varValue.Clear();
 					pStringList->get_Item(vtIdx, &varValue);
 					CComBSTR bstrEncoded;
@@ -1487,8 +1483,8 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 					bstrUrl.AppendBSTR(bstrEncoded);
 				}
 				pStringList.Release();
-			}		
-			key.Clear();		
+			}
+			key.Clear();
 		}
 		hr = piResponse->Redirect(bstrUrl);
 	}
@@ -1502,14 +1498,14 @@ STDMETHODIMP NWCSession::get_OldSessionID(BSTR *pVal) throw()
 	{
 		if (bHashsessionID == TRUE)
 		{
-			//put return in pVal using a temp BSTR copy			
+			//put return in pVal using a temp BSTR copy
 			CComBSTR temp;
 			temp = m_OldSessionId.GetHashCode();
 			*pVal = temp.Detach();
 		}
 		else
 			*pVal = m_OldSessionId.Copy();
-				
+
 	}
 	else
 	{
@@ -1525,11 +1521,11 @@ STDMETHODIMP_(void) NWCSession::ReadCookieFromQueryString() throw()
 	hr = piRequest->get_QueryString(&oReqDict);
 	VARIANT vMissing;
 	CComVariant vitem;
-	
+
 	vMissing.vt = VT_ERROR;
 	vMissing.scode = DISP_E_PARAMNOTFOUND;
 	if (SUCCEEDED(hr))
-	{ 
+	{
 		VARIANT vkey;
 		vkey.vt = VT_BSTR; //lend the data
 		vkey.bstrVal = m_bstrToken;
@@ -1546,13 +1542,13 @@ STDMETHODIMP_(void) NWCSession::ReadCookieFromQueryString() throw()
 		//ignore invalid index, in case there really is no cookie
 		BOOL isValid = vitem.vt == VT_BSTR && IsValidHex(vitem.bstrVal);
 		if (isValid == TRUE)
-		{					
+		{
 			blnFoundURLGuid = TRUE;
-			logModule.Write(L"QueryString: %s, %x", vitem.bstrVal, hr);					
-			vitem.Detach(&strGUID);			
-				
+			logModule.Write(L"QueryString: %s, %x", vitem.bstrVal, hr);
+			vitem.Detach(&strGUID);
+
 		}
 		else
-			logModule.Write(L"tried QueryString(GUID)");	
+			logModule.Write(L"tried QueryString(GUID)");
 	}
 }

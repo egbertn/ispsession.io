@@ -72,11 +72,10 @@ public:
 		return hr;
 	}
 
-	void FinalRelease() throw()
+	void FinalRelease() 
 	{
 		if (m_onEndPageDone == FALSE)
 		{
-			m_onEndPageDone = TRUE;
 			this->OnEndPage();
 		}
 		m_pictx.Release();
@@ -114,7 +113,7 @@ private:
 	//redis connection pool
 	simple_pool::ptr_t pool;
 
-	bool licenseOK;
+	//bool licenseOK;
 	BOOL blnCancel,
 		blnNew,
 		blnExpired,		

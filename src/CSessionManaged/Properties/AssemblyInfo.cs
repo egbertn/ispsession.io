@@ -17,5 +17,5 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 #if Demo
-[assembly: AssemblyMetadata("at", "43616")] //may 2019
+[assembly: AssemblyMetadata("at", "43676")] //july 2019
 #endif

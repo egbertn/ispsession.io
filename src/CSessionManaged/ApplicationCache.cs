@@ -264,7 +264,7 @@ namespace ispsession.io
 
         void IKeySerializer.DeserializeKey(byte[] binaryString)
         {
-            var util = new AppPersistUtil(new MemoryStream(binaryString)) { LateObjectActivation = true };
+            var util = new StreamManager(new MemoryStream(binaryString)) { LateObjectActivation = true };
             var key = util.ReadString();
             var vt = (VarEnum)util.ReadInt16();
             var m = new ElementModel() {  Value = util.ReadValue(vt) };

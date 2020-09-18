@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
   <metadata>
     <id>ispsession.io</id>
-    <version>1.0.25</version>
+    <version>1.0.26</version>
     <title>ASP.NET Session and Application State Broker</title>    
     <authors>ADC Cure</authors>
     <owners>ADC Cure</owners>
@@ -11,7 +11,7 @@
     <iconUrl>https://ispsession.io/images/Platipus3_Transparant_small.png</iconUrl>
     <summary>
       ASP.NET .Net Framework session state broker and ApplicationCache using Redis as a storage backend.
-      Stunning performance and scalability for both Session state and Application cache.
+      Stunning performance and scalability for both Session state and Application cache. Expires at July 30, 2019
     </summary>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <description>Provides Session State and Application Cache as a replacement for the built in state for classic ASP/classic ASP.NET and AspNetCore. 

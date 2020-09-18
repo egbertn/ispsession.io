@@ -1,11 +1,12 @@
-﻿using ispsession.io.Interfaces;
+﻿using ISPSession.io.common.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 
-namespace ispsession.io
+namespace ISPSession.io.common
 {
-
     internal sealed class MemHandle : SafeHandle
     {
         private const int GMEM_INVALID_HANDLE = 0x8000;
@@ -67,18 +68,8 @@ namespace ispsession.io
         /// <summary>
         /// emulates Shlwapi HashData
         /// </summary>
-        public static  uint HashData(byte[] lpSrc, ref byte[] lpDest)
+        public static uint HashData(byte[] lpSrc, int nSrcLen, ref byte[] lpDest, int nDestLen)
         {
-            if (lpDest == null)
-            {
-                throw new ArgumentNullException(nameof(lpDest));
-            }
-            if (lpSrc == null)
-            {
-                throw new ArgumentNullException(nameof(lpSrc));
-            }
-            int nSrcLen = lpSrc.Length;
-            int nDestLen = lpDest.Length;
             int srcCount = nSrcLen - 1, destCount = nDestLen - 1;
             if (lpSrc == null || lpDest == null)
                 return NativeMethods.E_INVALIDARG;
@@ -131,7 +122,7 @@ namespace ispsession.io
         internal unsafe static JoinInformation GetJoinedDomain()
         {
             var retVal = new JoinInformation();
-           
+
             var workstation = Environment.MachineName;
             var domainName = Environment.UserDomainName;
             if (workstation == domainName)
@@ -140,8 +131,8 @@ namespace ispsession.io
             }
             retVal.Domain = domainName;
             return retVal;
-                
-            
+
+
         }
         internal unsafe static DOMAIN_CONTROLLER_INFO GetDomainInfo()
         {
@@ -149,10 +140,16 @@ namespace ispsession.io
             // TODO: find out how this works out on Linux
             /*DomainName = Environment.GetEnvironmentVariable("USERDNSDOMAIN").ToLowerInvariant(),
                 DomainControllerName = Environment.GetEnvironmentVariable("LOGONSERVER"),*/
-            
-            var domainInfo = new DOMAIN_CONTROLLER_INFO() { DomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName.ToLowerInvariant() };        
-          
+
+            var domainInfo = new DOMAIN_CONTROLLER_INFO() { DomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName.ToLowerInvariant() };
+
             return domainInfo;
+        }
+        internal static string GetNetBiosName(bool giveDnsName = false)
+        {
+
+            return Environment.MachineName;
+
         }
         [DllImport(KERNEL32, ExactSpelling = true)]
         internal static extern IntPtr GlobalLock(IntPtr hMem);
@@ -167,7 +164,7 @@ namespace ispsession.io
         [DllImport(OLE32, ExactSpelling = true)]
         internal static extern int CreateStreamOnHGlobal(SafeHandle hGlobal, bool fDeleteOnRelease,
            out IStream ppstm);
-     
+
 
 
     }

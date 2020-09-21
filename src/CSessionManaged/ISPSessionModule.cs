@@ -13,7 +13,7 @@ namespace ispsession.io
     {
         internal PersistMetaData Meta;
         internal SessionStateItemCollection Items;
-      
+
     }
     internal sealed class ISPHttpSessionStateContainer : HttpSessionStateContainer
     {
@@ -67,22 +67,6 @@ namespace ispsession.io
                     _appSettings = new SessionAppSettings();
                     // Create a SessionIDManager.
                     _sessionIDManager = new ISPSessionIDManager(_appSettings);
-#if !Demo
-                    string license = _appSettings.Lic;
-                    var lic = _appSettings.LicKey;
-                    if (string.IsNullOrEmpty(license))
-                    {
-                        throw new Exception("Ccession.LIC appsetting is missing in web.config");
-                    }
-                    if (string.IsNullOrEmpty(lic))
-                    {
-                        throw new Exception(
-                            "ISP Session requires a Appsetting such as <add key=\"LicenseNET\" value=\"0245456556560418A91B161F23534007\" />");
-                    }
-                    Checked = StreamManager.LicentieCheck(StreamManager.HexToBytes(lic), license);
-#else
-                    Checked = true;
-#endif
                 }
             }
         }
@@ -93,7 +77,7 @@ namespace ispsession.io
         }
         /// <summary>
         /// Will mostly deal with Redis exceptions
-        /// </summary>        
+        /// </summary>
         internal static void WriteToEventLog(Exception e, string action)
         {
             try
@@ -110,7 +94,6 @@ namespace ispsession.io
             }
 
         }
-        private static bool Checked;
         //
         // Event handler for HttpApplication.AcquireRequestState
         //
@@ -144,21 +127,7 @@ namespace ispsession.io
             {
                 sessionItems = CSessionDL.SessionGet(_appSettings, sessionID);
             }
-#if !Demo
-            if (!Checked)
-            {
-                HttpContext.Current.Response.Write(StreamManager.LicString);
-            }
-#else
 
-            var exp = double.Parse(StreamManager.GetMetaData("at"));
-            if (DateTime.Today > DateTime.FromOADate(exp))
-            {
-                context.Response.Write(StreamManager.LicString);
-            }
-
-#endif
-         
             if (_appSettings.Liquid || sessionID == null)
             {
                 oldSessionID = sessionID;
@@ -220,7 +189,7 @@ namespace ispsession.io
 
         /// <summary>
         /// determines EnableSessionState Page Tag directive.
-        /// </summary>    
+        /// </summary>
         private static PagesEnableSessionState SessionMode(HttpContext context)
         {
             if (context.Handler is IRequiresSessionState)

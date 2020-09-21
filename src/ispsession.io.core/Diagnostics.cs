@@ -28,7 +28,7 @@ namespace ispsession.io.core
             {
                 //TraceLevel.Info=3
                 //var fmt = string.Format(message, args);
-                //NativeMethods.OutputDebugStringW(fmt);                
+                //NativeMethods.OutputDebugStringW(fmt);
                 var fmt = $"Error {DateTimeOffset.Now} {System.Threading.Thread.CurrentThread.ManagedThreadId} {string.Format(message, args)}";
                 Debug.WriteLine(fmt);
             }

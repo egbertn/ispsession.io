@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Session State broker for AspNetCore, compatible with classic ASP and classic ASP.NET (when combined with respective session.io products)</Description>
-    <Copyright>(c) 2001-2019, ADC Cure, Amsterdam</Copyright>
+    <Copyright>(c) 2001-2019, ADC Cure, Amsterdam. This file is part of ispsession.io which is released under a MIT license.</Copyright>
     <AssemblyTitle>ispsession.io Session State Broker</AssemblyTitle>
     <VersionPrefix>1.0.16</VersionPrefix>
     <TargetFramework>netcoreapp2.1</TargetFramework>
@@ -11,7 +11,7 @@
     <PackageTags>Session;SessionState;Application Cache</PackageTags>
     <PackageReleaseNotes>1.0.23 Liquid feature fully fixed.
 1.0.19 finally releases (4/27/2019) the ISP Cache feature, compatible with ASP.NET (.NetFramework). 
-1.0.15 targets .Net Core 2.1. Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io. This is an evaluation package that expires at the end of the month. The purchased assembly, contains extra optimizations, however, the demo performs very well too.</PackageReleaseNotes>
+1.0.15 targets .Net Core 2.1. Please read howToConfigure_ISP_Session.txt or go to the website ispsession.io.</PackageReleaseNotes>
     <PackageIconUrl>https://ispsession.io/images/Platipus3_Transparant_small.png</PackageIconUrl>
     <PackageLicenseUrl>https://ispsession.io/license</PackageLicenseUrl>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>

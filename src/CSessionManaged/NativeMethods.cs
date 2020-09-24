@@ -55,9 +55,6 @@ namespace ispsession.io
         [DllImport(KERNEL32, SetLastError = true)]
         internal static extern MemHandle GlobalAlloc(AllocFlags flags, [MarshalAs(UnmanagedType.SysInt)] IntPtr size);
 
-        //[DllImport(KERNEL32)]
-        //[return: MarshalAs(UnmanagedType.SysInt)]
-        //internal static extern UIntPtr GlobalSize(MemHandle handle);
         [DllImport(KERNEL32, SetLastError = true)]
         internal static extern IntPtr GlobalLock(MemHandle handle);
 
@@ -70,33 +67,8 @@ namespace ispsession.io
             public string Domain { get; internal set; }
             public string WorkGroup { get; internal set; }
         }
-        const int ErrorSuccess = 0;
-        internal unsafe static JoinInformation GetJoinedDomain()
-        {
-            var retVal = new JoinInformation();
-
-            var workstation = Environment.MachineName;
-            var domainName = Environment.UserDomainName;
-            if (workstation == domainName)
-            {
-                return retVal; // they are equal so not joined to a domein
-            }
-            retVal.Domain = domainName;
-            return retVal;
 
 
-        }
-        internal unsafe static DOMAIN_CONTROLLER_INFO GetDomainInfo()
-        {
-
-            // TODO: find out how this works out on Linux
-            /*DomainName = Environment.GetEnvironmentVariable("USERDNSDOMAIN").ToLowerInvariant(),
-                DomainControllerName = Environment.GetEnvironmentVariable("LOGONSERVER"),*/
-
-            var domainInfo = new DOMAIN_CONTROLLER_INFO() { DomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName.ToLowerInvariant() };
-
-            return domainInfo;
-        }
         [DllImport(KERNEL32, ExactSpelling = true)]
         internal static extern IntPtr GlobalLock(IntPtr hMem);
         [DllImport(KERNEL32, ExactSpelling = true)]

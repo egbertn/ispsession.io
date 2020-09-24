@@ -71,38 +71,6 @@ namespace ispsession.io.core
         internal static extern int CreateStreamOnHGlobal(SafeHandle hGlobal, bool fDeleteOnRelease,
            out IStream ppstm);
 
-        const int ErrorSuccess = 0;
-        internal sealed class JoinInformation
-        {
-            public string Domain { get; internal set; }
-            public string WorkGroup { get; internal set; }
-        }
-        internal unsafe static JoinInformation GetJoinedDomain()
-        {
-            var retVal = new JoinInformation();
 
-            var workstation = Environment.MachineName;
-            var domainName = Environment.UserDomainName;
-            if (workstation == domainName)
-            {
-                return retVal; // they are equal so not joined to a domein
-            }
-            retVal.Domain = domainName;
-            return retVal;
-        }
-
-        internal unsafe static DOMAIN_CONTROLLER_INFO GetDomainInfo()
-        {
-
-            var domainInfo = new DOMAIN_CONTROLLER_INFO() { DomainName = System.Net.NetworkInformation.IPGlobalProperties.GetIPGlobalProperties().DomainName.ToLowerInvariant() };
-            return domainInfo;
-        }
-
-        internal static string GetNetBiosName(bool giveDnsName = false)
-        {
-
-            return Environment.MachineName;
-
-        }
     }
 }

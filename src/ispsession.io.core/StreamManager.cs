@@ -62,11 +62,13 @@ namespace ispsession.io.core
 
         internal static readonly Encoding _encoding = Encoding.UTF8;
 
-
-        internal char ReadChar()
+        internal unsafe char ReadChar()
         {
             Str.Read(_memoryBuff, 0, sizeof(char));
-            return BitConverter.ToChar(_memoryBuff, 0);
+            fixed (byte* ptr = this._memoryBuff)
+            {
+                return *(char*)ptr;
+            }
         }
 
         internal unsafe short ReadInt16()
@@ -1255,18 +1257,6 @@ namespace ispsession.io.core
                 throw new InvalidOperationException(string.Format("Character '{0}' at index '{1}' is not valid alphanumeric character.", character, index));
 
             return value;
-        }
-        public  static uint GetHashCode2(string value)
-        {
-            if (string.IsNullOrEmpty(value)) return 0;
-            var bytes = _encoding.GetBytes(value);
-            var hash = new byte[sizeof(uint)];
-            var result = NativeMethods.HashData(bytes, ref hash);
-            if (result != 0)
-            {
-                return 0;
-            }
-            return BitConverter.ToUInt32(hash, 0);
         }
     }
 

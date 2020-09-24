@@ -1211,23 +1211,6 @@ namespace ispsession.io
             }
         }
 
-
-
-        public unsafe static uint GetHashCode2(string value)
-        {
-            if (string.IsNullOrEmpty(value)) return 0;
-            var bytes = _encoding.GetBytes(value);
-            uint outp;
-            var hash = new byte[sizeof(uint)];
-            var result = NativeMethods.HashData(bytes, ref hash);
-            if (result != 0)
-            {
-                return 0;
-
-            }
-            outp = BitConverter.ToUInt32(hash, 0);
-            return outp;
-        }
         internal bool LateObjectActivation { get; set; }
         // private static readonly object l = new object();
         private static readonly Lazy<Dictionary<string, string>> Cache =

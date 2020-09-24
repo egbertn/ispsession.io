@@ -18,65 +18,25 @@ namespace ispsession.io.core
         private readonly RequestDelegate _next;
         private readonly CacheAppSettings _options;
         private readonly IISPCacheStore _cacheStore;
-        
+
         private static int _instanceCount;
         private static readonly object locker = new object();
-#if !Demo
-        private static bool initDone;
-        private static bool Checked;
-#endif
+
         public ISPCacheMiddleWare(RequestDelegate next, IISPCacheStore _CacheStore, IOptions<CacheAppSettings> options)
         {
             _next = next;
             this._options = options.Value;
             this._cacheStore = _CacheStore;
-         
+
         }
         public async Task Invoke(HttpContext context)
         {
 
-            // do Application initialisation just once. Otherwise, 
+            // do Application initialisation just once. Otherwise,
             // when css extension or others are loaded, it will be reloaded again
             Func<bool> initialized = () => false;
 
-
-#if !Demo
-            if (initDone == false)
-            {
-                lock (locker)
-                {
-                    initDone = true;
-                    string license = _options.License;
-                    var lic = _options.LicenseDomains;
-                    if (string.IsNullOrEmpty(license))
-                    {
-                        throw new Exception("LicenseDomains in section ispcache.io is missing in appsettings.json");
-                    }
-                    if (lic == null || !lic.Any())
-                    {
-                        throw new Exception(
-                            "LicenseDomains in section ispcache.io is missing in appsettings.json");
-                    }
-                    Checked = StreamManager.LicentieCheck(StreamManager.HexToBytes(string.Join("\r\n", lic)), license);
-                }
-            }
-            if (!Checked)
-            {
-                await context.Response.WriteAsync(StreamManager.MessageString2);
-            }
-            if (Interlocked.Increment(ref _instanceCount) > StreamManager.Maxinstances)
-            {
-                Thread.Sleep(500 * (_instanceCount - StreamManager.Maxinstances));
-                Trace.TraceInformation(StreamManager.MessageString3, StreamManager.Maxinstances, _instanceCount);                
-            }
-#else
-            var exp = double.Parse(StreamManager.GetMetaData("at"));
-            if (DateTime.Today > DateTime.FromOADate(exp))
-            {
-                await context.Response.WriteAsync(StreamManager.MessageString);
-            }
-
-#endif
+            Interlocked.Increment(ref _instanceCount);
 
             var cacheFeature = new ISPCacheFeature
             {
@@ -103,12 +63,10 @@ namespace ispsession.io.core
                     //this._logger.ErrorClosingTheSession(var_9_257);
                 }
             }
-#if !Demo
-            Interlocked.Decrement(ref _instanceCount);            
-#endif      
+
+            Interlocked.Decrement(ref _instanceCount);
 
         }
-
     }
     public static partial class Extensions
     {

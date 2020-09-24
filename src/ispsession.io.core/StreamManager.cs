@@ -11,14 +11,14 @@ using System.Reflection;
 
 namespace ispsession.io.core
 {
-    
+
 
     // notes: It would be ideally to use BinaryWriter, it handles nearly all types
     // but it is not compatible with ASP Session state. e.g. it writes Strings as UTF7 strings, instead of UTF8.
-    // TO achieve the same performance as BinaryWriter, 
+    // TO achieve the same performance as BinaryWriter,
     // we have a member byte[] buffer _memoryBuff
     // future optimization using stackalloc &amp; unsafe code UnsafeStreamn
-    // 
+    //
     public class StreamManager
     {
 		public const string VERSION = "NON_OPTIMIZED_VERSION";
@@ -37,7 +37,7 @@ namespace ispsession.io.core
             Str = stream;
         }
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="required"></param>
         /// <param name="exactSize">if true, will not round up to blocks of 0x1000</param>
@@ -51,7 +51,7 @@ namespace ispsession.io.core
             }
         }
 
-        internal static readonly TraceSwitch TraceInfo = new TraceSwitch("ISPSession", "ISPsession Trace Switch");        
+        internal static readonly TraceSwitch TraceInfo = new TraceSwitch("ISPSession", "ISPsession Trace Switch");
         //SIMPLE, ADC_ISPSTATE_PROVIDER_ENT,ADC_ISPSTATE_PROVIDER_ADV
         internal static readonly int[] Productid = { 26,27,28,29 };
         internal readonly static string ProductString = "ISP Session 9.0 State Provider";
@@ -59,29 +59,16 @@ namespace ispsession.io.core
         internal readonly static string MessageString2 = @"The ispsession.io Module should be licensed. Please contact ADC Cure for an updated license at information @adccure.nl";
         internal readonly static string MessageString3 = "LICENSE ERROR max = {0} requested ={1} \r\n";
         internal static int Maxinstances = 1000;
-        
+
         internal static readonly Encoding _encoding = Encoding.UTF8;
 
 
-#if !Demo
-        internal unsafe char ReadChar()
-        {
-            Str.Read(_memoryBuff, 0, sizeof(char));
-            fixed (byte* ptr = this._memoryBuff)
-            {
-                return *(char*)ptr;
-            }
-        }
-#else
         internal char ReadChar()
         {
             Str.Read(_memoryBuff, 0, sizeof(char));
             return BitConverter.ToChar(_memoryBuff, 0);
         }
 
-#endif
-
-#if !Demo
         internal unsafe short ReadInt16()
         {
             Str.Read(_memoryBuff, 0, sizeof(short));
@@ -91,16 +78,8 @@ namespace ispsession.io.core
                 return *(short*)ptr;
             }
         }
-#else
-        internal short ReadInt16()
-        {
-            Str.Read(_memoryBuff, 0, sizeof(short));
-            return BitConverter.ToInt16(_memoryBuff, 0);
-        }
-#endif
 
 
-#if !Demo
         internal unsafe void WriteInt16(short value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -109,15 +88,8 @@ namespace ispsession.io.core
             }
             Str.Write(_memoryBuff, 0, sizeof(short));
         }
-#else
-        internal void WriteInt16(short value)
-        {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(short));
-        }
-#endif
 
 
-#if !Demo
         internal unsafe int ReadInt32()
         {
             Str.Read(_memoryBuff, 0, sizeof(int));
@@ -126,15 +98,7 @@ namespace ispsession.io.core
                 return *(int*)ptr;
             }
         }
-#else
-        internal int ReadInt32()
-        {
-            Str.Read(_memoryBuff, 0, sizeof(int));
-            return BitConverter.ToInt32(_memoryBuff, 0);
-        }
-#endif
 
-#if !Demo
         internal unsafe uint ReadUInt32()
         {
             Str.Read(_memoryBuff, 0, sizeof(uint));
@@ -144,15 +108,7 @@ namespace ispsession.io.core
                 return *(uint*)ptr;
             }
         }
-#else
-        internal uint ReadUInt32()
-        {
-            Str.Read(_memoryBuff, 0, sizeof(uint));        
-            return BitConverter.ToUInt32(_memoryBuff, 0);
-        }
-#endif
 
-#if !Demo
         internal unsafe void WriteInt32(int value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -162,16 +118,9 @@ namespace ispsession.io.core
 
             }
         }
-#else
-        internal void WriteInt32(int value)
-        {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(int));
-        }
-#endif
 
 
 
-#if !Demo
         internal unsafe void WriteUInt32(uint value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -180,12 +129,6 @@ namespace ispsession.io.core
             }
             Str.Write(_memoryBuff, 0, sizeof(uint));
         }
-#else
-        internal void WriteUInt32(uint value)
-        {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(uint));
-        }
-#endif
 
         /// <summary>
         /// Persists a structure into buffer
@@ -207,7 +150,7 @@ namespace ispsession.io.core
         }
         /// <summary>
         /// Retrieves structure of type T from Stream
-        /// Note, .NET does not pad the structure to 4 alignment (pad=4 does not help). 
+        /// Note, .NET does not pad the structure to 4 alignment (pad=4 does not help).
         /// </summary>
         /// <exception cref="OutofMemoryException"/>
         internal T GetStruct<T>() where T : struct
@@ -233,7 +176,6 @@ namespace ispsession.io.core
             }
         }
 
-#if !Demo
         internal unsafe long ReadInt64()
         {
             Str.Read(_memoryBuff, 0, sizeof(long));
@@ -242,15 +184,7 @@ namespace ispsession.io.core
                 return *(long*)ptr;
             }
         }
-#else
-         internal long ReadInt64()
-        {
-            Str.Read(_memoryBuff, 0, sizeof(long));
-            return BitConverter.ToInt64(_memoryBuff, 0);
-        }
-#endif
 
-#if !Demo
         internal unsafe ulong ReadUInt64()
         {
             Str.Read(_memoryBuff, 0, sizeof(ulong));
@@ -259,15 +193,7 @@ namespace ispsession.io.core
                 return *(ulong*)ptr;
             }
         }
-#else
-        internal ulong ReadUInt64()
-        {
-            Str.Read(_memoryBuff, 0, sizeof(ulong));
-            return BitConverter.ToUInt64(_memoryBuff, 0);
-        }
-#endif
 
-#if !Demo
         internal unsafe void WriteInt64(long value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -276,14 +202,7 @@ namespace ispsession.io.core
             }
              Str.Write(_memoryBuff, 0, sizeof(long));
         }
-#else
-        internal void WriteInt64(long value)
-        {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(long));
-        }
-#endif
 
-#if !Demo
         internal unsafe void WriteUInt64(ulong value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -292,14 +211,7 @@ namespace ispsession.io.core
                 Str.Write(_memoryBuff, 0, sizeof(ulong));
             }
         }
-#else
-        internal void WriteUInt64(ulong value)
-        {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(ulong));
-        }
-#endif
 
-#if !Demo
         internal unsafe float ReadFloat()
         {
             Str.Read(_memoryBuff, 0, sizeof(float));
@@ -308,16 +220,7 @@ namespace ispsession.io.core
                 return *(float*)ptr;
             }
         }
-#else
-        internal float ReadFloat()
-        {
-            Str.Read(_memoryBuff, 0, sizeof(float));
 
-            return BitConverter.ToSingle(_memoryBuff, 0);
-        }
-#endif
-
-#if !Demo
         internal unsafe void WriteFloat(float value)
         {
             fixed (byte* ptr = _memoryBuff)
@@ -327,14 +230,7 @@ namespace ispsession.io.core
             }
         }
 
-#else
-        internal void WriteFloat(float value)
-        {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(float));
-        }
-#endif
 
-#if !Demo
         internal unsafe decimal ReadDecimal()
         {
             Str.Read(_memoryBuff, 0, sizeof(decimal));
@@ -346,21 +242,7 @@ namespace ispsession.io.core
             }
             return ret;
         }
-#else
-        internal decimal ReadDecimal()
-        {
-            Str.Read(_memoryBuff, 0, sizeof(decimal));
-            _memoryBuff[0] = 0; //clear vt (VARTYPE)
-            _memoryBuff[1] = 0;
-            var ptr = Marshal.AllocHGlobal(sizeof(decimal));
-            Marshal.Copy(_memoryBuff, 0, ptr, sizeof(decimal));
-            var dec = Marshal.PtrToStructure<decimal>(ptr);
-            Marshal.FreeHGlobal(ptr);
-            return dec;
-        }
-#endif
 
-#if !Demo
         internal unsafe void WriteDecimal(decimal value)
         {
             fixed (byte* ptr = _memoryBuff)
@@ -370,33 +252,10 @@ namespace ispsession.io.core
             }
             Str.Write(_memoryBuff, 0, sizeof(decimal));
         }
-#else
-        internal void WriteDecimal(decimal value)
-        {
-            var ptr = Marshal.AllocHGlobal(sizeof(decimal));
-            Marshal.StructureToPtr(value, ptr, false);            
-            Marshal.Copy(ptr, _memoryBuff, 0, sizeof(decimal));            
-            Marshal.FreeHGlobal(ptr);
-            _memoryBuff[0] = (byte)VarEnum.VT_DECIMAL;
-            _memoryBuff[1] = 0; //to be sure
-            //var bits = Decimal.GetBits(value);
-            //var tgDecimal = new tagDECIMAL() 
-            //{  
-            //    wReserved = (ushort)VarEnum.VT_DECIMAL,
-            //    scale = (byte)((bits[3] >>16)& 31),
-            //    sign = (byte)((bits[3] >> 24) & 31),
-            //    Hi32 = bits[2],
-            //    Mid32 = bits[1],
-            //    Lo32 = bits[0]
-            //};
-            //Buffer.BlockCopy(, 0, _memoryBuff, 0, sizeof(decimal));
 
-            Str.Write(_memoryBuff, 0, sizeof(decimal));
-        }
-#endif
         internal decimal ReadCurrency()
         {
-            return Decimal.FromOACurrency(ReadInt64());          
+            return Decimal.FromOACurrency(ReadInt64());
         }
         internal void WriteCurrency(decimal value)
         {
@@ -411,7 +270,6 @@ namespace ispsession.io.core
             WriteInt16(value ? (short)-1 : (short)0);
         }
 
-#if !Demo
         internal unsafe double ReadDouble()
         {
             Str.Read(_memoryBuff, 0, sizeof(double));
@@ -420,17 +278,8 @@ namespace ispsession.io.core
                 return *(double*)ptr;
             }
         }
-#else
-         internal  double ReadDouble()
-        {
-            Str.Read(_memoryBuff, 0, sizeof(double));    
-
-            return BitConverter.ToDouble(_memoryBuff, 0);
-        }
-#endif
 
 
-#if !Demo
         internal unsafe void WriteDouble(double value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -439,15 +288,8 @@ namespace ispsession.io.core
                 Str.Write(_memoryBuff, 0, sizeof(double));
             }
         }
-#else
-        internal void WriteDouble(double value)
-        {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(double));
-        }
-#endif
 
 
-#if !Demo
         internal unsafe void WriteChar(char value)
         {
             fixed (byte* ptr = this._memoryBuff)
@@ -456,25 +298,19 @@ namespace ispsession.io.core
             }
             Str.Write(_memoryBuff, 0, sizeof(char));
         }
-#else
-        internal void WriteChar(char value)
-        {
-            Str.Write(BitConverter.GetBytes(value), 0, sizeof(char));
-        }
-#endif
-    
+
         internal DateTime ReadDateTime()
         {
             return DateTime.FromOADate(ReadDouble());
         }
         internal void WriteDateTime(DateTime value)
-        {           
+        {
             WriteDouble(value.ToOADate());
         }
         /// <summary>
-        /// 
+        ///
         /// </summary>
-        /// <param name="seekBack">contains the Seeked pointer to which you can seek back. This supports 'peek into' without disurbing the Stream current position</param>        
+        /// <param name="seekBack">contains the Seeked pointer to which you can seek back. This supports 'peek into' without disurbing the Stream current position</param>
         internal string ReadString()
         {
             var size = ReadInt32();
@@ -489,31 +325,22 @@ namespace ispsession.io.core
             //int done =  Encoding.UTF8.GetChars(_memoryBuff, 0, size, newstr, 0);
             //return new string(newstr);
         }
-#if !Demo
         internal unsafe void WriteString(string value)
-#else
-        internal void WriteString(string value)
-#endif
         {
             var wideSize = value == null ? 0 : value.Length;
             var byteSize = 0;
             if (wideSize > 0)
             {
-                
+
                 byteSize = _encoding.GetByteCount(value);
                 //on array starting with string length
                 EnsureMemory(byteSize + sizeof(int));
-                
+
                 _encoding.GetBytes(value, 0, wideSize, _memoryBuff, sizeof(int));
-#if !Demo
                 fixed (byte*ptr = _memoryBuff)
                 {
                     *(int*)ptr = byteSize;
                 }
-#else
-                Array.Copy(BitConverter.GetBytes(byteSize), _memoryBuff, sizeof(int));
-#endif
-
                 //one single operation, instead of two
                 Str.Write(_memoryBuff, 0, byteSize + sizeof(int));
             }
@@ -525,7 +352,7 @@ namespace ispsession.io.core
         }
 
 
-        internal void WriteValue(object data, VarEnum vT) //string keyName 
+        internal void WriteValue(object data, VarEnum vT) //string keyName
         {
             if ((vT & VarEnum.VT_ARRAY) == VarEnum.VT_ARRAY)
             {
@@ -643,7 +470,7 @@ namespace ispsession.io.core
                                     break;
                                 }
                             }
-                            //reset previous cols to initial lowerbound from left to 
+                            //reset previous cols to initial lowerbound from left to
                             // most right carry position
                             for (int z = 0; z < dimPointer; z++)
                                 rgIndices[z] = psaBound[z].lLbound;
@@ -691,7 +518,7 @@ namespace ispsession.io.core
                                     break;
                                 }
                             }
-                            //reset previous cols to initial lowerbound from left to 
+                            //reset previous cols to initial lowerbound from left to
                             // most right carry position
                             for (int z = 0; z < dimPointer; z++)
                                 rgIndices[z] = psaBound[z].lLbound;
@@ -712,7 +539,7 @@ namespace ispsession.io.core
                         WriteBoolean((bool)data);
                         break;
                     case VarEnum.VT_EMPTY:
-                    case VarEnum.VT_NULL:                     
+                    case VarEnum.VT_NULL:
                         // do nothing
                         break;
                     case VarEnum.VT_UI2:
@@ -844,7 +671,7 @@ namespace ispsession.io.core
             }
         }
         /// <summary>
-        /// Delivers memory storage size in bytes 
+        /// Delivers memory storage size in bytes
         /// Only useful for simple value types, not for strucs neither for 'Variant/object'
         /// </summary>
         internal static int GetElementSize(VarEnum vT)
@@ -872,7 +699,7 @@ namespace ispsession.io.core
                 case VarEnum.VT_DATE:
                     return sizeof(double);
                 // on 64 bit windows, it is 24, on 32 bit Windows it is 16
-                // however, we don't copy contiguous memory for Variants 
+                // however, we don't copy contiguous memory for Variants
                 // but we loop through each separate element
                 case VarEnum.VT_VARIANT:
                 case VarEnum.VT_DECIMAL:
@@ -912,7 +739,7 @@ namespace ispsession.io.core
                     isJagged = ReadString() == "__jagged";
                     if (isJagged)
                     {
-                        typeStr = ReadString(); //e.g. System.Int32[][] 
+                        typeStr = ReadString(); //e.g. System.Int32[][]
                     }
                 }
 
@@ -929,7 +756,7 @@ namespace ispsession.io.core
                 Diagnostics.TraceInformation("reading array type={0}, cDims {1}, ElSize {2}", requestedType, cDims, elSize);
                 if (cDims == 0)
                 {
-                    
+
                     return Array.CreateInstance(requestedType, 0);
                 }
                 //calculate the size of the blob
@@ -1000,11 +827,11 @@ namespace ispsession.io.core
                                     psa.SetValue(ReadDecimal(), rgIndices);
                                     break;
                             }
-                            
+
                             rgIndices[dimPointer]++;
                             if (++findEl == lElements)
                             {
-                                return psa;  //eternal is not eternal                                
+                                return psa;  //eternal is not eternal
                             }
                         }
                         //carry stuff
@@ -1019,7 +846,7 @@ namespace ispsession.io.core
                                     break;
                                 }
                             }
-                            //reset previous cols to initial lowerbound from left to 
+                            //reset previous cols to initial lowerbound from left to
                             // most right carry position
                             for (int z = 0; z < dimPointer; z++)
                                 rgIndices[z] = lowerbounds[z];
@@ -1065,7 +892,7 @@ namespace ispsession.io.core
                                     break;
                                 }
                             }
-                            //reset previous cols to initial lowerbound from left to 
+                            //reset previous cols to initial lowerbound from left to
                             // most right carry position
                             for (int z = 0; z < dimPointer; z++)
                                 rgIndices[z] = lowerbounds[z];
@@ -1125,7 +952,7 @@ namespace ispsession.io.core
                         bool isNetObject = Str.ReadByte() == 99 && Str.ReadByte() == 55;
                         if (!isNetObject)
                         {
-                            Str.Position = posBackup; //back                             
+                            Str.Position = posBackup; //back
                         }
                         object data;
                         EnsureMemory(bytesInStream);
@@ -1296,7 +1123,7 @@ namespace ispsession.io.core
                     return null;
             }
         }
-     
+
 
         /// <summary>
         /// saves a COM object using IPersistStreamInit
@@ -1378,7 +1205,7 @@ namespace ispsession.io.core
                     throw new Exception(string.Format("meta key {0} not found", key));
                 }
             }
-            return Cache.Value[key];      
+            return Cache.Value[key];
         }
         [DebuggerStepThrough]
         internal static byte[] HexToBytes(string h)
@@ -1429,7 +1256,6 @@ namespace ispsession.io.core
 
             return value;
         }
-#if !Demo
         public  static uint GetHashCode2(string value)
         {
             if (string.IsNullOrEmpty(value)) return 0;
@@ -1442,82 +1268,6 @@ namespace ispsession.io.core
             }
             return BitConverter.ToUInt32(hash, 0);
         }
-
-        /// <summary>LicentieCheck
-        /// do not modify these lines. It is illegal.
-        /// position - 
-        /// meaning
-        /// position 1: License
-        /// position 2-5 calculated license
-        /// position 6-9 calculated hash on license (if license type = 4)        
-        /// </summary>                
-        public static bool LicentieCheck(byte[] license, string licensedfor)
-        {
-            if (license == null)
-            {
-                throw new ArgumentNullException("license", "License cannot be null");
-            }
-            if (string.IsNullOrEmpty(licensedfor))
-            {
-                throw new ArgumentNullException("licensedfor", "licensedfor cannot be null or empty");
-            }
-            var retVal = false;
-            var licenseType = license[0];
-            if (!Array.Exists( Productid,x => x ==licenseType)) //ISP Session 6.0 and others are excluded
-            {
-                return false;
-            }
-
-            var nt4Netbiosname = NativeMethods.GetNetBiosName(); //uppercase
-            if (string.IsNullOrEmpty(nt4Netbiosname))
-            {
-                nt4Netbiosname = NativeMethods.GetNetBiosName(true); //lowercase often
-            }
-            var pdomInfo = NativeMethods.GetDomainInfo();
-            string cwName = null;
-            string workgroupname = null;
-            if (!string.IsNullOrEmpty(pdomInfo.DomainName))
-            {
-                cwName = pdomInfo.DomainName;
-            }
-            else
-            {
-                var joinInfo = NativeMethods.GetJoinedDomain();
-                workgroupname = string.IsNullOrEmpty(joinInfo.WorkGroup) ? joinInfo.Domain : joinInfo.WorkGroup;
-            }
-            Diagnostics.TraceInformation("Names {0} {1}", nt4Netbiosname, cwName);
-            var lines = new List<string>(licensedfor.Split(new[] { licensedfor.IndexOf("\r\n", StringComparison.Ordinal) > 0 ? "\r\n" : " " }, StringSplitOptions.None));
-
-            lines.Insert(0, ProductString);
-            var foundLicensedItem = lines.Exists(x => x == nt4Netbiosname || x == workgroupname || x == cwName);
-            if (!foundLicensedItem && (licenseType != 4 && licenseType != 29))
-            {
-                Diagnostics.TraceInformation("Could not find licensedItem {0} in allowed licensee {1}", cwName, licensedfor);
-                return false;
-
-            }
-            licensedfor = string.Join(" ", lines);
-            var hashcode = GetHashCode2(licensedfor);
-            var checkCode = BitConverter.ToUInt32(license, 1);
-            var checkCode2 = BitConverter.ToUInt32(license, 5);
-            Diagnostics.TraceInformation("given license {0} calculated license {1} license hash {2}", checkCode, hashcode, checkCode2);
-            switch (licenseType)
-            {
-                case 27:
-                case 28:
-                case 26://isp session simple / advanced & ent
-                    if (hashcode == checkCode)
-                        retVal = true;
-                    break;
-                case 29://isp session blk this just checks the GUID, not the given domain name
-                    var buf = string.Concat(licenseType.ToString(), checkCode.ToString());
-                    if (GetHashCode2(buf) == checkCode2)
-                        retVal = true;
-                    break;
-            }
-            return retVal;
-        }
-#endif
     }
-   
+
 }

@@ -5,10 +5,8 @@ using Microsoft.Extensions.Options;
 using System;
 using System.Threading.Tasks;
 using ispsession.io.core.Interfaces;
-#if !Demo
 using System.Threading;
 using System.Diagnostics;
-#endif
 namespace ispsession.io.core
 {
     internal sealed class ISPSessionStateItemCollection
@@ -17,9 +15,9 @@ namespace ispsession.io.core
         internal ISPSessionStateItemCollection2 Items;
     }
 
-   
+
     public class ISPSessionMiddleWare
-    {    
+    {
         private readonly ISPSessionIDManager _manager;
         private readonly RequestDelegate _next;
         private readonly SessionAppSettings _options;
@@ -41,63 +39,26 @@ namespace ispsession.io.core
         {
 
             var isNewSessionKey = false;
-             
+
             var text2 = await _manager.GetSessionIDAsync(context);
-           
+
             if (text2 == null )
             {
                 text2 = _manager.CreateSessionID(context);
-                isNewSessionKey = (text2 == null);  //when liquid, it is not new            
+                isNewSessionKey = (text2 == null);  //when liquid, it is not new
             }
-           
+
             // do the cookie stuff just once
             Func<bool> initialized =() => false;
-            Task<bool> tryEstablishSession(ISPSession i) => (new ISPSessionIDManager(context, text2, 
+            Task<bool> tryEstablishSession(ISPSession i) => (new ISPSessionIDManager(context, text2,
                 _options)).TryEstablishSession(i);
 
+            Interlocked.Increment(ref _instanceCount);
 
-#if !Demo
-            if (initDone == false)
-            {
-                lock (locker)
-                {
-                    initDone = true;
-                    string license = string.Join("\r\n", _options.Lic);
-                    var lic = _options.LicKeyCore;
-                    if (string.IsNullOrEmpty(license))
-                    {
-                        throw new Exception("LicKeyCore in section ispsession.io is missing in appsettings.json");
-                    }
-                    if (string.IsNullOrEmpty(lic))
-                    {
-                        throw new Exception(
-                            "Lic in section ispsession.io is missing in appsettings.json");
-                    }
-                    Checked = StreamManager.LicentieCheck(StreamManager.HexToBytes(lic), license);
-                }
-            }
-            if (!Checked)
-            {
-                await context.Response.WriteAsync(StreamManager.MessageString2);
-            }
-            if (Interlocked.Increment(ref _instanceCount) > StreamManager.Maxinstances)
-            {
-                Thread.Sleep(500 * (_instanceCount - StreamManager.Maxinstances));
-                Trace.TraceInformation(StreamManager.MessageString3, StreamManager.Maxinstances, _instanceCount);                
-            }
-#else
-            var exp = double.Parse(StreamManager.GetMetaData("at"));
-            if (DateTime.Today > DateTime.FromOADate(exp))
-            {
-                await context.Response.WriteAsync(StreamManager.MessageString);
-            }
-
-#endif
-            
             var sessionFeature = new ISPSessionFeature
             {
                 Session = this._sessionStore.Create(text2, tryEstablishSession, isNewSessionKey, _options),
-             
+
             };
             context.Features.Set<IISPSEssionFeature>(sessionFeature);
             context.Features.Set<Microsoft.AspNetCore.Http.Features.ISessionFeature>(sessionFeature);//make HttpContext.Session happy
@@ -111,7 +72,7 @@ namespace ispsession.io.core
                 try
                 {
                     await sessionFeature.Session.CommitAsync();
-                  
+
 
                 }
                 catch (Exception ex)
@@ -119,9 +80,8 @@ namespace ispsession.io.core
                     //this._logger.ErrorClosingTheSession(var_9_257);
                 }
             }
-#if !Demo
-            Interlocked.Decrement(ref _instanceCount);            
-#endif      
+            Interlocked.Decrement(ref _instanceCount);
+
 
         }
 

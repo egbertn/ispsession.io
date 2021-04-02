@@ -24,7 +24,7 @@ public:
 	CComBSTR(_In_ int nSize)
 #endif
 	{
-		//if (nSize == 0) //BUG it should be possible to assign a L"" string 
+		//if (nSize == 0) //BUG it should be possible to assign a L"" string
 		if (nSize < 0)
 		{
 			AtlThrow(E_INVALIDARG);
@@ -33,8 +33,8 @@ public:
 
 		const HRESULT hr = SetLength(nSize);
 		if (FAILED(hr))
-			AtlThrow(hr);		
-		
+			AtlThrow(hr);
+
 	}
 	CComBSTR2(_In_ int nSize, _In_reads_opt_(nSize) LPCOLESTR sz)
 	{
@@ -42,7 +42,7 @@ public:
 		{
 			AtlThrow(E_INVALIDARG);
 		}
-		
+
 		if (nSize == 0)
 			m_str = nullptr;
 		else
@@ -92,7 +92,7 @@ public:
 	{
 		if (m_str != src.m_str)
 		{
-			if (::SysReAllocStringLen(&m_str, src, src.Length()) == FALSE)			
+			if (::SysReAllocStringLen(&m_str, src, src.Length()) == FALSE)
 				AtlThrow(E_OUTOFMEMORY);
 		}
 		return *this;
@@ -104,10 +104,10 @@ public:
 		{
 			if (pSrc != nullptr)
 			{
-				if (::SysReAllocString(&m_str, pSrc) == FALSE)				
+				if (::SysReAllocString(&m_str, pSrc) == FALSE)
 					AtlThrow(E_OUTOFMEMORY);
 			}
-			else		
+			else
 			{
 				Empty();
 			}
@@ -134,18 +134,18 @@ public:
 		if (m_str != src.m_str)
 		{
 			//smell: should be ByteLen eg. binary copy
-			if (::SysReAllocStringLen(&m_str, src.m_str, src.Length()) == FALSE)			
-				AtlThrow(E_OUTOFMEMORY);			
+			if (::SysReAllocStringLen(&m_str, src.m_str, src.Length()) == FALSE)
+				AtlThrow(E_OUTOFMEMORY);
 		}
 		return *this;
 	}
 
-	inline CComBSTR2::~CComBSTR2()  noexcept
+	inline ~CComBSTR2()  noexcept
 	{
 		::SysFreeString(m_str);
 	}
-	
-	static ULONG GetStreamSize(BSTR bstr)
+
+	static ULONG GetStreamSize(BSTR bstr)  noexcept
 	{
 		ULONG ulSize = sizeof(ULONG);
 		if (bstr != nullptr)
@@ -155,7 +155,7 @@ public:
 
 		return ulSize;
 	}
-	
+
 	unsigned int __stdcall Length() const  noexcept
 	{
 		return ::SysStringLen(m_str);
@@ -200,10 +200,10 @@ public:
 			return nullptr;
 
 		unsigned int copyLen = ByteLength();
-		BSTR retVal = ::SysAllocStringByteLen((char*)m_str, copyLen);			
+		BSTR retVal = ::SysAllocStringByteLen((char*)m_str, copyLen);
 		return retVal;
-		
-	
+
+
 	}
 	_Check_return_ HRESULT CopyTo(_Outptr_result_maybenull_ _Result_nullonfailure_ BSTR* pbstr) const  noexcept
 	{
@@ -230,24 +230,24 @@ public:
 	STDMETHODIMP Format(_In_ PCWSTR pszFormat, _In_ va_list args)  noexcept
 	{
 		size_t len = _vscwprintf( pszFormat, args );
-		HRESULT hr = S_OK;		
+		HRESULT hr = S_OK;
 		hr = SetLength((UINT)len) ;
 
 		if(SUCCEEDED(hr) && len > 0)
 			if (vswprintf( m_str, len+1, pszFormat, args ) < 0)
 				hr = E_INVALIDARG;
-		
+
 		return hr;
 	}
 
 	/* added by may 2005 e.n. needs #include 'wchar.h'*/
 	HRESULT __cdecl Format(_In_ PCWSTR pszFormat, ...)  noexcept
 	{
-		va_list args;			
-		va_start( args, pszFormat );		
+		va_list args;
+		va_start( args, pszFormat );
 		HRESULT hr = Format(pszFormat, args);
 		va_end(args);
-		
+
 		return hr;
 	}
 private:
@@ -255,15 +255,15 @@ private:
 	{
 		unsigned int curLen = Length();
 		HRESULT hr = S_OK;
-		if (atPosition > curLen || lpsz == nullptr) 
+		if (atPosition > curLen || lpsz == nullptr)
 			hr = E_INVALIDARG;
 		else
 			hr = SetLength(curLen + nLen);
 		if (SUCCEEDED(hr) && curLen != 0 && nLen != 0)
 		{
-			
-			wmemmove_s(&m_str[atPosition + nLen], (curLen + nLen) - atPosition, &m_str[atPosition], 
-				curLen - atPosition);			
+
+			wmemmove_s(&m_str[atPosition + nLen], (curLen + nLen) - atPosition, &m_str[atPosition],
+				curLen - atPosition);
 			Checked::wmemcpy_s(&m_str[atPosition], (curLen + nLen) - atPosition, lpsz, nLen );
 		}
 		return hr;
@@ -301,7 +301,7 @@ public:
 	STDMETHODIMP Remove(
 		//** zero based starting position where you start to remove characters
 		//** if this number is outside valid bounds, E_INVALIDARG is returned
-		_In_ unsigned int startIndex, 
+		_In_ unsigned int startIndex,
 		//** the number of characters, you want to remove
 		//** if this number is outside valid bounds, it is corrected
 		_In_ unsigned int count)  noexcept
@@ -310,19 +310,19 @@ public:
 		// avoid buffer overflow
 		if (count + startIndex > maxIdx) count = maxIdx - startIndex;
 		HRESULT hr = S_OK;
-		if (startIndex < maxIdx) 				
+		if (startIndex < maxIdx)
 		{
-			if (maxIdx - startIndex - count != 0)			
+			if (maxIdx - startIndex - count != 0)
 				//copy back, overlapped memory
-				wmemmove_s(&m_str[startIndex], maxIdx - startIndex, &m_str[startIndex + count] , 
-					maxIdx - startIndex - count);	
+				wmemmove_s(&m_str[startIndex], maxIdx - startIndex, &m_str[startIndex + count] ,
+					maxIdx - startIndex - count);
 			// shrink to new length
-			
+
 			hr = SetLength(maxIdx - count);
 		}
-		else 
+		else
 			hr = E_INVALIDARG;
-		
+
 		return hr;
 	}
 	/// <summary>original string john smith
@@ -350,12 +350,12 @@ public:
 		else
 			return nullptr;
 	}
-	
+
 	STDMETHODIMP SetByteLength(_In_ unsigned int length)  noexcept
 	{
 		return _SetByteLength(&m_str, length);
 	}
-	
+
 	// Cuts the length to specified but does not clear contents
 	STDMETHODIMP SetLength(_In_ unsigned int length)  noexcept
 	{
@@ -390,7 +390,7 @@ private:
 	static STDMETHODIMP  _SetLength(_Inout_ BSTR * str, _In_ unsigned int length)  noexcept
 	{
 		return ::SysReAllocStringLen(str, nullptr, length) == FALSE ? E_OUTOFMEMORY : S_OK;
-		
+
 	}
 public:
 	int __stdcall TokenCount(_In_ PCWSTR find, _In_ bool caseInsensitive)  noexcept
@@ -398,9 +398,9 @@ public:
 		int strLen = (int)Length();
 		int tokenCount = 0;
 		int findLen = (int)wcslen(find);
-		if (findLen < strLen) 
+		if (findLen < strLen)
 		{
-			for(int x = 0; 
+			for(int x = 0;
 				(x = IndexOf((const PWSTR)find, x, caseInsensitive)) >= 0;)
 			{
 				x += findLen;
@@ -412,7 +412,7 @@ public:
 	/// <summary>
 	/// Replaces a find token with a specified token
 	/// By E.N.
-	/// </summary>	
+	/// </summary>
 	/// <param name="find">token to be replace</param>
 	/// <param name="replace">token that will replace</param>
 	/// <param name="caseInsensitive">if true, will do a case insensitive replacement</param>
@@ -420,7 +420,7 @@ public:
 	/// CComBSTR2 myReplace(L"the dog jumps over the");
 	/// myReplace(CComBSTR2(L"the"), CComBSTR2(L"big"));
 	/// </example>
-	/// <returns>The example would modify the string to "big dog jumps over big" </returns>	
+	/// <returns>The example would modify the string to "big dog jumps over big" </returns>
 	STDMETHODIMP Replace(_In_opt_ BSTR find, _In_opt_ BSTR replace, _In_ bool caseInsensitive)  noexcept
 	{
 		HRESULT hr = S_OK;
@@ -440,29 +440,29 @@ public:
 				hr = SetLength(newLen);
 				if (FAILED(hr)) return hr;
 			}
-			
-			for(int x = 0; 
-				(x = IndexOf(find, x, caseInsensitive)) >= 0				
+
+			for(int x = 0;
+				(x = IndexOf(find, x, caseInsensitive)) >= 0
 				; )
 			{
 				int offset = x + findLen;
 				if (lengthDiff != 0)
 				{
-					wmemmove_s(&m_str[offset + lengthDiff], 
-						(lengthDiff < 0 ? oldLen : newLen) - offset, 
-						&m_str[offset], 
+					wmemmove_s(&m_str[offset + lengthDiff],
+						(lengthDiff < 0 ? oldLen : newLen) - offset,
+						&m_str[offset],
 						oldLen - offset);
 					oldLen += lengthDiff;
-				}										
-				if (replaceLen > 0) 
+				}
+				if (replaceLen > 0)
 				{
 					MergeString(x, replace);
-					x += replaceLen;			
+					x += replaceLen;
 				}
 			}
 			if (lengthDiff < 0)
 			{
-				hr = SetLength(newLen);				
+				hr = SetLength(newLen);
 			}
 		}
 		return hr;
@@ -472,30 +472,30 @@ public:
 	/// Replaces a find token with a specified token
 	/// <param name="find">token to be replace</param>
 	/// <param name="replace">token that will replace</param>
-	/// </summary>	
+	/// </summary>
 	/// <example>
 	/// CComBSTR2 myReplace(L"the dog jumps over the");
 	/// myReplace(CComBSTR2(L"the"), CComBSTR2(L"big"));
 	/// </example>
-	/// <returns>The example would modify the string to "big dog jumps over big" </returns>	
+	/// <returns>The example would modify the string to "big dog jumps over big" </returns>
 	STDMETHODIMP Replace(_In_opt_ const BSTR find, _In_opt_ const BSTR replace)  noexcept
 	{
 		return Replace(find, replace, false);
 	}
 
-	SAFEARRAY* __stdcall Split(_In_opt_ PCWSTR expression, _In_ const bool caseInsenstive)  const  
+	SAFEARRAY* __stdcall Split(_In_opt_ PCWSTR expression, _In_ const bool caseInsenstive)  const
 	{
 		return Split(CComBSTR(expression), caseInsenstive);
 	}
 	/// <summary>
 	/// Split and copies this instance of CComBSTR2 into a SAFEARRAY* of VTYPE = VT_BSTR
-	/// </summary>	
+	/// </summary>
 	/// <example>
 	/// CComSafeArray<BSTR> myArray;
 	/// CComBSTR2 joined(L"John|Smith");
 	/// myArray.Attach(joined.Split(CComBSTR2(L"|")))
 	/// </example>
-	/// <returns>The example would return a safearray with 2 VT_BSTR elements containing "John" and "Smith"</returns>	
+	/// <returns>The example would return a safearray with 2 VT_BSTR elements containing "John" and "Smith"</returns>
 	SAFEARRAY* __stdcall Split(_In_ const CComBSTR& expression, _In_ const bool caseInsensitive)  const
 	{
 		SAFEARRAY* retval = nullptr;
@@ -506,27 +506,27 @@ public:
 		{
 			unsigned int exprLen = expression.Length();
 			unsigned int mLen = Length();
-			
+
 			int x = 0;
 			//contains the number of found expression tokens
-			unsigned int found = mLen == 0 ? -1 : 0;					
+			unsigned int found = mLen == 0 ? -1 : 0;
 			//find until no more...
 			if (expression != NULL && found >= 0)
 			{
 				for (;;)
 				{
 					x = IndexOf(expression, x, caseInsensitive);
-					if (x == -1) break;				
+					if (x == -1) break;
 					found++;
-					x += exprLen;				
-				}				
-			}			
-			retval = ::SafeArrayCreateVector(VT_BSTR, 0, found + 1); 
+					x += exprLen;
+				}
+			}
+			retval = ::SafeArrayCreateVector(VT_BSTR, 0, found + 1);
 			if (retval == nullptr)
 				return retval;
-			
+
 			else if (mLen > 0)
-			{				
+			{
 				BSTR* paBSTR  ;//(BSTR*)retval->pvData;
 				hr = SafeArrayAccessData(retval, (void**)&paBSTR);
 				if (hr == S_OK)
@@ -534,27 +534,27 @@ public:
 					x = 0;
 					for (unsigned int curEl = 0; curEl <= found; curEl++)
 					{
-						x = IndexOf(expression, x, caseInsensitive);					
+						x = IndexOf(expression, x, caseInsensitive);
 						paBSTR[curEl] = x < 0 ? Substring(prevPos) : Substring(prevPos, x - prevPos);
 						if (paBSTR[curEl] == nullptr)
 						{
 							hr = E_OUTOFMEMORY;
 							break;
 						}
-						x += exprLen;	
-						prevPos = x;					
-					}				
-					SafeArrayUnaccessData(retval);					
+						x += exprLen;
+						prevPos = x;
+					}
+					SafeArrayUnaccessData(retval);
 				}
 			}
 			if (FAILED(hr))
 			{
 				AtlTrace(L"general split fail %x", hr);
-				if (retval != nullptr) 
+				if (retval != nullptr)
 					::SafeArrayDestroy(retval);
 				retval = nullptr;
 				AtlThrow(hr);
-			}				
+			}
 		}
 		return retval;
 	}
@@ -566,15 +566,15 @@ public:
 	/// <summary>
 	/// Added by E.N.
 	/// Joins a SAFEARRAY to a single BSTR
-	/// </summary>	
+	/// </summary>
 	/// <example>
-	/// CComSafeArray&lt;BSTR&gt; myArray;	
+	/// CComSafeArray&lt;BSTR&gt; myArray;
 	/// myArray.Add(CComBSTR2(L"John"));
 	/// myArray.Add(CComBSTR2(L"Smith"));
 	/// CComBSTR2 joined;
-	/// joined.Attach(CComBSTR2::Join(myArray.m_psa, CComBSTR2(L"|") ) );	/// 
+	/// joined.Attach(CComBSTR2::Join(myArray.m_psa, CComBSTR2(L"|") ) );	///
 	/// </example>
-	/// <returns>The example would return "John|Smith"</returns>	
+	/// <returns>The example would return "John|Smith"</returns>
 	static BSTR __stdcall Join(_In_opt_ SAFEARRAY *psa, _In_ const BSTR delimiter) // noexcept
 	{
 		BSTR retval = nullptr;
@@ -585,16 +585,16 @@ public:
 			unsigned int delLen = ::SysStringByteLen(delimiter);
 			UINT dims = ::SafeArrayGetDim(psa);
 			hr = ::SafeArrayGetVartype(psa, &vt);
-			if (vt != VT_BSTR || dims != 1) 
+			if (vt != VT_BSTR || dims != 1)
 				AtlThrow(E_INVALIDARG);
-			
-			LONG ubound, elements, lbound;			
+
+			LONG ubound, elements, lbound;
 			::SafeArrayGetUBound(psa, 1, &ubound);
 			::SafeArrayGetLBound(psa, 1, &lbound);
 			elements = ubound - lbound + 1;
-			
+
 			BSTR* paBSTR;
-			hr = ::SafeArrayAccessData(psa,(void**) &paBSTR);			
+			hr = ::SafeArrayAccessData(psa,(void**) &paBSTR);
 			if (FAILED(hr))
 			{
 				AtlThrow(hr);
@@ -633,28 +633,28 @@ public:
 					{
 						Checked::memcpy_s(((PSTR)retval) + totalLen, delLen, delimiter, delLen);
 						totalLen += delLen;
-					}					
+					}
 				}
-			} 
-			::SafeArrayUnaccessData(psa);//success allocate string				
-			
+			}
+			::SafeArrayUnaccessData(psa);//success allocate string
+
 		}
 		return retval;
 	}
 	/// <summary>
 	/// Added by E.N.
 	/// Returns a new instance of a BSTR which is a Substring starting at the 'startindex' character
-	/// </summary>	
+	/// </summary>
 	/// <example>
 	/// CComBSTR2 john(L"John Smith"), subbed;
 	/// subbed.Attach(john.Substring(5));
 	/// </example>
-	/// <returns>The example would return "Smith"</returns>	
+	/// <returns>The example would return "Smith"</returns>
 	BSTR __stdcall Substring(_In_ const unsigned int startIndex, _In_ unsigned int length)  const  noexcept
 	{
 		unsigned int maxIdx = Length();
 		//if (length < 0) length = 0;
-		if (startIndex + length > maxIdx) 
+		if (startIndex + length > maxIdx)
 			length = maxIdx - startIndex;
 		if (m_str != nullptr && startIndex >= 0 && startIndex <= maxIdx)
 		{
@@ -710,7 +710,7 @@ public:
 		{
 			LCID lcid = ::GetThreadLocale();
 			DWORD dwCmpFlags = caseInsensitive ? NORM_IGNORECASE : 0;
-		
+
 			unsigned int compLen = (unsigned int)wcslen(src);
 			unsigned int maxLen = Length();
 			unsigned int examinedChars = 0;
@@ -721,14 +721,14 @@ public:
 					bool doCompare = caseInsensitive ? true : m_str[x] == src[0];
 
 					if (doCompare)
-						doCompare=  ::CompareStringW(lcid, dwCmpFlags, &m_str[x], 
+						doCompare=  ::CompareStringW(lcid, dwCmpFlags, &m_str[x],
 								compLen, src, compLen) == CSTR_EQUAL	;
 					if (doCompare)
 					{
 						result = x;
 						break;
 					}
-					if (x-- == 0 || (examinedChars++ == count && count != 0)) break;					
+					if (x-- == 0 || (examinedChars++ == count && count != 0)) break;
 				}
 			}
 		}
@@ -747,9 +747,9 @@ public:
 	int __stdcall IndexOf(_In_opt_ const PWSTR src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0) const  noexcept
 	{
 		int result = -1;
-		
+
 		if (m_str != nullptr && src != nullptr)
-		{			
+		{
 			LCID lcid = ::GetThreadLocale();
 			DWORD dwCmpFlags = caseInsensitive ? NORM_IGNORECASE : 0;
 			unsigned int maxLen = Length();
@@ -759,19 +759,19 @@ public:
 			{
 				for(int x = startIndex; (x + compLen <= maxLen) || (examinedChars++ == count && count != 0); x++)
 				{
-					bool doCompare = caseInsensitive ? true : 
+					bool doCompare = caseInsensitive ? true :
 						m_str[x] == src[0];
 
 					if (doCompare)
-						doCompare=  ::CompareStringW(lcid, dwCmpFlags, &m_str[x], 
+						doCompare=  ::CompareStringW(lcid, dwCmpFlags, &m_str[x],
 								compLen, src, compLen) == CSTR_EQUAL	;
-					if (doCompare)				
+					if (doCompare)
 					{
 						result = x;
 						break;
-					}						
+					}
 				}
-			}					
+			}
 		}
 		return result;
 	}
@@ -823,7 +823,7 @@ public:
 	{
 		return (m_str == nullptr);
 	}
-	
+
 	_Check_return_ STDMETHODIMP Append(_In_ const CComBSTR2& bstrSrc)  noexcept
 	{
 		return AppendBSTR(bstrSrc.m_str);
@@ -839,7 +839,7 @@ public:
 		if (pVar.vt != VT_BSTR)
 		{
 			VARIANT v = {0};
-			hr = ::VariantChangeTypeEx(&v,(VARIANT*)&pVar, 
+			hr = ::VariantChangeTypeEx(&v,(VARIANT*)&pVar,
 				::GetThreadLocale(), 0, VT_BSTR);
 			if (hr == S_OK) hr = AppendBSTR(v.bstrVal);
 			VariantClear(&v);
@@ -867,8 +867,8 @@ public:
 			return S_OK;
 		int n1 = Length();
 		HRESULT hr = SetLength(n1 + nLen);
-		if ( FAILED(hr))		
-			return hr;	
+		if ( FAILED(hr))
+			return hr;
 		Checked::wmemcpy_s(m_str+n1, (n1 + nLen), lpsz, nLen);
 		return S_OK;
 	}
@@ -903,11 +903,11 @@ public:
 	static int __stdcall CountChar(_In_ const BSTR a, _In_ wchar_t theChar)  noexcept
 	{
 		int retval = 0;
-		if (a != nullptr) 
+		if (a != nullptr)
 		{
-			unsigned int x  = ::SysStringLen(a);					
-			while (x-- != 0)			
-				if (a[x] == theChar) retval++;		
+			unsigned int x  = ::SysStringLen(a);
+			while (x-- != 0)
+				if (a[x] == theChar) retval++;
 		}
 		return retval;
 	}
@@ -931,7 +931,7 @@ public:
 		}
 		return retval;
 	}
-	
+
 	int __stdcall CompareTo(_In_ const BSTR otherBstr)  noexcept
 	{
 		return Compare(m_str, otherBstr, false, false, false);
@@ -951,11 +951,11 @@ public:
 	{
 		return Compare(m_str, otherBstr, ignoreCase, ignoreDiacritics, ignoreSymbols);
 	}
-	
-	unsigned long GetHashCode()  noexcept 
+
+	unsigned long GetHashCode()  noexcept
 	{
 		unsigned long hash=0;
-		
+
 //		HRESULT hr = S_OK;
 		if (!IsEmpty())
 		{
@@ -1010,7 +1010,7 @@ public:
 	bool __stdcall IsNumeric() const  noexcept
 	{
 		LONG64 bogus;
-		
+
 		HRESULT hr = ::VarI8FromStr(m_str, ::GetThreadLocale(), LOCALE_NOUSEROVERRIDE, &bogus);
 		if (hr == S_OK)
 		{
@@ -1018,7 +1018,7 @@ public:
 		}
 		DOUBLE bogusr8;
 		hr = ::VarR8FromStr(m_str, ::GetThreadLocale(), LOCALE_NOUSEROVERRIDE, &bogusr8);
-		
+
 		if (hr == S_OK)
 		{
 			return true;
@@ -1028,7 +1028,7 @@ public:
 		return hr == S_OK ? true : false;
 	}
 
-	VARIANT_BOOL __stdcall ToBool() const 
+	VARIANT_BOOL __stdcall ToBool() const
 	{
 		if (Length() > 0)
 		{
@@ -1099,7 +1099,7 @@ public:
 	BSTR ToByteString(_In_ UINT codePage=CP_UTF8) const
 	{
 		if (!IsEmpty())
-		{	
+		{
 			const auto len = Length();
 			BSTR pszA = nullptr;  ;
 			//memset(pszA, 0, neededLen);
@@ -1113,7 +1113,7 @@ public:
 					_convert = WideCharToMultiByte(codePage, 0, m_str, len, (PSTR) pszA, _convert, nullptr, nullptr);
 				else
 					AtlThrowImpl(hr);
-				
+
 			}
 			err = GetLastError();
 			if (_convert == 0 && err > 0)
@@ -1122,7 +1122,7 @@ public:
 
 			return pszA;
 		}
-		else 
+		else
 			return nullptr;
 	}
 	//creates a copy to a wide-string
@@ -1179,8 +1179,8 @@ public:
 private:
 	bool __cdecl _LoadNString(_In_ UINT uID, _In_ HINSTANCE hInst, _In_ va_list args)  noexcept
 	{
-		
-		bool result = true;			
+
+		bool result = true;
 
 		PWSTR myMessage = nullptr;
 		LANGID langid = LANGIDFROMLCID(::GetThreadLocale());
@@ -1188,14 +1188,14 @@ private:
 		int trycnt = 0;
 		UINT bufSize =0;
 		DWORD dwerr;
-		
+
 		::SetLastError(ERROR_SUCCESS); //fix
 		do
 		{
 			trycnt++;
 			bufSize = ::FormatMessageW(FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_ALLOCATE_BUFFER,
 				hInst, uID, id, (PWSTR) &myMessage, 0, &args);
-			
+
 			 dwerr = ::GetLastError();
 			 if (dwerr == ERROR_RESOURCE_LANG_NOT_FOUND && trycnt == 1)
 			 {
@@ -1207,7 +1207,7 @@ private:
 			 }
 		} while (dwerr == ERROR_RESOURCE_LANG_NOT_FOUND && trycnt < 4);
 
-		if (dwerr != ERROR_SUCCESS) 
+		if (dwerr != ERROR_SUCCESS)
 		{
 			AtlTrace(L"_LoadNString %d", dwerr);
 			result = false;
@@ -1218,9 +1218,9 @@ private:
 			if (bufSize > 0) bufSize -= 2;
 			m_str = ::SysAllocStringLen(myMessage, bufSize);
 		}
-		if (myMessage != nullptr) 
+		if (myMessage != nullptr)
 			::GlobalFree(myMessage);
-	
+
 		return result;
    }
 public:
@@ -1253,7 +1253,7 @@ public:
 	CComBSTR2& __stdcall operator+=(_In_opt_ const VARIANT& pVar)
 	{
 		HRESULT hr = Append(pVar);
-		if (FAILED(hr)) 
+		if (FAILED(hr))
 			AtlThrow(hr);
 		return *this;
 	}
@@ -1264,7 +1264,7 @@ public:
 			AtlThrow(hr);
 		return *this;
 	}
-	
+
 	bool __stdcall operator<(_In_ const CComBSTR2& bstrSrc) const  noexcept
 	{
 		return Compare(m_str, bstrSrc.m_str, true, true, true) == -1;
@@ -1292,7 +1292,7 @@ public:
 	{
 		return operator>((LPCOLESTR)pszSrc);
 	}
-	
+
 	bool __stdcall operator!=(_In_ const CComBSTR2& bstrSrc) const  noexcept
 	{
 		return !operator==(bstrSrc);
@@ -1323,7 +1323,7 @@ public:
 	{
 		return operator==((LPCOLESTR)pszSrc);
 	}
-	
+
 	bool __stdcall operator==(int nNull) const  noexcept
 	{
 		ATLASSERT(nNull == 0);
@@ -1350,7 +1350,7 @@ public:
 			if (FAILED(hr))
 				AtlThrow(hr);
 		}
-		else 
+		else
 		{
 			m_str = A2WBSTR(sz, nSize);
 			if (m_str == nullptr && nSize != 0)
@@ -1369,8 +1369,8 @@ public:
 			return E_OUTOFMEMORY;
 		return Append(bstrTemp);
 	}
-	
-	
+
+
 	CComBSTR2& __stdcall operator=(_In_ ULONG ulong)
 	{
 		Empty();
@@ -1421,7 +1421,7 @@ public:
 	STDMETHODIMP AssignLongHex(_In_ LONG pVal, _In_ bool fixedLen = true)  noexcept
 	{
 		PCWSTR fmt = fixedLen ? 	L"%08x" : L"%x";
-		return Format(fmt, pVal) ;		
+		return Format(fmt, pVal) ;
 	}
 	CComBSTR2& __stdcall operator=(_In_ LONG pSrc)
 	{
@@ -1545,7 +1545,7 @@ public:
 	}
 	CComBSTR2& __stdcall operator=(_In_opt_ const std::wstring pSrc)
 	{
-		
+
 		if (!pSrc.empty())
 		{
 			if (::SysReAllocStringLen(&m_str, pSrc.c_str(), static_cast<UINT>(pSrc.length())) == FALSE)
@@ -1598,7 +1598,7 @@ public:
 		ATLASSERT(pStream != nullptr);
 		if(pStream == nullptr)
 			return E_INVALIDARG;
-			
+
 		ULONG cb;
 		ULONG cbStrLen = CComBSTR::GetStreamSize(m_str) - sizeof(ULONG);
 		HRESULT hr = pStream->Write((void*) &cbStrLen, sizeof(cbStrLen), &cb);
@@ -1614,10 +1614,10 @@ public:
 		{
 			return E_INVALIDARG;
 		}
-			
+
 		ATLASSERT(!*this); // should be empty
 		Empty();
-		
+
 		HRESULT hrSeek;
 		ULARGE_INTEGER nBegOffset;
 		{
@@ -1640,9 +1640,9 @@ public:
 			}
 			// read nullptr string
 			else if (cbStrLen == 0)
-			{				
+			{
 			}
-			// invalid data length	
+			// invalid data length
 			else if (cbStrLen < sizeof(OLECHAR))
 			{
 				ATLTRACE(atlTraceCOM, 0, _T("Input stream is corrupted."));
@@ -1654,7 +1654,7 @@ public:
 				ATLTRACE(atlTraceCOM, 0, _T("String exceeded the maximum allowed size see _ATL_STREAM_MAX_SIZE."));
 				hr = E_ACCESSDENIED;
 			}
-			else 
+			else
 			{
 				//subtract size for terminating nullptr which we wrote out
 				cbStrLen -= sizeof(OLECHAR);
@@ -1678,14 +1678,14 @@ public:
 						else
 						{
 							OLECHAR ch;
-							hr = pStream->Read(reinterpret_cast<void*>(&ch), sizeof(OLECHAR), &cbRead);	
+							hr = pStream->Read(reinterpret_cast<void*>(&ch), sizeof(OLECHAR), &cbRead);
 
 							if (SUCCEEDED(hr))
-							{								
-								if (cbRead != sizeof(OLECHAR)) 
+							{
+								if (cbRead != sizeof(OLECHAR))
 								{
 									ATLTRACE(atlTraceCOM, 0, _T("Cannot read nullptr terminator from stream."));
-									hr = E_FAIL; 									
+									hr = E_FAIL;
 								}
 								else
 								{
@@ -1694,8 +1694,8 @@ public:
 								}
 							}
 						}
-					}			
-						
+					}
+
 					if (FAILED(hr))
 					{
 						::SysFreeString(m_str);
@@ -1704,16 +1704,16 @@ public:
 				}
 			}
 		}
-		
-		// If SysAllocStringByteLen or IStream::Read failed, reset seek 
+
+		// If SysAllocStringByteLen or IStream::Read failed, reset seek
 		// pointer to start of BSTR size.
 		if (FAILED(hr) && SUCCEEDED(hrSeek))
 		{
 			LARGE_INTEGER nOffset;
 			nOffset.QuadPart = static_cast<LONGLONG>(nBegOffset.QuadPart);
-			pStream->Seek(nOffset, STREAM_SEEK_SET, nullptr);				
+			pStream->Seek(nOffset, STREAM_SEEK_SET, nullptr);
 		}
-	
+
 		return hr;
 	}
 
@@ -1771,7 +1771,7 @@ public:
 	{
 		::SysFreeString(m_str);
 		return BstrFromVector((LPSAFEARRAY)pSrc, &m_str);
-	}	
+	}
 
 };
 
@@ -1841,7 +1841,7 @@ public:
 			scode = E_INVALIDARG;
 #ifndef _ATL_NO_VARIANT_THROW
 			AtlThrow(E_INVALIDARG);
-#endif			
+#endif
 		}
 	}
 	CComVariant2(_In_ BYTE nSrc)  noexcept
@@ -1962,7 +1962,7 @@ public:
 #ifndef _ATL_NO_VARIANT_THROW
 			AtlThrow(E_INVALIDARG);
 #endif
-		}		
+		}
 	}
 	CComVariant2(_In_ const CComBSTR2& bstrSrc) ATLVARIANT_THROW()
 	{
@@ -2040,14 +2040,14 @@ public:
 
 	CComVariant2& operator=(_In_ const CComBSTR2& bstrSrc) ATLVARIANT_THROW()
 	{
-		if (vt != VT_BSTR) 
+		if (vt != VT_BSTR)
 		{
 			ClearThrow();
 			vt = VT_BSTR;
 		}
-		if (bstrSrc.m_str == nullptr)		
+		if (bstrSrc.m_str == nullptr)
 		{
-			::SysFreeString(bstrVal);		
+			::SysFreeString(bstrVal);
 			bstrVal = nullptr;
 			vt = VT_EMPTY;
 		}
@@ -2060,11 +2060,11 @@ public:
 #endif
 		}
 		return *this;
-	}		
-	
+	}
+
 	CComVariant2& operator=(_In_z_ LPCOLESTR lpszSrc) ATLVARIANT_THROW()
 	{
-		if (vt != VT_BSTR) 
+		if (vt != VT_BSTR)
 		{
 			ClearThrow();
 			vt = VT_BSTR;
@@ -2083,11 +2083,11 @@ public:
 	CComVariant2& operator=(_In_z_ LPCSTR lpszSrc) ATLVARIANT_THROW()
 	{
 		USES_CONVERSION_EX;
-		if (vt != VT_BSTR) 
+		if (vt != VT_BSTR)
 		{
 			ClearThrow();
 			vt = VT_BSTR;
-		}		
+		}
 		if (::SysReAllocString(&bstrVal, A2COLE_EX(lpszSrc, _ATL_SAFE_ALLOCA_DEF_THRESHOLD)) == FALSE)
 		{
 			vt = VT_ERROR;
@@ -2210,7 +2210,7 @@ public:
 
 		// Need to AddRef as VariantClear will Release
 		if (punkVal != nullptr)
-			punkVal->AddRef();		
+			punkVal->AddRef();
 		return *this;
 	}
 
@@ -2489,20 +2489,20 @@ public:
 	}
 private:
 	inline HRESULT VarCmp(
-		_In_ LPVARIANT pvarLeft, 
-		_In_ LPVARIANT pvarRight, 
-		_In_ LCID lcid, 
+		_In_ LPVARIANT pvarLeft,
+		_In_ LPVARIANT pvarRight,
+		_In_ LCID lcid,
 		_In_ ULONG dwFlags) const throw();
 
 // Operations
 public:
 	HRESULT Clear() noexcept
-	{ 
-		return ClearToZero();		
+	{
+		return ClearToZero();
 	}
 	HRESULT ClearToZero() noexcept
 	{
-		HRESULT hr = ::VariantClear(this); 
+		HRESULT hr = ::VariantClear(this);
 		if( FAILED(hr) )
 		{
 			return hr;
@@ -2512,7 +2512,7 @@ public:
 		return hr;
 	}
 
-	// behaves like ADsBuildVarArrayStr 
+	// behaves like ADsBuildVarArrayStr
 	// returns: VT_ARRAY | VT_VARIANT (BSTR)
 	HRESULT BuildVarArray(__in_ecount_opt(elements) VARIANT theArray[], int elements) noexcept
 	{
@@ -2534,7 +2534,7 @@ public:
 				hr = SafeArrayLock(psa);
 				if (SUCCEEDED(hr))
 				{
-					while(elements-- != 0)	
+					while(elements-- != 0)
 					{
 						if (SafeArrayPtrOfIndex(psa, (LONG*)&elements, (void**)&copydata) == S_OK)
 							VariantCopy(copydata, &theArray[elements]);
@@ -2545,7 +2545,7 @@ public:
 		}
 		return hr;
 	}
-	// behaves like ADsBuildVarArrayStr 
+	// behaves like ADsBuildVarArrayStr
 	// returns: VT_ARRAY | VT_VARIANT (BSTR)
 	HRESULT BuildVarArray(__in_ecount_opt(elements) PCWSTR theArray[], int elements)  noexcept
 	{
@@ -2567,20 +2567,20 @@ public:
 				hr = SafeArrayAccessData(psa, (void**)&copydata);
 				if (SUCCEEDED(hr))
 				{
-					while(elements-- != 0)	
+					while(elements-- != 0)
 					{
 						copydata[elements].vt = VT_BSTR;
 						copydata[elements].bstrVal = SysAllocString(theArray[elements]);
-					}				
+					}
 					SafeArrayUnaccessData(psa);
 				}
 			}
 		}
 		return hr;
 	}
-	HRESULT Copy(_In_ const VARIANT* pSrc) 
+	HRESULT Copy(_In_ const VARIANT* pSrc)
 	{
-		return ::VariantCopy(this, const_cast<VARIANT*>(pSrc)); 
+		return ::VariantCopy(this, const_cast<VARIANT*>(pSrc));
 	}
 	HRESULT CopyTo(_Out_ VARIANT* pDest)  noexcept
 	{
@@ -2606,13 +2606,13 @@ public:
 
 	//Added by e.n.
 	//attaches to a BSTR
-	// clears its contents first, then copies pointer, then assigns nullptr 
+	// clears its contents first, then copies pointer, then assigns nullptr
 	// to your pSrc
 	HRESULT Attach(_In_ BSTR* pSrc)
 	{
 		if(pSrc == nullptr)
 			return E_INVALIDARG;
-			
+
 		// Clear out the variant
 		HRESULT hr = Clear();
 		if (SUCCEEDED(hr) && this->bstrVal != *pSrc)
@@ -2630,7 +2630,7 @@ public:
 	{
 		if(pSrc == nullptr)
 			return E_INVALIDARG;
-			
+
 		HRESULT hr = S_OK;
 		if (this != pSrc)
 		{
@@ -2650,12 +2650,12 @@ public:
 	//Added by E.N.
 	void Detach()  noexcept
 	{
-		ZeroMemory(this, sizeof(VARIANT));		
+		ZeroMemory(this, sizeof(VARIANT));
 	}
 	HRESULT Detach(_Inout_ BSTR* pDest)  noexcept
 	{
 		ATLASSERT(pDest != nullptr);
-		if (*pDest != nullptr) 
+		if (*pDest != nullptr)
 			SysFreeString(*pDest);
 		HRESULT hr = S_OK;
 		if (vt != VT_BSTR)
@@ -2683,7 +2683,7 @@ public:
 		return hr;
 	}
 
-	HRESULT ChangeType(_In_ VARTYPE vtNew, _In_ const VARIANT* pSrc = nullptr) 
+	HRESULT ChangeType(_In_ VARTYPE vtNew, _In_ const VARIANT* pSrc = nullptr)
 	{
 		// Convert in place if pSrc is nullptr
 		const VARIANT* pVar = const_cast<VARIANT*>(pSrc);
@@ -2786,7 +2786,7 @@ _Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStre
 {
 	if(pStream == nullptr)
 		return E_INVALIDARG;
-		
+
 	HRESULT hr = pStream->Write(&vt, sizeof(VARTYPE), nullptr);
 	if (FAILED(hr))
 		return hr;
@@ -2900,7 +2900,7 @@ _Check_return_ inline HRESULT CComVariant::ReadFromStream(
 		hr = AtlInternalOleLoadFromStream(pStream,
 			(vtRead == VT_UNKNOWN) ? __uuidof(IUnknown) : __uuidof(IDispatch),
 			(void**)&punkVal, rgclsidAllowed, cclsidAllowed);
-		// If IPictureDisp or IFontDisp property is not set, 
+		// If IPictureDisp or IFontDisp property is not set,
 		// OleLoadFromStream() will return REGDB_E_CLASSNOTREG.
 		if (hr == REGDB_E_CLASSNOTREG)
 			hr = S_OK;
@@ -2969,22 +2969,22 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 	{
 		return E_INVALIDARG;
 	}
-	
+
 	HRESULT hr = S_OK;
 	ULARGE_INTEGER nSize;
-	nSize.QuadPart = sizeof(VARTYPE);	
-	
+	nSize.QuadPart = sizeof(VARTYPE);
+
 	switch (vt)
 	{
 	case VT_UNKNOWN:
 	case VT_DISPATCH:
-		{	
+		{
 			nSize.LowPart += sizeof(CLSID);
-			
+
 			if (punkVal != nullptr)
 			{
 				CComPtr<IPersistStream> spStream;
-				
+
 				hr = punkVal->QueryInterface(__uuidof(IPersistStream), (void**)&spStream);
 				if (FAILED(hr))
 				{
@@ -2994,17 +2994,17 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 						break;
 					}
 				}
-				
+
 				ULARGE_INTEGER nPersistSize;
 				nPersistSize.QuadPart = 0;
-				
+
 				ATLASSERT(spStream != nullptr);
-				hr = spStream->GetSizeMax(&nPersistSize);				
+				hr = spStream->GetSizeMax(&nPersistSize);
 				if (SUCCEEDED(hr))
 				{
 					hr = AtlAdd(&nSize.QuadPart, nSize.QuadPart, nPersistSize.QuadPart);
-				}				
-			}			
+				}
+			}
 		}
 		break;
 	case VT_UI1:
@@ -3046,7 +3046,7 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 					bstr = varBSTR.bstrVal;
 					vtTmp = VT_BSTR;
 				}
-			} 
+			}
 			else
 			{
 				bstr = bstrVal;
@@ -3054,17 +3054,17 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 
 			if (vtTmp == VT_BSTR)
 			{
-				// Add the size of the length + string (in bytes) + nullptr terminator.				
+				// Add the size of the length + string (in bytes) + nullptr terminator.
 				nSize.QuadPart += CComBSTR::GetStreamSize(bstr);
 			}
-		}		
+		}
 	}
-	
+
 	if (SUCCEEDED(hr))
 	{
 		pcbSize->QuadPart = nSize.QuadPart;
 	}
-	
+
 	return hr;
 }
 
@@ -3076,19 +3076,19 @@ inline HRESULT CComVariant2::GetSizeMax(_Out_ ULARGE_INTEGER* pcbSize) const
 	Workaround for VarCmp function which does not compare VT_I1, VT_UI2, VT_UI4, VT_UI8 values
 */
 inline HRESULT CComVariant::VarCmp(
-	_In_ LPVARIANT pvarLeft, 
-	_In_ LPVARIANT pvarRight, 
-	_In_ LCID lcid, 
+	_In_ LPVARIANT pvarLeft,
+	_In_ LPVARIANT pvarRight,
+	_In_ LCID lcid,
 	_In_ ULONG dwFlags) const  noexcept
-{			
-	switch(vt) 
+{
+	switch(vt)
 	{
 		case VT_I1:
 			if (pvarLeft->cVal == pvarRight->cVal)
 			{
 				return VARCMP_EQ;
 			}
-			return pvarLeft->cVal > pvarRight->cVal ? VARCMP_GT : VARCMP_LT;			
+			return pvarLeft->cVal > pvarRight->cVal ? VARCMP_GT : VARCMP_LT;
 		case VT_UI2:
 			if (pvarLeft->uiVal == pvarRight->uiVal)
 			{
@@ -3097,11 +3097,11 @@ inline HRESULT CComVariant::VarCmp(
 			return pvarLeft->uiVal > pvarRight->uiVal ? VARCMP_GT : VARCMP_LT;
 
 		case VT_UI4:
-			if (pvarLeft->uintVal == pvarRight->uintVal) 
+			if (pvarLeft->uintVal == pvarRight->uintVal)
 			{
 				return VARCMP_EQ;
 			}
-			return pvarLeft->uintVal > pvarRight->uintVal ? VARCMP_GT : VARCMP_LT;				
+			return pvarLeft->uintVal > pvarRight->uintVal ? VARCMP_GT : VARCMP_LT;
 
 		case VT_UI8:
 			if (pvarLeft->ullVal == pvarRight->ullVal)

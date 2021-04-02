@@ -1,3 +1,6 @@
+8.2.0.181  ISP Session is now open source.
+	No license will be required, but support for setup or additional features may be charged.
+
 8.2.0.173 Jan 24, 2020
 	Now using Visual Studio 2019.
 8.2.0.172 Jan 22, 2020

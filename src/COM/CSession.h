@@ -3,12 +3,12 @@
 /* this ALWAYS GENERATED file contains the definitions for the interfaces */
 
 
- /* File created by MIDL compiler version 8.01.0622 */
+ /* File created by MIDL compiler version 8.01.0626 */
 /* at Tue Jan 19 04:14:07 2038
  */
 /* Compiler settings for CSession.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0622 
-    protocol : all , ms_ext, app_config, c_ext, robust
+    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.01.0626 
+    protocol : all , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
@@ -40,6 +40,14 @@
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1020)
 #pragma once
+#endif
+
+#ifndef DECLSPEC_XFGVIRT
+#if _CONTROL_FLOW_GUARD_XFG
+#define DECLSPEC_XFGVIRT(base, func) __declspec(xfg_virtual(base, func))
+#else
+#define DECLSPEC_XFGVIRT(base, func)
+#endif
 #endif
 
 /* Forward Declarations */ 
@@ -176,28 +184,34 @@ EXTERN_C const IID IID_INWCVariantDictionary;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             INWCVariantDictionary * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             INWCVariantDictionary * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             INWCVariantDictionary * This);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfoCount)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
             INWCVariantDictionary * This,
             /* [out] */ UINT *pctinfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfo)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
             INWCVariantDictionary * This,
             /* [in] */ UINT iTInfo,
             /* [in] */ LCID lcid,
             /* [out] */ ITypeInfo **ppTInfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetIDsOfNames)
         HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
             INWCVariantDictionary * This,
             /* [in] */ REFIID riid,
@@ -206,6 +220,7 @@ EXTERN_C const IID IID_INWCVariantDictionary;
             /* [in] */ LCID lcid,
             /* [size_is][out] */ DISPID *rgDispId);
         
+        DECLSPEC_XFGVIRT(IDispatch, Invoke)
         /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
             INWCVariantDictionary * This,
             /* [annotation][in] */ 
@@ -225,46 +240,56 @@ EXTERN_C const IID IID_INWCVariantDictionary;
             /* [annotation][out] */ 
             _Out_opt_  UINT *puArgErr);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, get_Item)
         /* [id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Item )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT Key,
             /* [retval][out] */ VARIANT *pVal);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, put_Item)
         /* [id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Item )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT Key,
             /* [in] */ VARIANT newVal);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, putref_Item)
         /* [defaultcollelem][id][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Item )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT Key,
             /* [in] */ VARIANT newVal);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, get_Key)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Key )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT KeyIndex,
             /* [retval][out] */ VARIANT *pVal);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, get_Count)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count )( 
             INWCVariantDictionary * This,
             /* [retval][out] */ INT *pVal);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, _NewEnum)
         /* [restricted][id] */ HRESULT ( STDMETHODCALLTYPE *_NewEnum )( 
             INWCVariantDictionary * This,
             /* [retval][out] */ IUnknown **pVal);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, Remove)
         HRESULT ( STDMETHODCALLTYPE *Remove )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT varKey);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, RemoveAll)
         HRESULT ( STDMETHODCALLTYPE *RemoveAll )( 
             INWCVariantDictionary * This);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, get_Exists)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Exists )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT vKey,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
+        DECLSPEC_XFGVIRT(INWCVariantDictionary, get_VarType)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_VarType )( 
             INWCVariantDictionary * This,
             /* [in] */ VARIANT vKey,
@@ -398,28 +423,34 @@ EXTERN_C const IID IID_IVariantDictionary2;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             IVariantDictionary2 * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IVariantDictionary2 * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IVariantDictionary2 * This);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfoCount)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
             IVariantDictionary2 * This,
             /* [out] */ UINT *pctinfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfo)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
             IVariantDictionary2 * This,
             /* [in] */ UINT iTInfo,
             /* [in] */ LCID lcid,
             /* [out] */ ITypeInfo **ppTInfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetIDsOfNames)
         HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
             IVariantDictionary2 * This,
             /* [in] */ REFIID riid,
@@ -428,6 +459,7 @@ EXTERN_C const IID IID_IVariantDictionary2;
             /* [in] */ LCID lcid,
             /* [size_is][out] */ DISPID *rgDispId);
         
+        DECLSPEC_XFGVIRT(IDispatch, Invoke)
         /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
             IVariantDictionary2 * This,
             /* [annotation][in] */ 
@@ -447,38 +479,46 @@ EXTERN_C const IID IID_IVariantDictionary2;
             /* [annotation][out] */ 
             _Out_opt_  UINT *puArgErr);
         
+        DECLSPEC_XFGVIRT(IVariantDictionary2, get_Item)
         /* [id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Item )( 
             IVariantDictionary2 * This,
             /* [in] */ VARIANT Key,
             /* [retval][out] */ VARIANT *pVal);
         
+        DECLSPEC_XFGVIRT(IVariantDictionary2, put_Item)
         /* [id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Item )( 
             IVariantDictionary2 * This,
             /* [in] */ VARIANT Key,
             /* [in] */ VARIANT newVal);
         
+        DECLSPEC_XFGVIRT(IVariantDictionary2, putref_Item)
         /* [defaultcollelem][id][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Item )( 
             IVariantDictionary2 * This,
             /* [in] */ VARIANT Key,
             /* [in] */ VARIANT newVal);
         
+        DECLSPEC_XFGVIRT(IVariantDictionary2, get_Key)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Key )( 
             IVariantDictionary2 * This,
             /* [in] */ VARIANT KeyIndex,
             /* [retval][out] */ VARIANT *pVal);
         
+        DECLSPEC_XFGVIRT(IVariantDictionary2, get_Count)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count )( 
             IVariantDictionary2 * This,
             /* [retval][out] */ INT *pVal);
         
+        DECLSPEC_XFGVIRT(IVariantDictionary2, _NewEnum)
         /* [restricted][id] */ HRESULT ( STDMETHODCALLTYPE *_NewEnum )( 
             IVariantDictionary2 * This,
             /* [retval][out] */ IUnknown **pVal);
         
+        DECLSPEC_XFGVIRT(IVariantDictionary2, Remove)
         HRESULT ( STDMETHODCALLTYPE *Remove )( 
             IVariantDictionary2 * This,
             /* [in] */ VARIANT varKey);
         
+        DECLSPEC_XFGVIRT(IVariantDictionary2, RemoveAll)
         HRESULT ( STDMETHODCALLTYPE *RemoveAll )( 
             IVariantDictionary2 * This);
         
@@ -627,28 +667,34 @@ EXTERN_C const IID IID_IApplicationCache;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             IApplicationCache * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             IApplicationCache * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             IApplicationCache * This);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfoCount)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
             IApplicationCache * This,
             /* [out] */ UINT *pctinfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfo)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
             IApplicationCache * This,
             /* [in] */ UINT iTInfo,
             /* [in] */ LCID lcid,
             /* [out] */ ITypeInfo **ppTInfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetIDsOfNames)
         HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
             IApplicationCache * This,
             /* [in] */ REFIID riid,
@@ -657,6 +703,7 @@ EXTERN_C const IID IID_IApplicationCache;
             /* [in] */ LCID lcid,
             /* [size_is][out] */ DISPID *rgDispId);
         
+        DECLSPEC_XFGVIRT(IDispatch, Invoke)
         /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
             IApplicationCache * This,
             /* [annotation][in] */ 
@@ -676,68 +723,83 @@ EXTERN_C const IID IID_IApplicationCache;
             /* [annotation][out] */ 
             _Out_opt_  UINT *puArgErr);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, get_Value)
         /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_Value )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key,
             /* [retval][out] */ VARIANT *pvar);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, put_Value)
         /* [propput][id] */ HRESULT ( STDMETHODCALLTYPE *put_Value )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key,
             /* [in] */ VARIANT pvar);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, putref_Value)
         /* [propputref][id] */ HRESULT ( STDMETHODCALLTYPE *putref_Value )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key,
             /* [in] */ VARIANT pvar);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, get_Key)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Key )( 
             IApplicationCache * This,
             /* [in] */ INT KeyIndex,
             /* [retval][out] */ BSTR *pVal);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, get_Count)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Count )( 
             IApplicationCache * This,
             /* [retval][out] */ int *pVal);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, _NewEnum)
         /* [restricted][id] */ HRESULT ( STDMETHODCALLTYPE *_NewEnum )( 
             IApplicationCache * This,
             /* [retval][out] */ IUnknown **pVal);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, Remove)
         HRESULT ( STDMETHODCALLTYPE *Remove )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, RemoveAll)
         HRESULT ( STDMETHODCALLTYPE *RemoveAll )( 
             IApplicationCache * This);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, LockKey)
         /* [id] */ HRESULT ( STDMETHODCALLTYPE *LockKey )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, UnlockKey)
         /* [id] */ HRESULT ( STDMETHODCALLTYPE *UnlockKey )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, ExpireKeyAt)
         /* [id] */ HRESULT ( STDMETHODCALLTYPE *ExpireKeyAt )( 
             IApplicationCache * This,
             /* [in] */ BSTR vKey,
             /* [in] */ INT at);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, get_Exists)
         /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_Exists )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, get_KeyType)
         /* [propget][id] */ HRESULT ( STDMETHODCALLTYPE *get_KeyType )( 
             IApplicationCache * This,
             /* [in] */ BSTR Key,
             /* [retval][out] */ SHORT *pVal);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, OnStartPage)
         /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
             IApplicationCache * This,
             /* [in] */ IUnknown *p);
         
+        DECLSPEC_XFGVIRT(IApplicationCache, OnEndPage)
         /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
             IApplicationCache * This);
         
@@ -953,28 +1015,34 @@ EXTERN_C const IID IID_INWCSession;
     {
         BEGIN_INTERFACE
         
+        DECLSPEC_XFGVIRT(IUnknown, QueryInterface)
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
             INWCSession * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
+        DECLSPEC_XFGVIRT(IUnknown, AddRef)
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
             INWCSession * This);
         
+        DECLSPEC_XFGVIRT(IUnknown, Release)
         ULONG ( STDMETHODCALLTYPE *Release )( 
             INWCSession * This);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfoCount)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfoCount )( 
             INWCSession * This,
             /* [out] */ UINT *pctinfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetTypeInfo)
         HRESULT ( STDMETHODCALLTYPE *GetTypeInfo )( 
             INWCSession * This,
             /* [in] */ UINT iTInfo,
             /* [in] */ LCID lcid,
             /* [out] */ ITypeInfo **ppTInfo);
         
+        DECLSPEC_XFGVIRT(IDispatch, GetIDsOfNames)
         HRESULT ( STDMETHODCALLTYPE *GetIDsOfNames )( 
             INWCSession * This,
             /* [in] */ REFIID riid,
@@ -983,6 +1051,7 @@ EXTERN_C const IID IID_INWCSession;
             /* [in] */ LCID lcid,
             /* [size_is][out] */ DISPID *rgDispId);
         
+        DECLSPEC_XFGVIRT(IDispatch, Invoke)
         /* [local] */ HRESULT ( STDMETHODCALLTYPE *Invoke )( 
             INWCSession * This,
             /* [annotation][in] */ 
@@ -1002,126 +1071,156 @@ EXTERN_C const IID IID_INWCSession;
             /* [annotation][out] */ 
             _Out_opt_  UINT *puArgErr);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_SessionID)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_SessionID )( 
             INWCSession * This,
             /* [retval][out] */ BSTR *pbstrRet);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_Value)
         /* [id][propget] */ HRESULT ( STDMETHODCALLTYPE *get_Value )( 
             INWCSession * This,
             /* [in] */ BSTR vkey,
             /* [retval][out] */ VARIANT *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, put_Value)
         /* [id][propput] */ HRESULT ( STDMETHODCALLTYPE *put_Value )( 
             INWCSession * This,
             /* [in] */ BSTR vkey,
             /* [in] */ VARIANT newVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, putref_Value)
         /* [id][propputref] */ HRESULT ( STDMETHODCALLTYPE *putref_Value )( 
             INWCSession * This,
             /* [in] */ BSTR vkey,
             /* [in] */ VARIANT newVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_TimeOut)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_TimeOut )( 
             INWCSession * This,
             /* [retval][out] */ LONG *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, put_TimeOut)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_TimeOut )( 
             INWCSession * This,
             /* [in] */ LONG pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, Abandon)
         HRESULT ( STDMETHODCALLTYPE *Abandon )( 
             INWCSession * This);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_CodePage)
         /* [hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_CodePage )( 
             INWCSession * This,
             /* [retval][out] */ LONG *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, put_CodePage)
         /* [hidden][propput] */ HRESULT ( STDMETHODCALLTYPE *put_CodePage )( 
             INWCSession * This,
             /* [in] */ LONG newVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_LCID)
         /* [hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_LCID )( 
             INWCSession * This,
             /* [retval][out] */ LONG *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, put_LCID)
         /* [hidden][propput] */ HRESULT ( STDMETHODCALLTYPE *put_LCID )( 
             INWCSession * This,
             /* [in] */ LONG newVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_StaticObjects)
         /* [hidden][propget] */ HRESULT ( STDMETHODCALLTYPE *get_StaticObjects )( 
             INWCSession * This,
             /* [retval][out] */ INWCVariantDictionary **ppProperties);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_Contents)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_Contents )( 
             INWCSession * This,
             /* [retval][out] */ INWCVariantDictionary **pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_IsExpired)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsExpired )( 
             INWCSession * This,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_IsNew)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_IsNew )( 
             INWCSession * This,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_LiquidCookie)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_LiquidCookie )( 
             INWCSession * This,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, put_LiquidCookie)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_LiquidCookie )( 
             INWCSession * This,
             /* [in] */ VARIANT_BOOL newVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_ReEntrance)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_ReEntrance )( 
             INWCSession * This,
             /* [retval][out] */ VARIANT_BOOL *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, put_ReEntrance)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_ReEntrance )( 
             INWCSession * This,
             /* [in] */ VARIANT_BOOL newVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_URL)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_URL )( 
             INWCSession * This,
             /* [in] */ VARIANT strCheckA,
             /* [retval][out] */ VARIANT *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, Execute)
         HRESULT ( STDMETHODCALLTYPE *Execute )( 
             INWCSession * This,
             /* [in] */ BSTR ToPage);
         
+        DECLSPEC_XFGVIRT(INWCSession, Transfer)
         HRESULT ( STDMETHODCALLTYPE *Transfer )( 
             INWCSession * This,
             /* [in] */ BSTR ToPage);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_CreateInstance)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_CreateInstance )( 
             INWCSession * This,
             /* [in] */ BSTR progid,
             /* [retval][out] */ IDispatch **pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, put_Readonly)
         /* [propput] */ HRESULT ( STDMETHODCALLTYPE *put_Readonly )( 
             INWCSession * This,
             /* [in] */ VARIANT_BOOL newVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, Statistics)
         HRESULT ( STDMETHODCALLTYPE *Statistics )( 
             INWCSession * This,
             /* [optional][in] */ VARIANT vAppKey,
             /* [optional][in] */ VARIANT vSessionID,
             /* [retval][out] */ INWCVariantDictionary **retVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, EnsureURLCookie)
         HRESULT ( STDMETHODCALLTYPE *EnsureURLCookie )( 
             INWCSession * This);
         
+        DECLSPEC_XFGVIRT(INWCSession, get_OldSessionID)
         /* [propget] */ HRESULT ( STDMETHODCALLTYPE *get_OldSessionID )( 
             INWCSession * This,
             /* [retval][out] */ BSTR *pVal);
         
+        DECLSPEC_XFGVIRT(INWCSession, OnStartPage)
         /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnStartPage )( 
             INWCSession * This,
             /* [in] */ IUnknown *p);
         
+        DECLSPEC_XFGVIRT(INWCSession, OnEndPage)
         /* [hidden] */ HRESULT ( STDMETHODCALLTYPE *OnEndPage )( 
             INWCSession * This);
         
+        DECLSPEC_XFGVIRT(INWCSession, Initialize)
         HRESULT ( STDMETHODCALLTYPE *Initialize )( 
             INWCSession * This,
             /* [in] */ IDispatch *iRequest,

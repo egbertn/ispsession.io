@@ -23,12 +23,13 @@ isW64 = (oEnv("PROCESSOR_ARCHITECTURE") = "AMD64")
 '=========== check bitness and download & run VC runtime setup silently
 If isW64 Then
     version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "system32"), "msvcp140.dll"))
-    'vc 14.24.28127.4 = Visual Studio 2019   
-    If version(2) < 28127  Then  
+
+    'vc 14.36.32532.0 = Visual Studio 2023
+    If version(2) < 32532 Then  
         DownloadToTempAndRun 64
     End If  
     version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "SysWOW64"), "msvcp140.dll"))    
-    If version(2) < 28127  Then  
+    If version(2) < 32532 Then  
         DownloadToTempAndRun 32
     End If
     'register COM components
@@ -49,7 +50,7 @@ If isW64 Then
     oWs.Run regsvr32 + " /s " + fileTemp
 Else 'just in case
     version = GetVCRVersion(oFs.BuildPath( oFs.BuildPath( windir, "system32"), "msvcp140.dll")) 'vcruntime140
-    If version(2) < 28127  Then  
+    If version(2) < 32532 Then  
         DownloadToTempAndRun 32
     End If
 
@@ -74,8 +75,8 @@ Sub DownloadToTempAndRun(bits)
     'checked at June 24, 2018: these files exist
     ' english runtime
 
-    vArray = Array("https://aka.ms/vs/16/release/vc_redist.x64.exe", _
-        "https://aka.ms/vs/16/release/vc_redist.x86.exe")
+    vArray = Array("https://aka.ms/vs/17/release/vc_redist.x64.exe", _
+        "https://aka.ms/vs/17/release/vc_redist.x86.exe")
     
     If Bits = 32 Then
         pos = 1       

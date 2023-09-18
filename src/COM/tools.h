@@ -23,8 +23,10 @@ std::string& __stdcall trim(std::string &s);
 
 void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elems, int maxCount = 0);
 std::string str_toupper(std::string s);
-
-
+bool is_bool(const std::wstring& s);
+bool is_number(const std::wstring& s);
+std::wstring str_tolower(std::wstring s);
+std::wstring getenv(std::wstring& envName);
 BSTR __stdcall GetNetBIOSName(bool GiveDnsName) noexcept;
 BSTR __stdcall GetDCDomain()  noexcept;
 void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[], int els) noexcept;

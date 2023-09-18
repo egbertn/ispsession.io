@@ -23,12 +23,12 @@
 #include <atlbase.h>
 HRESULT __stdcall HashData2(const unsigned char* lpSrc, DWORD nSrcLen, unsigned char *lpDest, DWORD nDestLen);
 
-#include "\Data\Git\Repos\ispsession.io\src\COM\bstrnocache.h"
+#include "..\..\src\COM\bstrnocache.h"
 #include <atlcom.h>
 #include <atlctl.h>
 #include <adoint.h>
 
-#include "\Data\Git\Repos\ispsession.io\src\COM\CCOmBSTR2.h"
+#include "..\..\src\COM\CCOmBSTR2.h"
 #include <atlsafe.h>
 
 #include <atlfile.h>

@@ -96,7 +96,7 @@ public:
 		}*/
 		/*if (bIsDBOpen == TRUE) 
 			pool->;*/
-		strConstruct.Empty();
+		strConstruct.clear();
 		
 	}
 
@@ -141,8 +141,8 @@ private:
 	
 	LONG lngTimeout,		
 		lngTimeOutSetting;
-
-	CComBSTR strConstruct, m_bstrToken,
+	wstring strConstruct;
+	CComBSTR m_bstrToken,
 		strGUID,
 		strCookieDOM,
 		strAppPath, m_OldSessionId;

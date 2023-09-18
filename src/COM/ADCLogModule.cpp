@@ -81,10 +81,10 @@ void LoggingModule::set_Logging(int enable) noexcept
 			
 			// note, GetTempPathW would attempt IUSR in C:\Users\IUSR\AppData\Local\Temp
 			// it automatically will return \Windows\Temp but that is undocumented. So we do it ourselves
-		
+			
 			std::wstring buf = m_tempLocation == 0 ? 
-				(std::wstring(_wgetenv(L"windir")) + L"\\temp") : 
-				std::wstring( std::filesystem::temp_directory_path().c_str());
+				(getenv(wstring(L"windir")) + L"\\temp") : 
+				std::filesystem::temp_directory_path();
 
 			if (buf.empty())
 			{

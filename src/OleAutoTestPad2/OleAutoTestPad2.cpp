@@ -6,10 +6,13 @@
 #include <iostream>
 #include <atlcoll.h>
 #include "resource.h"
-#include "OleAutoTestPad2_i.h"
+//#include "OleAutoTestPad2_i.h"
 #include <atlcoll.h>
 #include <filesystem>
 #include <string>
+#include <stdlib.h>
+
+#include <stdio.h>
 
 static const unsigned char HashDataLookup[256] = {
 				  0x01, 0x0E, 0x6E, 0x19, 0x61, 0xAE, 0x84, 0x77, 0x8A, 0xAA, 0x7D, 0x76, 0x1B,
@@ -104,7 +107,7 @@ BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) throw()
 class COleAutoTestPad2Module : public ATL::CAtlExeModuleT< COleAutoTestPad2Module >
 {
 public :
-	DECLARE_LIBID(LIBID_OleAutoTestPad2Lib)
+	DECLARE_NO_REGISTRY()
 	DECLARE_REGISTRY_APPID_RESOURCEID(IDR_OLEAUTOTESTPAD2, "{E83463A0-3359-4FEC-86A0-E7464635C1A8}")
 	};
 
@@ -692,19 +695,32 @@ static CComBSTR& GetKey() throw()
 	}
 	return CComBSTR(p);
 }
+std::wstring getenv(LPCWSTR envName)
+{
+	std::wstring env_var;
+	size_t required_size;
+	::_wgetenv_s(&required_size, nullptr, 0, envName);
+	if (required_size == 0) return std::move(std::wstring());
+
+
+	env_var.resize(required_size);
+	::_wgetenv_s(&required_size, (wchar_t*)env_var.data(), required_size, envName);
+	
+	return std::move(env_var);
+}
 extern "C" int WINAPI _tWinMain(HINSTANCE /*hInstance*/, HINSTANCE /*hPrevInstance*/, 
 								LPTSTR /*lpCmdLine*/, int nShowCmd)
 {
-	
+	auto compname = getenv(L"COMPUTERNAME");
 	
 
 	//HTMLReplace match[] = { { L"&", L"&amp;" },{ L"<", L"&lt;" },{ L">", L"&gt;" } };
-	byte bytes[] = { 1,2,3,4,6,2,6,2,2,5,204,-128,6,3,5,45,2,7,7,128,254 };
+	char bytes[] = { 1,2,3,4,6,2,6,2,2,5,204,-128,6,3,5,45,2,7,7,128,254 };
 	UINT hash=0;
 	UINT hash2 = 0;
-	auto hashResult = HashData(bytes, sizeof(bytes), (BYTE*)&hash, sizeof(hash));
+	auto hashResult = HashData((LPBYTE)bytes, sizeof(bytes), (BYTE*)&hash, sizeof(hash));
 
-	 hashResult = HashData2(bytes, sizeof(bytes), (BYTE*)&hash2, sizeof(hash));
+	 hashResult = HashData2((LPBYTE)bytes, sizeof(bytes), (BYTE*)&hash2, sizeof(hash));
 
 	//for (int x = 0; x < sizeof(match) / sizeof(HTMLReplace); x++)
 	//{

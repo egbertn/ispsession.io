@@ -50,7 +50,25 @@ std::string str_toupper(std::string s)
 	return s;
 
 }
+bool is_number(const std::wstring& s) {
+	return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+}
+std::wstring str_tolower(std::wstring s)
+{
+	std::transform(s.begin(), s.end(), s.begin(),
+		// [](char c){ return std::toupper(c); }          // wrong
+		[](wchar_t c) { return (wchar_t)std::tolower(c); } // correct
+	);
+	return s;
+}
 
+bool is_bool(const std::wstring& s) {
+	if (s.empty())
+		return false;
+
+	auto lower = str_tolower(s);
+	return lower.compare(L"true") == 0 || lower.compare(L"false") == 0;
+}
 //void split(const std::string &s, char delim, std::vector<std::string> &elems, int maxCount s= 0)
 //{
 // std::stringstream ss;
@@ -555,21 +573,21 @@ BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) noexcept
 			btByte = sdata[cx];
 			btByte2 = sdata[cx + 2];
 
-			if ((btByte >= 65) & (btByte <= 70)) //& correct
+			if ((btByte >= 65) && (btByte <= 70)) //& correct
 				btByte -= 55;
-			else if ((btByte >= 48) & (btByte <= 57))
+			else if ((btByte >= 48) && (btByte <= 57))
 				btByte ^= 48;
 			//'needless test but you never now if somebody converts to lowercase
-			else if ((btByte >= 97) & (btByte <= 102))
+			else if ((btByte >= 97) && (btByte <= 102))
 				btByte -= 87;
 			else{ retval = FALSE; break; }
 
-			if ((btByte2 >= 65) & (btByte2 <= 70))
+			if ((btByte2 >= 65) && (btByte2 <= 70))
 				btByte2 -= 55;
-			else if ((btByte2 >= 48) & (btByte2 <= 57))
+			else if ((btByte2 >= 48) && (btByte2 <= 57))
 				btByte2 ^= 48;  //' cut the two leftmost bits 110000
 			//'needless test but you never now if somebody converts to lowercase
-			else if ((btByte2 >= 97) & (btByte2 <= 102))
+			else if ((btByte2 >= 97) && (btByte2 <= 102))
 				btByte2 -= 87;
 			else
 			{
@@ -783,4 +801,17 @@ HRESULT __stdcall HashData2(const unsigned char* lpSrc, DWORD nSrcLen, unsigned 
 		srcCount--;
 	}
 	return S_OK;
+}
+std::wstring getenv(wstring& envName)
+{
+	std::wstring env_var;
+	size_t required_size;
+	::_wgetenv_s(&required_size, nullptr, 0, envName.c_str());
+	if (required_size == 0) return std::move(std::wstring());
+
+
+	env_var.resize(required_size);
+	::_wgetenv_s(&required_size, (wchar_t*)env_var.data(), required_size, envName.c_str());
+
+	return std::move(env_var);
 }

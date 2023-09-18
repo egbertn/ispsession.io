@@ -198,31 +198,33 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	}
 	ConfigurationManager config(retVal);
 	const PWSTR prefix = L"ispsession_io:";
-	CComBSTR bstrProp ( L"EnableLogging"), temp, strLicensedFor;
+	wstring bstrProp(L"EnableLogging");
+	wstring temp;
+	CComBSTR strLicensedFor;
 	GUID license = { 0 };
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0 && bstrProp.IsNumeric())
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (is_number(bstrProp))
 	{
-		auto enableLogging = bstrProp.ToLong();
+		auto enableLogging = stoi(bstrProp);
 		logModule.set_Logging(enableLogging);
 		logModule.set_TempLocation(0);
 		logModule.Write(L"Read dologging %d", enableLogging);
 	}
 
 	bstrProp = L"ClassicLicense";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (!bstrProp.IsEmpty())
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (!bstrProp.empty())
 	{
-		setstring((const PUCHAR)&license, bstrProp);
+		setstring((const PUCHAR)&license, CComBSTR(bstrProp.c_str()));
 	}
 	bstrProp = L"ClassicCsession.LIC";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() != 0)
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (!bstrProp.empty())
 	{
-		strLicensedFor.Attach(bstrProp.Detach());//move
+		strLicensedFor = bstrProp.c_str();//move
 	}
 
 	/*licenseOK = LicentieCheck(&license, strLicensedFor);
@@ -240,34 +242,34 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 
 
 	bstrProp = L"AD_PATH";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0)
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (!bstrProp.empty())
 	{
-		strAppPath.Attach(bstrProp.Detach());
+		strAppPath  = bstrProp.c_str();
 	}
 	bstrProp = L"AD_DOMAIN";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0)
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (!bstrProp.empty())
 	{
-		strCookieDOM.Attach(bstrProp.Detach());
+		strCookieDOM = bstrProp.c_str();
 	}
     bstrProp = L"NoConnectionPool";
-    bstrProp.Insert(0, prefix);
-    bstrProp.Attach(config.AppSettings(bstrProp));
-    if (!bstrProp.IsEmpty())
+    bstrProp.insert(0, prefix);
+    bstrProp.assign(config.AppSettings(bstrProp));
+    if (!bstrProp.empty())
     {
-        bNoConnectionPooling = bstrProp.ToBool() == VARIANT_TRUE ? TRUE : FALSE;
+        bNoConnectionPooling = bstrProp.compare(L"true") == 0 ? TRUE : FALSE;
     }
 	bstrProp = L"DataSource";
-	bstrProp.Insert(0, prefix);
-	strConstruct = _wgetenv(bstrProp);
-	if (strConstruct.IsEmpty()) // try web.Config
+	bstrProp.insert(0, prefix);
+	strConstruct = getenv(bstrProp);
+	if (strConstruct.empty()) // try web.Config
 	{
-		strConstruct.Attach(config.AppSettings(bstrProp));
+		strConstruct.assign(config.AppSettings(bstrProp));
 	}
-	if (strConstruct.IsEmpty())
+	if (strConstruct.empty())
 	{
 		hr = HRESULT_FROM_WIN32(ERROR_CANTREAD);
 		Error(L"Invalid web.Config datasource not found",this->GetObjectCLSID(), hr);
@@ -275,7 +277,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	}
 	if (SUCCEEDED(hr))
 	{
-		auto success = CSessionDL::OpenDBConnection(std::wstring(strConstruct), pool);
+		auto success = CSessionDL::OpenDBConnection(strConstruct, pool);
 		if (!success)
 		{
 			hr = E_FAIL;
@@ -283,11 +285,11 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	}
 
 	bstrProp = L"SessionTimeout";
-	bstrProp.Insert(0, prefix);
-	temp.Attach(config.AppSettings(bstrProp));
-	if (temp.Length() > 0 && temp.IsNumeric())
+	bstrProp.insert(0, prefix);
+	temp.assign(config.AppSettings(bstrProp));
+	if (is_number(temp))
 	{
-		lngTimeOutSetting = temp.ToLong();
+		lngTimeOutSetting = stoi(temp);
 	}
 	else
 	{
@@ -296,64 +298,64 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 
 
 	bstrProp = L"CookieName";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0)
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (!bstrProp.empty())
 	{
-		m_bstrToken.Attach(bstrProp.Detach());
+		m_bstrToken = bstrProp.c_str();
 	}
 	logModule.Write(L"Timeout (%d), AD_DOMAIN: (%s), AD_PATH: (%s), CookieName (%s)", lngTimeout, strCookieDOM, strAppPath, m_bstrToken);
 
 	bstrProp = L"SessionTimeout";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0 && bstrProp.IsNumeric())
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (is_number(bstrProp))
 	{
-		this->lngTimeout = bstrProp.ToLong();
+		this->lngTimeout = stoi(bstrProp);
 	}
 
 	bstrProp = L"HASH_SESSIONID";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0 && bstrProp.IsBool())
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (is_bool(bstrProp))
 	{
-		bHashsessionID = bstrProp.ToBool() == VARIANT_TRUE ? TRUE: FALSE;
+		bHashsessionID = bstrProp.compare(L"true") == 0? TRUE : FALSE;
 	}
 	logModule.Write(L"HashSessionId (%d)", bHashsessionID);
 
 	bstrProp = L"SnifQueryStringFirst";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0 && bstrProp.IsBool())
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (is_bool(bstrProp))
 	{
-		blnSnifQueryStringFirst = bstrProp.ToBool()  == VARIANT_TRUE ? TRUE : FALSE;
+		blnSnifQueryStringFirst = bstrProp.compare(L"true") == 0 ? TRUE : FALSE;
 	}
 	logModule.Write(L"SnifQueryStringFirst (%d)", blnSnifQueryStringFirst);
 
 
 	bstrProp = L"CookieNoSSL";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() > 0 && bstrProp.IsBool())
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (is_bool(bstrProp))
 	{
-		blnCookieNoSSL = bstrProp.ToBool() == VARIANT_TRUE ? TRUE : FALSE;
+		blnCookieNoSSL = bstrProp.compare(L"true") == 0? TRUE : FALSE;
 	}
 
 	bstrProp = L"CookieExpires";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
 	logModule.Write(L"CookieNoSSL (%d), expiration in minutes %s", blnCookieNoSSL, bstrProp);
-	if (bstrProp.Length() > 0 && bstrProp.IsNumeric())
+	if (is_number(bstrProp))
 	{// could be VT_I2 or VT_I4
 
 		// equivalent to DateAdd("n", vExpires, Now())
-		dtExpires = bstrProp.ToLong();
+		dtExpires = stoi(bstrProp);
 	}
 
 	bstrProp = L"APP_KEY";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (bstrProp.Length() != 32)
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (bstrProp.size() != 32)
 	{
 		hr = E_INVALIDARG;
 		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);
@@ -363,7 +365,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 		logModule.Write(L"AppKey: (%s)", bstrProp);
 	}
 
-	if (setstring(reinterpret_cast<PUCHAR>(&btAppKey), bstrProp) == FALSE)
+	if (setstring(reinterpret_cast<PUCHAR>(&btAppKey), CComBSTR(bstrProp.c_str())) == FALSE)
 	{
 		hr = E_INVALIDARG;
 		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);

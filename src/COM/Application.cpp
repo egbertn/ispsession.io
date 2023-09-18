@@ -587,17 +587,17 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 
 	//dlm->AddServerUrl("", port); //TODO: get con string
 	m_startSessionRequest = std::chrono::system_clock::now();
-	CComBSTR bstrProp ( L"DataSource"), strConstruct;
+	wstring bstrProp ( L"DataSource"), strConstruct;
 	auto prefix = L"ispsession_io:";
-	bstrProp.Insert(0, prefix);
+	bstrProp.insert(0, prefix);
 
-	strConstruct = _wgetenv(bstrProp);
+	strConstruct = getenv(bstrProp);
 
-	if (strConstruct.IsEmpty()) // not in environment, then web.Config
+	if (strConstruct.empty()) // not in environment, then web.Config
 	{
-		strConstruct.Attach(config.AppSettings(bstrProp));
+		strConstruct.assign(config.AppSettings(bstrProp));
 	}
-	if (strConstruct.IsEmpty())
+	if (strConstruct.empty())
 	{
 		hr = HRESULT_FROM_WIN32(ERROR_CANTREAD);
 		Error(L"Invalid web.Config datasource not found", this->GetObjectCLSID(), hr);
@@ -606,7 +606,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 
 	if (SUCCEEDED(hr))
 	{
-		auto success = CSessionDL::OpenDBConnection(std::wstring(strConstruct, strConstruct.Length()), pool);
+		auto success = CSessionDL::OpenDBConnection(strConstruct, pool);
 		if (!success)
 		{
 			hr = E_FAIL;
@@ -616,38 +616,38 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 	GUID license = { 0 };
 
 	bstrProp = L"CacheLicense";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
-	if (!bstrProp.IsEmpty())
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
+	if (!bstrProp.empty())
 	{
-		setstring((const PUCHAR)&license, bstrProp);
+		setstring((const PUCHAR)&license, CComBSTR(bstrProp.c_str()));
 	}
 	else
 	{
 		m_bErrState = TRUE;
-		Error(bstrProp.Append(L" key not found"), this->GetObjectCLSID(), E_INVALIDARG);
+		Error(bstrProp.append(L" key not found").c_str(), this->GetObjectCLSID(), E_INVALIDARG);
 		return E_INVALIDARG;
 	}
     bstrProp = L"NoConnectionPool";
-    bstrProp.Insert(0, prefix);
-    bstrProp.Attach(config.AppSettings(bstrProp));
-    if (!bstrProp.IsEmpty())
+    bstrProp.insert(0, prefix);
+    bstrProp.assign(config.AppSettings(bstrProp));
+    if (!bstrProp.empty())
     {
-        NoConnectionPooling = bstrProp.ToBool() == VARIANT_TRUE ? TRUE : FALSE;
+        NoConnectionPooling = bstrProp.compare(L"true") == 0 ? TRUE : FALSE;
     }
 
 	bstrProp = L"ClassicCsession.LIC";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
 	CComBSTR strLicensedFor;
-	if (bstrProp.Length() != 0)
+	if (!bstrProp.empty())
 	{
-		strLicensedFor.Attach(bstrProp.Detach());//move
+		strLicensedFor = bstrProp.c_str();
 	}
 	else
 	{
 		m_bErrState = TRUE;
-		Error(bstrProp.Append(L" key not found"), this->GetObjectCLSID(), E_INVALIDARG);
+		Error(bstrProp.append(L" key not found").c_str(), this->GetObjectCLSID(), E_INVALIDARG);
 		return E_INVALIDARG;
 	}
 
@@ -664,12 +664,12 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 #endif
 
 	bstrProp = L"APP_KEY";
-	bstrProp.Insert(0, prefix);
-	bstrProp.Attach(config.AppSettings(bstrProp));
+	bstrProp.insert(0, prefix);
+	bstrProp.assign(config.AppSettings(bstrProp));
 
-	logModule.Write(L"AppKey: (%s)", bstrProp.m_str);
+	logModule.Write(L"AppKey: (%s)", bstrProp.c_str());
 
-	if (setstring(reinterpret_cast<PUCHAR>(&m_AppKey), bstrProp) == FALSE)
+	if (setstring(reinterpret_cast<PUCHAR>(&m_AppKey),CComBSTR( bstrProp.c_str())) == FALSE)
 	{
 		hr = E_INVALIDARG;
 		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);

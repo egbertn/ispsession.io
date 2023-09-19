@@ -22,8 +22,7 @@ private:
 public:
 	ConfigurationManager() noexcept;
 	ConfigurationManager(const BSTR configFile) noexcept;
-	std::wstring AppSettings(const std::wstring key, PCWSTR defaultValue = nullptr) noexcept;
-	BSTR AppSettings(const BSTR key, PCWSTR defaultValue = nullptr) noexcept;
+	std::wstring AppSettings(const std::wstring& key, PCWSTR defaultValue = nullptr) noexcept;
 	time_t GetFileTime() noexcept;
 	~ConfigurationManager() noexcept;
 };

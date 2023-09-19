@@ -83,11 +83,11 @@ public:
 		logModule.Close();
 		RELEASE(m_piVarDict);
 
-		strGUID.Empty();
-		strCookieDOM.Empty();
-		m_bstrToken.Empty();
-		strAppPath.Empty();
-		m_OldSessionId.Empty();
+		strGUID.clear();
+		strCookieDOM.clear();
+		m_bstrToken.clear();
+		strAppPath.clear();
+		m_OldSessionId.clear();
 		/*if (bErrState == FALSE)
 		{
 			InterlockedDecrement(&dwInstanceCount);
@@ -142,7 +142,7 @@ private:
 	LONG lngTimeout,		
 		lngTimeOutSetting;
 	wstring strConstruct;
-	CComBSTR m_bstrToken,
+	wstring m_bstrToken,
 		strGUID,
 		strCookieDOM,
 		strAppPath, m_OldSessionId;
@@ -194,7 +194,7 @@ private:
 	// creates a new GUID and writes cookie, if possible
 	STDMETHOD( NewID)();
 	
-	STDMETHOD( WriteCookie)(BSTR cookie);
+	STDMETHOD( WriteCookie)(wstring cookie);
 	STDMETHOD( NewGuid)(GUID * guid);
 	
 	STDMETHOD( OnStartPage)(IUnknown* pctx) noexcept;

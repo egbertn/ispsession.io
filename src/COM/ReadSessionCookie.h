@@ -5,7 +5,7 @@ class ReadSessionCookie
 {
 public:
 
-	STDMETHODIMP Initialize(IRequest* request, CComBSTR& token) noexcept;
+	STDMETHODIMP Initialize(IRequest* request, wstring& token) noexcept;
 	STDMETHODIMP get_Item(const VARIANT var, BSTR* pRet) noexcept;
 	STDMETHODIMP get_HasKeys(VARIANT_BOOL* pfHasKeys) noexcept;
 	STDMETHODIMP get_Count(int* cStrRet) noexcept;

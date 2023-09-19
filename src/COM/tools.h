@@ -41,12 +41,11 @@ BSTR __stdcall FileStripPath(const wchar_t* pathname) noexcept;
 //							  /*BOOL *EnableCompression,  */
 //							/*  BOOL *hashSessionID =0,*/ int *EnableLogging=0, GUID * license=NULL, BSTR* licensedFor=NULL);
 
-BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) noexcept;
-BOOL __stdcall IsValidHex(const BSTR Cookie) noexcept;
-BSTR __stdcall sHexFromBt(const PUCHAR btBytes, LONG cb = sizeof(GUID), bool prePend=true) noexcept;
+bool is_hex_notation(std::wstring const& s);
 // set byte length string to hex, note to set the correct length!
+bool setstring(GUID* addrGUID, std::wstring& strCookiePtr) noexcept;
 
-void __stdcall sHexFromBt(GUID* psa, BSTR *sRet) noexcept;
+std::wstring sHexFromBt(GUID* psa) noexcept;
 // creates a multibyte string from any point in memory
 // assumes you own the memory. If bytes == NULL returns zerood string
 std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) noexcept;
@@ -59,8 +58,7 @@ bool __stdcall FileExists(const wchar_t* file) noexcept;
 
 STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm) noexcept;
 STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvObj) noexcept;
-
-void __stdcall FreeString(BSTR * theString) noexcept;
 bool __stdcall LicentieCheck(GUID *licence, BSTR licenseContents) noexcept;
 STDMETHODIMP ISequentialStream_Copy( ISequentialStream* iface, ISequentialStream* pstm, ULARGE_INTEGER cb, ULARGE_INTEGER* pcbRead, ULARGE_INTEGER* pcbWritten) noexcept;
 HRESULT __stdcall HashData2(const unsigned char* lpSrc, DWORD nSrcLen, unsigned char *lpDest, DWORD nDestLen) noexcept;
+unsigned long get_hashcode(std::wstring& s);

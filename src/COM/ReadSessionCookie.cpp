@@ -1,10 +1,10 @@
 #include "stdafx.h"
 #include "ReadSessionCookie.h"
 
-STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, CComBSTR& token) noexcept
+STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, wstring& token) noexcept
 {
 	auto hr = S_FALSE;
-	if (request == nullptr || token.IsEmpty())
+	if (request == nullptr || token.empty())
 	{
 		return E_INVALIDARG;
 	}
@@ -46,7 +46,7 @@ STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, CComBSTR& token) n
 				line.Detach();
 				if (keyvaluePair.GetCount() == 2)
 				{
-					if (token.CompareTo(keyvaluePair.GetAt(0)) == 0)
+					if (token.compare(keyvaluePair.GetAt(0)) == 0)
 					{
 						m_CookieValue.AssignBSTR(keyvaluePair.GetAt(1));
 						if (m_CookieValue.IndexOf(L"&", 0U, true) > 0)

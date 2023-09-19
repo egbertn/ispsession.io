@@ -55,7 +55,7 @@ time_t ConfigurationManager::GetFileTime() noexcept
 	return stResult.st_mtime;
 }
 
-wstring ConfigurationManager::AppSettings(const wstring key, PCWSTR defaultValue) noexcept
+wstring ConfigurationManager::AppSettings(const wstring& key, PCWSTR defaultValue) noexcept
 {
 	HRESULT hr = CheckTimeOut();
 	if (FAILED(hr))
@@ -78,31 +78,7 @@ wstring ConfigurationManager::AppSettings(const wstring key, PCWSTR defaultValue
 	}
 	return std::move(wstring());
 }
-BSTR ConfigurationManager::AppSettings(const BSTR key, PCWSTR defaultValue) noexcept
-{
-	
-	HRESULT hr = CheckTimeOut();
-	if (FAILED(hr)) 
-	{
-		logModule.Write(L"Cannot parse config file because of (%x)", hr);
-		return nullptr;
-	}
 
-	auto found = _map.find(key);
-	
-	//ATLTRACE(L"AppSettings findKey found %d %s\r\n", found, key);
-	//note: GetValueAt returns by reference, and does not Copy()	
-	if (found != _map.end() && found->first == key) 
-	{
-		return CComBSTR(static_cast<INT>( found->second.length()), found->second.c_str()).Detach();
-	}
-	else if (defaultValue != nullptr)
-	{
-		return ::SysAllocString(defaultValue);
-	}
-	return nullptr;
-	
-}
 ConfigurationManager::~ConfigurationManager() noexcept
 {
 	_map.clear();

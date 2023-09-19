@@ -952,22 +952,22 @@ public:
 		return Compare(m_str, otherBstr, ignoreCase, ignoreDiacritics, ignoreSymbols);
 	}
 
-	unsigned long GetHashCode()  noexcept
-	{
-		unsigned long hash=0;
-
-//		HRESULT hr = S_OK;
-		if (!IsEmpty())
-		{
-			//compress unicode before hashing
-			CComBSTR lpza;
-			lpza.Attach(ToByteString());
-			HRESULT	hr = HashData2((PBYTE)lpza.m_str, lpza.ByteLength(),(LPBYTE) &hash, sizeof(unsigned long));
-			if (hr != S_OK) hash = 0xFFFFFFFF;
-		}
-		//FreeLibrary(hinst);
-		return hash;
-	}
+//	unsigned long GetHashCode()  noexcept
+//	{
+//		unsigned long hash=0;
+//
+////		HRESULT hr = S_OK;
+//		if (!IsEmpty())
+//		{
+//			//compress unicode before hashing
+//			CComBSTR lpza;
+//			lpza.Attach(ToByteString());
+//			HRESULT	hr = HashData2((PBYTE)lpza.m_str, lpza.ByteLength(),(LPBYTE) &hash, sizeof(unsigned long));
+//			if (hr != S_OK) hash = 0xFFFFFFFF;
+//		}
+//		//FreeLibrary(hinst);
+//		return hash;
+//	}
 
 	// added by e.n.
 	static void __stdcall StringReverse(_In_opt_ const  BSTR s)  noexcept
@@ -1543,12 +1543,12 @@ public:
 		if (FAILED(hr)) AtlThrow(hr);
 		return *this;
 	}
-	CComBSTR2& __stdcall operator=(_In_opt_ const std::wstring pSrc)
+	CComBSTR2& __stdcall operator=(_In_opt_ const std::wstring& pSrc)
 	{
 
 		if (!pSrc.empty())
 		{
-			if (::SysReAllocStringLen(&m_str, pSrc.c_str(), static_cast<UINT>(pSrc.length())) == FALSE)
+			if (::SysReAllocStringLen(&m_str, pSrc.c_str(), pSrc.length()) == FALSE)
 				AtlThrow(E_OUTOFMEMORY);
 		}
 		else

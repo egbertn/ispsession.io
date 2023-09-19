@@ -620,7 +620,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 	bstrProp.assign(config.AppSettings(bstrProp));
 	if (!bstrProp.empty())
 	{
-		setstring((const PUCHAR)&license, CComBSTR(bstrProp.c_str()));
+		setstring(&license, bstrProp);
 	}
 	else
 	{
@@ -669,7 +669,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 
 	logModule.Write(L"AppKey: (%s)", bstrProp.c_str());
 
-	if (setstring(reinterpret_cast<PUCHAR>(&m_AppKey),CComBSTR( bstrProp.c_str())) == FALSE)
+	if (!setstring(&m_AppKey, bstrProp))
 	{
 		hr = E_INVALIDARG;
 		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);

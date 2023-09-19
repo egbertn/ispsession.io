@@ -216,8 +216,8 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	bstrProp.insert(0, prefix);
 	bstrProp.assign(config.AppSettings(bstrProp));
 	if (!bstrProp.empty())
-	{
-		setstring((const PUCHAR)&license, CComBSTR(bstrProp.c_str()));
+	{		
+		setstring(&license, bstrProp);
 	}
 	bstrProp = L"ClassicCsession.LIC";
 	bstrProp.insert(0, prefix);
@@ -302,7 +302,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	bstrProp.assign(config.AppSettings(bstrProp));
 	if (!bstrProp.empty())
 	{
-		m_bstrToken = bstrProp.c_str();
+		m_bstrToken = bstrProp;
 	}
 	logModule.Write(L"Timeout (%d), AD_DOMAIN: (%s), AD_PATH: (%s), CookieName (%s)", lngTimeout, strCookieDOM, strAppPath, m_bstrToken);
 
@@ -365,7 +365,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 		logModule.Write(L"AppKey: (%s)", bstrProp);
 	}
 
-	if (setstring(reinterpret_cast<PUCHAR>(&btAppKey), CComBSTR(bstrProp.c_str())) == FALSE)
+	if (!setstring(&btAppKey, bstrProp))
 	{
 		hr = E_INVALIDARG;
 		this->Error(L"APP_KEY missing", this->GetObjectCLSID(), hr);
@@ -417,20 +417,25 @@ STDMETHODIMP NWCSession::Initialize()
 
 		VARIANT_BOOL hasKeys;
 		pReadCookie.get_HasKeys(&hasKeys);
+		CComBSTR ret;
 		if (hasKeys == VARIANT_TRUE)
 		{
 			INT cnt;
 			pReadCookie.get_Count(&cnt);
 			logModule.Write(L"found more session cookies! %d", cnt);
 			//ignore other keys, read the first one.
-			VARIANT key = {0};
+			VARIANT key = { 0 };
 			key.vt = VT_I4;
-			key.intVal = 1; // collections in classic asp are one based, not zero
-			hr = pReadCookie.get_Item(key, &strGUID);
+			key.intVal = 1; // collections in classic asp are one based, not zero		
+			hr = pReadCookie.get_Item(key, &ret);
 		}
 		else
 		{
-			hr = pReadCookie.get_Item(vMissing, &strGUID);
+			hr = pReadCookie.get_Item(vMissing, &ret);
+		}
+		if (ret.Length() > 0)
+		{
+			strGUID = ret.m_str;
 		}
 
 		logModule.Write(L"get_Cookies with token %s Item: %s %x", m_bstrToken, strGUID, hr);
@@ -441,17 +446,16 @@ STDMETHODIMP NWCSession::Initialize()
 	if (tmpdate <= MAXTIME) strTemp.Empty();
 	#endif
 
-	if ((strGUID.IsEmpty() || IsValidHex(strGUID)==FALSE) && blnFoundURLGuid == FALSE)
+	if ((strGUID.empty() || is_hex_notation(strGUID)==false) && blnFoundURLGuid == FALSE)
 	{
 		ReadCookieFromQueryString();
 	}
-
-	g_blnValid = setstring(reinterpret_cast<PUCHAR>(&guid), strGUID);
-	logModule.Write(L"cookie valid: %d", g_blnValid);
-
-	if (guid == GUID_NULL)
+	if (guid != GUID_NULL)
+		strGUID = sHexFromBt(&guid);
+	else
 		g_blnValid = FALSE;
 
+	logModule.Write(L"cookie valid: %d", g_blnValid);
 	blnExpired =
 	blnCancel = FALSE;
 	#ifdef Demo
@@ -523,12 +527,14 @@ STDMETHODIMP NWCSession::get_SessionID(BSTR* pVal) throw()
 		if (bHashsessionID == TRUE)
 		{
 			//put return in pVal using a temp BSTR copy
-			CComBSTR temp;
-			temp =strGUID.GetHashCode();
-			*pVal = temp.Detach();
+			
+			auto temp =get_hashcode(strGUID);
+			wchar_t buffer[10];
+			_itow(temp, buffer, 10);
+			*pVal = SysAllocString(buffer);
 		}
 		else
-			*pVal = strGUID.Copy();
+			*pVal = SysAllocString(strGUID.c_str());
 
 	}
 	return S_OK;
@@ -662,7 +668,7 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 	HRESULT hr = S_OK;
 	CComVariant vcopy;
 	GUID testValid;
-	if (strCheckA.vt  != VT_BSTR)
+	if (strCheckA.vt != VT_BSTR)
 	{
 		hr = vcopy.ChangeType(VT_BSTR, &strCheckA);
 		if (FAILED(hr)) return hr;
@@ -674,28 +680,28 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 		vcopy.vt = VT_BSTR;
 	}
 
-	CComBSTR workbuf (vcopy.bstrVal);
+	CComBSTR workbuf(vcopy.bstrVal);
 
-	bool found  =  workbuf.IndexOf('?') >= 0;
-	CComBSTR findthis(m_bstrToken);
+	bool found = workbuf.IndexOf('?') >= 0;
+	CComBSTR findthis(m_bstrToken.c_str());
 	findthis.Append(L'='); //find GUID=
 	int foundGUID = workbuf.IndexOf(findthis);
 
 
-//if GUID is already equal and included
-	// do NOT add the GUID again!
-	//URL = (strCheckA + strPar + m_bstrToken + "=" + strGUID);
+	//if GUID is already equal and included
+		// do NOT add the GUID again!
+		//URL = (strCheckA + strPar + m_bstrToken + "=" + strGUID);
 	bool replaceDone = false;
-	if (foundGUID >=0)
+	if (foundGUID >= 0)
 	{
 		//http://localhost/nocookieweb/login.asp?blaat=7&GUID=754DF26965B14CEDE77EE9914842FB02
 		if ((int)workbuf.Length() >= foundGUID + 5 + 32)
 		{
 			CComBSTR tempGuid;
 			tempGuid.Attach(workbuf.Substring(foundGUID + 5, 32));
-			if (setstring((PUCHAR)&testValid, tempGuid) == TRUE)
+			if (setstring(&testValid, wstring( tempGuid.m_str)))
 			{
-				workbuf.MergeString(foundGUID + 5, strGUID);
+				workbuf.MergeString(foundGUID + 5, CComBSTR(strGUID.c_str()));
 				replaceDone = true;
 			}
 		}
@@ -705,11 +711,11 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 			int nextToken = workbuf.IndexOf('&', foundGUID, true);
 			if (nextToken < 0)
 			{
-				workbuf.Remove(foundGUID-1, workbuf.Length() - foundGUID+1);
+				workbuf.Remove(foundGUID - 1, workbuf.Length() - foundGUID + 1);
 			}
 			else
 			{
-				workbuf.Remove(foundGUID-1, nextToken - foundGUID+1);
+				workbuf.Remove(foundGUID - 1, nextToken - foundGUID + 1);
 			}
 		}
 	}
@@ -719,9 +725,9 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 	{
 		PWSTR strPar = found ? L"&amp;" : L"?";
 		workbuf.Append(strPar);
-		workbuf.AppendBSTR(m_bstrToken);
+		workbuf.Append(m_bstrToken.c_str());
 		workbuf.Append(L'=');
-		workbuf += strGUID;
+		workbuf.Append(strGUID.c_str());
 	}
 
 	pVal->vt = VT_BSTR;
@@ -825,10 +831,10 @@ STDMETHODIMP NWCSession::put_LiquidCookie(VARIANT_BOOL newVal) throw()
 		{
 			blnLiquid = FALSE;
 			guid = oldGuid;
-			if (!m_OldSessionId.IsEmpty())
+			if (!m_OldSessionId.empty())
 			{
-				m_OldSessionId.CopyTo(&strGUID);
-				m_OldSessionId.Empty();
+				strGUID = m_OldSessionId;
+				m_OldSessionId.clear();
 				WriteCookie(strGUID);
 			}
 		}
@@ -992,10 +998,7 @@ STDMETHODIMP STDMETHODCALLTYPE NWCSession::dbInit(void) noexcept
 	}
 	//we always must read the timestamp, because 'did insert' might be set to true at the very first time
 	memcpy(m_dbTimeStamp, pgetSession.m_timest, sizeof(m_dbTimeStamp));
-#ifdef DEBUG
-	temp2.Attach(sHexFromBt(m_dbTimeStamp, 8));
-	logModule.Write(L"timestamp %s", temp2);
-#endif
+
 	CHECKHR
 
 	if ((blnNew == FALSE) && (blnExpired == FALSE))
@@ -1095,14 +1098,14 @@ STDMETHODIMP NWCSession::NewID(void) throw()
     HRESULT hr = S_OK;
 	if (blnLiquid == TRUE && blnNew == FALSE)
 	{
-		m_OldSessionId.AssignBSTR(strGUID);
+		m_OldSessionId = strGUID;
 	}
 	if ((blnLiquid == TRUE) || (blnNew == TRUE))
 	{
 		hr = this->NewGuid(&guid);
 	}
 
-	sHexFromBt(&guid, &strGUID);
+	strGUID = sHexFromBt(&guid);
 	return hr;
 }
 
@@ -1172,7 +1175,7 @@ STDMETHODIMP NWCSession::put_ReEntrance(VARIANT_BOOL newVal) throw()
 	return S_OK;
 }
 
-STDMETHODIMP NWCSession::WriteCookie(BSTR cookieValue) throw()
+STDMETHODIMP NWCSession::WriteCookie(wstring cookieValue) throw()
 {
 
 	CComVariant vRet;
@@ -1183,14 +1186,14 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookieValue) throw()
 
 	WriteSessionCookie m_pWriteCookie;
 
-	if (!strCookieDOM.IsEmpty())
+	if (!strCookieDOM.empty())
 	{
-		hr = m_pWriteCookie.put_Domain(strCookieDOM);
+		hr = m_pWriteCookie.put_Domain(CComBSTR(strCookieDOM.c_str()));
 		logModule.Write(L"CookieDomain written %s %x", strCookieDOM, hr);
 	}
-	if (!strAppPath.IsEmpty())
+	if (!strAppPath.empty())
 	{
-		hr = m_pWriteCookie.put_Path(strAppPath);
+		hr = m_pWriteCookie.put_Path(CComBSTR(strAppPath.c_str()));
 		logModule.Write(L"CookiePath %s %x", strAppPath, hr);
 	}
 
@@ -1203,7 +1206,7 @@ STDMETHODIMP NWCSession::WriteCookie(BSTR cookieValue) throw()
 		logModule.Write(L"put_Expires %s %x", bstrOn, hr);
 	}
 
-	hr = m_pWriteCookie.put_Item(m_bstrToken, cookieValue);
+	hr = m_pWriteCookie.put_Item(CComBSTR(m_bstrToken.c_str()), CComBSTR(cookieValue.c_str()));
 	logModule.Write( L"Cookie: %s %x", cookieValue, hr);
 
 
@@ -1296,16 +1299,16 @@ STDMETHODIMP NWCSession::Statistics(VARIANT vAppKey, VARIANT vSessionID, INWCVar
 			return hr;
 		}
 
-		BOOL isValid = setstring((const PUCHAR)&session, vSessionID.bstrVal);
-		if (isValid != TRUE)
+		auto isValid = setstring(&session, wstring(vSessionID.bstrVal));
+		if (!isValid)
 		{
 			logModule.Write(L"Statistics valid vSessionId %d", isValid);
 		}
 	}
 	if (!isMissing && vAppKey.vt== VT_BSTR)
 	{
-		BOOL isValid = setstring((const PUCHAR)&guid, vAppKey.bstrVal);
-		if (isValid != TRUE)
+		auto isValid = setstring(&guid, wstring(vAppKey.bstrVal));
+		if (!isValid)
 			hr = E_INVALIDARG;
 		logModule.Write(L"Statistics valid appkey %d", isValid);
 	}
@@ -1407,7 +1410,7 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 	CComPtr<IRequestDictionary> pQueryString;
 	piRequest->get_QueryString(&pQueryString);
 	CComVariant varReturn;
-	CComVariant key(m_bstrToken.m_str);
+	CComVariant key(m_bstrToken.c_str());
 	pQueryString->get_Item(key, &varReturn); //key = Request.QueryString(m_bstrToken)
 
 	//VT_DISPATCH to VT_BSTR
@@ -1428,7 +1431,7 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 		pStringList->get_Item(vtIdx, &varReturn);
 	}
 	pStringList.Release();
-	if (intListCount !=1 || strGUID.CompareTo(varReturn.bstrVal, true) != 0)
+	if (intListCount !=1 || strGUID.compare(varReturn.bstrVal) != 0)
 	{
 		varReturn.Clear();
 
@@ -1448,9 +1451,9 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 		varReturn.Detach(&bstrUrl);
 		bstrUrl.Append(L'?'); //url = url + "?"
 
-		bstrUrl.AppendBSTR(m_bstrToken);
+		bstrUrl.Append(m_bstrToken.c_str());
 		bstrUrl.Append(L'=');
-		bstrUrl.AppendBSTR(strGUID);
+		bstrUrl.Append(strGUID.c_str());
 
 		IUnknown* pEnum;
 		pQueryString->get__NewEnum(&pEnum);
@@ -1465,7 +1468,7 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 			CComVariant varValue;
 			pQueryString->get_Item(key, &varValue);
 			// if guid <> "GUID" then
-			if (m_bstrToken.CompareTo(key.bstrVal, true) != 0)
+			if (m_bstrToken.compare(key.bstrVal) != 0)
 			{
 
 				if (varValue.vt != VT_DISPATCH) return E_UNEXPECTED;
@@ -1496,17 +1499,19 @@ STDMETHODIMP NWCSession::EnsureURLCookie() throw()
 STDMETHODIMP NWCSession::get_OldSessionID(BSTR *pVal) throw()
 {
 	*pVal = nullptr;
-	if (!m_OldSessionId.IsEmpty())
+	if (!m_OldSessionId.empty())
 	{
 		if (bHashsessionID == TRUE)
 		{
 			//put return in pVal using a temp BSTR copy
-			CComBSTR temp;
-			temp = m_OldSessionId.GetHashCode();
-			*pVal = temp.Detach();
+			
+			auto temp = get_hashcode(m_OldSessionId);
+			wchar_t buffer[10];
+			_itow(temp, buffer, 10);
+			*pVal = ::SysAllocString(buffer);
 		}
 		else
-			*pVal = m_OldSessionId.Copy();
+			*pVal = ::SysAllocString(m_OldSessionId.c_str());
 
 	}
 	else
@@ -1530,7 +1535,7 @@ STDMETHODIMP_(void) NWCSession::ReadCookieFromQueryString() throw()
 	{
 		VARIANT vkey;
 		vkey.vt = VT_BSTR; //lend the data
-		vkey.bstrVal = m_bstrToken;
+		vkey.bstrVal = CComBSTR(m_bstrToken.c_str()).Detach();
 		hr = oReqDict->get_Item(vkey, &vitem);
 		logModule.Write(L"Get QueryString with key %s %x", m_bstrToken, hr);
 		vkey.vt = VT_EMPTY;
@@ -1542,13 +1547,12 @@ STDMETHODIMP_(void) NWCSession::ReadCookieFromQueryString() throw()
 		vMissing.intVal = 1; //just item 1 (index 0)
 		pStringList->get_Item(vMissing, &vitem);
 		//ignore invalid index, in case there really is no cookie
-		BOOL isValid = vitem.vt == VT_BSTR && IsValidHex(vitem.bstrVal);
+		BOOL isValid = vitem.vt == VT_BSTR && is_hex_notation(wstring(vitem.bstrVal));
 		if (isValid == TRUE)
 		{
 			blnFoundURLGuid = TRUE;
 			logModule.Write(L"QueryString: %s, %x", vitem.bstrVal, hr);
-			vitem.Detach(&strGUID);
-
+			strGUID = vitem.bstrVal;
 		}
 		else
 			logModule.Write(L"tried QueryString(GUID)");

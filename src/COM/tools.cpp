@@ -459,111 +459,52 @@ std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) noexcept
 	};
 	return std::move(retVal);
 }
-void __stdcall sHexFromBt(GUID* psa, BSTR *sRet) noexcept
+wstring sHexFromBt(GUID* psa) noexcept
 {
 	auto pvdata = (PBYTE)psa;
-	if (::SysReAllocStringLen(sRet, psa == NULL ? L"00000000000000000000000000000000" : NULL, sizeof(GUID) * 2) == TRUE)
+	wstring sRet;
+	sRet.reserve(sizeof(GUID) * 2);
+
+	for (int cx = 0, bx = 0; cx < sizeof(GUID) * 2; bx++,cx+=2)
 	{
-
-		//ZeroMemory(*sRet, sizeof(GUID) *2);
-		BSTR sdata = *sRet;
-		for (int cx = 0, bx = 0; cx < sizeof(GUID) * 2; bx++)
-		{
-			wchar_t btByte = pvdata[bx];
-			wchar_t btByte2 = btByte & 15;
-			btByte = btByte / 16;
-			if (btByte > 9)
-				btByte += 55;
-			else
-				btByte |= 48;
-
-			if (btByte2 > 9)
-				btByte2 += 55;
-			else
-				btByte2 |= 48;
-			sdata[cx++] = btByte;
-			sdata[cx++] = btByte2;
-		}
-	}
-}
-
-// converts binary array to hexadecimal string prepended by 0x
-// so {0xFF, 0xFF} would become L"0xFFFF" 
-BSTR __stdcall sHexFromBt(const PUCHAR btBytes, LONG cb, bool prepend) noexcept
-{
-    int cx; 
-	BYTE btBlah;
-	BYTE btByte;
-    BYTE btByte2;
-    LONG lUbound = cb;
-	PBYTE btfetch;
-
-	PULONG pulHex;
-	CComBSTR myGUID(cb * 2 + 2); 
-	if (btBytes == NULL) 
-		myGUID = L"00000000000000000000000000000000";
-	else
-	{	
-		if (prepend)
-		{
-			pulHex = (PULONG)myGUID.m_str + 1;
-			myGUID.m_str[0] = L'0';
-			myGUID.m_str[1] = L'x';
-		}
+		wchar_t btByte = pvdata[bx];
+		wchar_t btByte2 = btByte & 15;
+		btByte = btByte / 16;
+		if (btByte > 9)
+			btByte += 55;
 		else
-		{
-			pulHex = (PULONG)myGUID.m_str;
-		}
+			btByte |= 48;
 
-		btfetch = (PBYTE) btBytes;
+		if (btByte2 > 9)
+			btByte2 += 55;
+		else
+			btByte2 |= 48;
+		//ZeroMemory(*sRet, sizeof(GUID) *2);
+		sRet.push_back((char)btByte);
+		sRet.push_back((char)btByte2);
 
-		for (cx =lUbound  - 1 ; cx>=0; cx--) 
-		{
-			btBlah = btfetch[cx];
-			btByte2 =btBlah & 15;
-			btByte = btBlah >>4;
-
-			if (btByte > 9)  
-				btByte += 55;
-			else 
-				btByte |=  48;
-
-			if (btByte2 > 9) 
-				btByte2 +=  55;
-			else 
-				btByte2 |= 48;
-			
-			pulHex[cx]= (ULONG)btByte2 <<16 | btByte;
-		}
 	}
-	return  myGUID.Detach();
-	
+	return std::move(sRet);
 }
-BOOL __stdcall IsValidHex(const BSTR Cookie) noexcept
-{
-	UINT sLen = ::SysStringLen(Cookie);
 
-	if (sLen == (sizeof(GUID) * 2))
-	{		
-		for (INT cx = (sizeof(GUID) / sizeof(int)) - 1; cx >= 0; cx--)
-		{
-			auto converted = wcstoul(&Cookie[cx*sizeof(__int64)], L'\0', 16);
-			if (converted == 0)
-			{
-				return FALSE;
-			}
-		}
-	}
-	return TRUE;
-}
+
 // Converts Hex GUID in Parameter strCookiePtr to addrGUID
-BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) noexcept
+bool is_hex_notation(std::wstring const& s)
 {
-	
+	return  s.size() == 32
+		&& s.find_first_not_of(L"0123456789abcdefABCDEF", 0) == std::wstring::npos;
+}
+
+bool setstring(GUID* addrGUID,wstring& strCookiePtr) noexcept
+{
+	if (strCookiePtr.empty())
+	{
+		return false;
+	}
 	LONG cx = 0;
 	UCHAR btByte = 0, btByte2 = 0;
-	PUCHAR sdata = reinterpret_cast<PUCHAR>(strCookiePtr);
-	UINT sLen = ::SysStringLen(strCookiePtr);
+	auto sdata = (PUCHAR)strCookiePtr.c_str();
+	UINT sLen = strCookiePtr.length();
 	BOOL retval = TRUE;
 	if (sLen == (sizeof(GUID) * 2))
 	{
@@ -593,7 +534,7 @@ BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) noexcept
 			{
 				retval = FALSE; break;
 			}
-			addrGUID[bx] = (btByte * 16) | btByte2;
+			((PUCHAR)addrGUID)[bx] = (btByte * 16) | btByte2;
 		}
 
 	}
@@ -602,14 +543,6 @@ BOOL __stdcall setstring(const PUCHAR addrGUID,const BSTR strCookiePtr) noexcept
 
 	return  retval;
 	
-}
-void __stdcall FreeString(__out BSTR * theString) noexcept
-{
-	if (theString != NULL && *theString != NULL)
-	{
-		SysFreeString(*theString);
-		*theString = NULL;
-	}
 }
 
 STDMETHODIMP ISequentialStream_Copy(_In_ ISequentialStream* iface, _In_ ISequentialStream* pstm, _In_ ULARGE_INTEGER cb, _Inout_opt_ ULARGE_INTEGER* pcbRead, _Inout_opt_ ULARGE_INTEGER* pcbWritten) noexcept
@@ -664,98 +597,7 @@ STDMETHODIMP ISequentialStream_Copy(_In_ ISequentialStream* iface, _In_ ISequent
 
 }
 
-// LicentieCheck
-// do not modify these lines. It is illegal.
-// position - 
-// meaning
-// position 1: License
-// position 2-5 calculated license
-// position 6-9 calculated hash on license (if license type = 4)
-bool __stdcall ::LicentieCheck(GUID *license, BSTR strLicensedFor) noexcept
-{
-	bool retVal = false;
-	char licenseType = 0;
-	//most left byte is license type.
-	memcpy(&licenseType, license, sizeof(licenseType));
-	// the domain name or PC name
-	// prefer dns name, then NT4 Domain Name, then PC name.
-	
-	CComBSTR NT4NETBIOSNAME;
-	CComBSTR dnsDomain;
-	CComBSTR buf(strLicensedFor);
-	dnsDomain.Attach(GetDCDomain());
-	NT4NETBIOSNAME.Attach(GetNetBIOSName());
-	// split since this is a CR LF line separated text file (notepad format)
-	// our Control Number is and should be the last line!
-	// should be a hidden string!
 
-	CComSafeArray<BSTR> lines;
-	//backward compat for line separated licenses
-	if (buf.IndexOf(L"\r\n") > 0)
-	{
-		buf.Insert(0, L"\r\n");
-		lines.Attach(buf.Split(L"\r\n"));
-	}
-	else
-	{
-		buf.Insert(0, L" ");
-		lines.Attach(buf.Split(L" "));
-	}
-	lines.SetAt(0, ::SysAllocString(licenseType>=5 ? L"ISP Session Cache 8.0": L"ISP Session Version 8.0"), false);
-
-	ULONG arraySize = lines.GetCount();
-	bool foundLicensedItem = false;
-	while (arraySize-- != 1) // line 0 contains 
-	{
-		if (NT4NETBIOSNAME.CompareTo(lines.GetAt(arraySize), true) == 0
-			|| dnsDomain.CompareTo(lines.GetAt(arraySize), true) == 0)
-		{
-			foundLicensedItem = true;
-			break;
-		}
-	}
-	if (foundLicensedItem == false && (licenseType != 4 && licenseType != 8))
-	{
-		logModule.Write(L"Could not find licensedItem %s in allowed licensee %s", NT4NETBIOSNAME.m_str, buf);
-		return false;
-	}
-	CComBSTR space(L" "); // reuse variable
-	buf.Attach(CComBSTR::Join(lines.m_psa, space));
-	ULONG hashcode = buf.GetHashCode(),
-		checkCode, checkCode2;
-	//offset 4
-	memcpy(&checkCode, (PBYTE)license + sizeof(unsigned char),
-		sizeof(checkCode));
-	//offset 5
-	memcpy(&checkCode2,
-		(PBYTE)license + sizeof(unsigned char) + sizeof(checkCode),
-		sizeof(checkCode2));
-	logModule.Write(L"given license %d calculated license %d license hash %d",
-		checkCode, hashcode, checkCode2);
-	switch (licenseType)
-	{
-	case 5: case 6: case 7:
-		
-	case 1: case 2: case 3://isp session simple / advanced & ent
-		if (hashcode == checkCode)
-			retVal = true;
-
-		break;
-	case 8:
-	case 4://isp session blk this just checks the GUID, not the given domain name
-
-		buf = static_cast<LONG>(licenseType);
-		space = checkCode; //reuse variable
-		buf += space;
-		if (buf.GetHashCode() == checkCode2)
-			retVal = true;
-		break;
-	default:
-		retVal = false;
-	}
-
-	return retVal;
-}
 
 static const unsigned char HashDataLookup[256] = {
 				  0x01, 0x0E, 0x6E, 0x19, 0x61, 0xAE, 0x84, 0x77, 0x8A, 0xAA, 0x7D, 0x76, 0x1B,
@@ -814,4 +656,18 @@ std::wstring getenv(wstring& envName)
 	::_wgetenv_s(&required_size, (wchar_t*)env_var.data(), required_size, envName.c_str());
 
 	return std::move(env_var);
+}
+unsigned long get_hashcode(std::wstring& s)
+{
+	unsigned long hash = 0;
+
+	if (!s.empty())
+	{
+		//compress unicode before hashing
+		const auto lpza = ws2s(s);
+		HRESULT	hr = HashData2((const unsigned char*)lpza.c_str(), lpza.length(), (LPBYTE)&hash, sizeof(unsigned long));
+		if (hr != S_OK) hash = 0xFFFFFFFF;
+	}
+
+	return hash;
 }

@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30503.244
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34024.191
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{E689F604-F0DC-4B9A-87AD-84C34B05F421}"
 EndProject
@@ -20,6 +20,7 @@ Project("{911E67C6-3D85-4FCE-B560-20A9C3E3FF48}") = "nuget", "nuget.exe", "{5C8A
 		UseLegacyDebugEngines = No
 		LaunchSQLEngine = No
 		AttachLaunchAction = No
+		IORedirection = Auto
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CSession", "COM\CSession.vcxproj", "{13A83C8F-5DFB-444F-8E89-AF41261DE804}"
@@ -98,8 +99,8 @@ Global
 		{5C8A7E17-CCE6-473C-9D9E-7A93208983D9}.Release|x86.ActiveCfg = Release
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Lib.ActiveCfg = Debug|Win32
-		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Mixed Platforms.ActiveCfg = Release|Win32
+		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Mixed Platforms.Build.0 = Release|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Win32.ActiveCfg = Debug|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|Win32.Build.0 = Debug|Win32
 		{13A83C8F-5DFB-444F-8E89-AF41261DE804}.Debug|x64.ActiveCfg = Debug|x64

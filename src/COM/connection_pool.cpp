@@ -257,10 +257,9 @@ connection::ptr_t connection_pool::create_slave_connection()
     unsigned int seed = static_cast<unsigned int>( std::chrono::system_clock::now().time_since_epoch().count());
     std::shuffle(slaves.begin(), slaves.end(), std::default_random_engine(seed));
 
-    for (std::vector<reply>::const_iterator it = slaves.begin();
-         it != slaves.end(); ++it)
+    for (const auto& it : slaves)
     {
-        const std::vector<reply>& properties = it->elements();
+        const std::vector<reply>& properties = it.elements();
         if (properties.at(9).str() == "slave")
         {
             std::string host = properties.at(3).str();

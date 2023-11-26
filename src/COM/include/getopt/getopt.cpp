@@ -38,7 +38,7 @@ YOUR INFORMATION HANDLING SYSTEM OR OTHERWISE, EVEN If WE ARE
 EXPRESSLY ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.
 */
 #define _CRT_SECURE_NO_WARNINGS
-
+#include "stdafx.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdio.h>

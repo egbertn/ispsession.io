@@ -3,14 +3,13 @@
 
 STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, wstring& token) noexcept
 {
-	auto hr = S_FALSE;
 	if (request == nullptr || token.empty())
 	{
 		return E_INVALIDARG;
 	}
 	CComPtr<IRequestDictionary> req;
 
-	hr = request->get_ServerVariables(&req);
+	request->get_ServerVariables(&req);
 	CComVariant ret;
 	if (SUCCEEDED(req->get_Item(CComVariant(L"HTTP_COOKIE"), &ret)))
 	{
@@ -49,7 +48,7 @@ STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, wstring& token) no
 					if (token.compare(keyvaluePair.GetAt(0)) == 0)
 					{
 						m_CookieValue.AssignBSTR(keyvaluePair.GetAt(1));
-						if (m_CookieValue.IndexOf(L"&", 0U, true) > 0)
+						if (m_CookieValue.IndexOf(L"&", 0, true) > 0)
 						{
 							CComSafeArray<BSTR> lines;
 							CComSafeArray<BSTR> keyvaluePair2;
@@ -61,19 +60,17 @@ STDMETHODIMP ReadSessionCookie::Initialize(IRequest* request, wstring& token) no
 								line.Detach();
 								if (keyvaluePair2.GetCount() == 2)
 								{
-									_dictionary.insert(pair<CComBSTR, CComBSTR>(keyvaluePair2.GetAt(0), keyvaluePair2.GetAt(1)));
+									_dictionary.emplace(pair<CComBSTR, CComBSTR>(keyvaluePair2.GetAt(0), keyvaluePair2.GetAt(1)));
 								}
 							}
 						}
-						found = true;
-						hr = S_OK;
-						break;
+						return S_OK;
 					}
 				}
 			}
 		}
 	}	
-	return hr;
+	return S_FALSE;
 }
 
 STDMETHODIMP ReadSessionCookie::get_Item(const VARIANT item, BSTR* strRet) noexcept

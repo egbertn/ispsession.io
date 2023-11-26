@@ -21,8 +21,10 @@ public:
 		if (psaCopy != nullptr)
 		{
 			HRESULT hr = ::SafeArrayUnaccessData(psaCopy);
-			(hr);
-			::SafeArrayDestroy(psaCopy);
+			if (hr == S_OK)
+			{
+				::SafeArrayDestroy(psaCopy);
+			}
 		}
 	}
 	//DECLARE_NO_REGISTRY()

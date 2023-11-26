@@ -9,17 +9,17 @@
 #include "tools.h"
 #include <chrono>
 #include "ScriptingContext.h"
+#include <filesystem>
 //TODO: consider optimistic locking http://www.redis.io/topics/transactions
 
 STDMETHODIMP NWCSession::Initialize(IDispatch* Request, IDispatch* server, IDispatch* response) noexcept
 {
 	if (m_OnStartPageCalled == false)
 	{
-		IScriptingContext* context;
 		CComObject<ScriptingContext>* ctx;
 		CComObject<ScriptingContext>::CreateInstance(&ctx);
 		CComPtr<IUnknown> punk;
-		punk = context;
+		punk = ctx;
 		ctx->Initialize(Request, server, response);
 		this->OnStartPage(punk);
 	}
@@ -157,7 +157,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	hr = m_piServer->MapPath(configFile, &root);
 	configFile.Insert(0, L".");
 	//IIS Setting 'enable parent paths' must be enabled
-	for (;;)
+	while(true)
 	{
 		retVal.Empty();
 		hr = m_piServer->MapPath(configFile, &retVal);
@@ -165,7 +165,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 		{
 			break;
 		}
-		if ((exists = FileExists(retVal))== true)
+		if ((exists = std::filesystem::exists(retVal.m_str))== true)
 		{
 			break;
 		}
@@ -184,7 +184,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	if (exists == FALSE)
 	{
 
-		exists = FileExists(root);
+		exists = std::filesystem::exists(root.m_str);
 		if (exists == TRUE)
 		{//last resort
 			retVal.Attach(root.Detach());
@@ -197,7 +197,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 		return HRESULT_FROM_WIN32( ERROR_FILE_NOT_FOUND);
 	}
 	ConfigurationManager config(retVal);
-	const PWSTR prefix = L"ispsession_io:";
+	PCWSTR prefix = L"ispsession_io:";
 	wstring bstrProp(L"EnableLogging");
 	wstring temp;
 	CComBSTR strLicensedFor;
@@ -264,7 +264,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
     }
 	bstrProp = L"DataSource";
 	bstrProp.insert(0, prefix);
-	strConstruct = getenv(bstrProp);
+	strConstruct = get_environment_variable(bstrProp);
 	if (strConstruct.empty()) // try web.Config
 	{
 		strConstruct.assign(config.AppSettings(bstrProp));
@@ -304,7 +304,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	{
 		m_bstrToken = bstrProp;
 	}
-	logModule.Write(L"Timeout (%d), AD_DOMAIN: (%s), AD_PATH: (%s), CookieName (%s)", lngTimeout, strCookieDOM, strAppPath, m_bstrToken);
+	logModule.Write(L"Timeout (%d), CookieDomain: (%s), CookiePath: (%s), CookieName (%s)", lngTimeout, strCookieDOM.c_str(), strAppPath.c_str(), m_bstrToken.c_str());
 
 	bstrProp = L"SessionTimeout";
 	bstrProp.insert(0, prefix);
@@ -332,7 +332,6 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	}
 	logModule.Write(L"SnifQueryStringFirst (%d)", blnSnifQueryStringFirst);
 
-
 	bstrProp = L"CookieNoSSL";
 	bstrProp.insert(0, prefix);
 	bstrProp.assign(config.AppSettings(bstrProp));
@@ -344,10 +343,10 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	bstrProp = L"CookieExpires";
 	bstrProp.insert(0, prefix);
 	bstrProp.assign(config.AppSettings(bstrProp));
-	logModule.Write(L"CookieNoSSL (%d), expiration in minutes %s", blnCookieNoSSL, bstrProp);
+	logModule.Write(L"CookieNoSSL (%d), expiration in minutes %s", blnCookieNoSSL, bstrProp.c_str());
 	if (is_number(bstrProp))
-	{// could be VT_I2 or VT_I4
-
+	{
+		// could be VT_I2 or VT_I4
 		// equivalent to DateAdd("n", vExpires, Now())
 		dtExpires = stoi(bstrProp);
 	}
@@ -362,7 +361,7 @@ STDMETHODIMP NWCSession::ReadConfigFromWebConfig()
 	}
 	else
 	{
-		logModule.Write(L"AppKey: (%s)", bstrProp);
+		logModule.Write(L"AppKey: (%s)", bstrProp.c_str());
 	}
 
 	if (!setstring(&btAppKey, bstrProp))
@@ -438,7 +437,7 @@ STDMETHODIMP NWCSession::Initialize()
 			strGUID = ret.m_str;
 		}
 
-		logModule.Write(L"get_Cookies with token %s Item: %s %x", m_bstrToken, strGUID, hr);
+		logModule.Write(L"get_Cookies with token %s Item: %s %x", m_bstrToken.c_str(), strGUID, hr);
 
 	}
 
@@ -450,10 +449,7 @@ STDMETHODIMP NWCSession::Initialize()
 	{
 		ReadCookieFromQueryString();
 	}
-	if (guid != GUID_NULL)
-		strGUID = sHexFromBt(&guid);
-	else
-		g_blnValid = FALSE;
+	g_blnValid = setstring(&guid, strGUID);
 
 	logModule.Write(L"cookie valid: %d", g_blnValid);
 	blnExpired =
@@ -701,7 +697,7 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 			tempGuid.Attach(workbuf.Substring(foundGUID + 5, 32));
 			if (setstring(&testValid, wstring( tempGuid.m_str)))
 			{
-				workbuf.MergeString(foundGUID + 5, CComBSTR(strGUID.c_str()));
+				workbuf.MergeString(foundGUID + 5, CComBSTR(strGUID));
 				replaceDone = true;
 			}
 		}
@@ -723,7 +719,7 @@ STDMETHODIMP NWCSession::get_URL(VARIANT strCheckA, VARIANT* pVal)  throw()
 
 	if (replaceDone == false)
 	{
-		PWSTR strPar = found ? L"&amp;" : L"?";
+		PCWSTR strPar = found ? L"&amp;" : L"?";
 		workbuf.Append(strPar);
 		workbuf.Append(m_bstrToken.c_str());
 		workbuf.Append(L'=');
@@ -1188,13 +1184,13 @@ STDMETHODIMP NWCSession::WriteCookie(wstring cookieValue) throw()
 
 	if (!strCookieDOM.empty())
 	{
-		hr = m_pWriteCookie.put_Domain(CComBSTR(strCookieDOM.c_str()));
-		logModule.Write(L"CookieDomain written %s %x", strCookieDOM, hr);
+		hr = m_pWriteCookie.put_Domain(CComBSTR(strCookieDOM));
+		logModule.Write(L"CookieDomain written %s %x", strCookieDOM.c_str(), hr);
 	}
 	if (!strAppPath.empty())
 	{
-		hr = m_pWriteCookie.put_Path(CComBSTR(strAppPath.c_str()));
-		logModule.Write(L"CookiePath %s %x", strAppPath, hr);
+		hr = m_pWriteCookie.put_Path(CComBSTR(strAppPath));
+		logModule.Write(L"CookiePath %s %x", strAppPath.c_str(), hr);
 	}
 
 	if (dtExpires != 0)
@@ -1206,8 +1202,8 @@ STDMETHODIMP NWCSession::WriteCookie(wstring cookieValue) throw()
 		logModule.Write(L"put_Expires %s %x", bstrOn, hr);
 	}
 
-	hr = m_pWriteCookie.put_Item(CComBSTR(m_bstrToken.c_str()), CComBSTR(cookieValue.c_str()));
-	logModule.Write( L"Cookie: %s %x", cookieValue, hr);
+	hr = m_pWriteCookie.put_Item(CComBSTR(m_bstrToken), CComBSTR(cookieValue));
+	logModule.Write( L"Cookie: %s %x", cookieValue.c_str(), hr);
 
 
 	// be sure if it was 'secure' to keep it like that.
@@ -1535,9 +1531,9 @@ STDMETHODIMP_(void) NWCSession::ReadCookieFromQueryString() throw()
 	{
 		VARIANT vkey;
 		vkey.vt = VT_BSTR; //lend the data
-		vkey.bstrVal = CComBSTR(m_bstrToken.c_str()).Detach();
+		vkey.bstrVal = CComBSTR(m_bstrToken).Detach();
 		hr = oReqDict->get_Item(vkey, &vitem);
-		logModule.Write(L"Get QueryString with key %s %x", m_bstrToken, hr);
+		logModule.Write(L"Get QueryString with key %s %x", m_bstrToken.c_str(), hr);
 		vkey.vt = VT_EMPTY;
 
 		CComPtr<IStringList> pStringList;

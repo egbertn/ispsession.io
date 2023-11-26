@@ -64,10 +64,12 @@ void LoggingModule::set_Logging(int enable) noexcept
 	if ((m_LoggingEnabled & 1) == 1)
 	{	
 		//find out if we can log in the current directory or otherwise have to use \%SystemRoot%\Temp
-		CComBSTR path;
 		m_logFileName.Attach(GetModulePath());
-		path.Attach(FileStripFile(m_logFileName));
-		m_logFileName.Attach(FileStripPath(m_logFileName));	
+		auto pathsys = std::filesystem::path(m_logFileName.m_str);
+		
+		CComBSTR path(pathsys.parent_path().c_str());
+		m_logFileName = pathsys.filename().c_str();
+
 		if (m_logFileName.IsEmpty())
 		{
 			OutputDebugStringW(L"Cannot log, LogFileName invalid");
@@ -83,8 +85,8 @@ void LoggingModule::set_Logging(int enable) noexcept
 			// it automatically will return \Windows\Temp but that is undocumented. So we do it ourselves
 			
 			std::wstring buf = m_tempLocation == 0 ? 
-				(getenv(wstring(L"windir")) + L"\\temp") : 
-				std::filesystem::temp_directory_path();
+				(get_environment_variable(wstring(L"windir")) + L"\\temp") :
+				std::filesystem::temp_directory_path().wstring();
 
 			if (buf.empty())
 			{
@@ -139,24 +141,22 @@ void LoggingModule::Write(PCWSTR pszFormat, ...)  noexcept
 {
 	bool noFileAccess = false;
 	CComBSTR m_fmt;
-//	CMutex mutResult;
+	//	CMutex mutResult;
 	if (m_LoggingEnabled == 0)
 		return;
 	else if ((m_LoggingEnabled & 1) == 1)
 	{
-		
-		
 	}
 	CComBSTR m_bstrTrace;
 	va_list ptr;
-	va_start(ptr, pszFormat);		
+	va_start(ptr, pszFormat);
 	m_bstrTrace.Format(pszFormat, ptr);
 	va_end(ptr);
-	if ((m_LoggingEnabled & 4) == 4 && !m_bstrTrace.StartsWith(L"db:") )
+	if ((m_LoggingEnabled & 4) == 4 && !m_bstrTrace.StartsWith(L"db:"))
 	{
 		return;
 	}
-	SYSTEMTIME st ;
+	SYSTEMTIME st;
 	GetLocalTime(&st);
 	//prepend debugstring with thread and time.
 	// eg 1040{tab}10:40:50:0599{tab}msg
@@ -165,7 +165,7 @@ void LoggingModule::Write(PCWSTR pszFormat, ...)  noexcept
 
 	bool appendCrLf = !m_bstrTrace.EndsWith(L"\n");
 	m_bstrTrace.Insert(0, m_fmt);
-	if (appendCrLf)			
+	if (appendCrLf)
 		m_bstrTrace.Append(L"\r\n");
 	if ((m_LoggingEnabled & 2) == 2)
 	{
@@ -176,20 +176,11 @@ void LoggingModule::Write(PCWSTR pszFormat, ...)  noexcept
 	{
 		ULONGLONG nCurLen;
 		m_file.GetPosition(nCurLen);
-		
 		auto ansi = m_bstrTrace.ToString();
-		
-		m_file.Write(ansi.c_str(), static_cast<DWORD>( ansi.length()));
-		//clear buffer so we can be sure the buffer advances
-	//	m_file.Flush();
-		//if (mutResult != NULL)
-		//{
-		//	//release ownership
-		//	mutResult.Release();			
-		//}
-	}	
-	
+		m_file.Write(ansi.c_str(), static_cast<DWORD>(ansi.length()));
 	}
+
+}
 	// opens file for append and prepends a BOM if needed
 	bool LoggingModule::OpenFile() noexcept
 	{

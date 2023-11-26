@@ -3,7 +3,6 @@
 // Some modifications, added some fixes, times out within 5 seconds
 #include "stdafx.h"
 #include "connection.h"
-//#include "..\..\src\src\Win32_Interop\Win32_FDAPI.h"
 #include "..\..\src\deps\hiredis\hiredis.h"
 
 using namespace redis3m;

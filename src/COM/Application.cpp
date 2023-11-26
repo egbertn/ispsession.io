@@ -7,6 +7,7 @@
 #include "CStream.h"
 #include "tools.h"
 #include "CEnum.h"
+#include <filesystem>
 
 STDMETHODIMP CApplication::HasOnStartPageBeenCalled()  noexcept
 {
@@ -552,7 +553,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 		{
 			break;
 		}
-		if ((exists = FileExists(retVal)) == true)
+		if ((exists = std::filesystem::exists(retVal.m_str)) == true)
 		{
 			break;
 		}
@@ -571,7 +572,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 	if (exists == FALSE)
 	{
 
-		exists = FileExists(root);
+		exists = std::filesystem::exists(root.m_str);
 		if (exists == TRUE)
 		{//last resort
 			retVal.Attach(root.Detach());
@@ -591,7 +592,7 @@ STDMETHODIMP CApplication::InitializeDataSource(IServer* m_piServer)  noexcept
 	auto prefix = L"ispsession_io:";
 	bstrProp.insert(0, prefix);
 
-	strConstruct = getenv(bstrProp);
+	strConstruct = get_environment_variable(bstrProp);
 
 	if (strConstruct.empty()) // not in environment, then web.Config
 	{

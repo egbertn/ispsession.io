@@ -19,9 +19,9 @@ public:
 		m_str = nullptr;
 	}
 #ifdef _ATL_CCOMBSTR_EXPLICIT_CONSTRUCTORS
-	explicit CComBSTR(_In_ int nSize)
+	explicit CComBSTR2(_In_ int nSize)
 #else
-	CComBSTR(_In_ int nSize)
+	CComBSTR2(_In_ int nSize)
 #endif
 	{
 		//if (nSize == 0) //BUG it should be possible to assign a L"" string
@@ -66,6 +66,10 @@ public:
 				AtlThrow(E_OUTOFMEMORY);
 			}
 		}
+	}
+	CComBSTR2(const std::wstring& src)
+	{
+		m_str = ::SysAllocStringLen(src.c_str(), (UINT)src.size());
 	}
 	CComBSTR2(_In_ const CComBSTR& src)
 	{
@@ -187,12 +191,12 @@ public:
 		CComBSTR utf8;
 		auto copyByteSTring = ToByteString();
 		utf8.Attach(copyByteSTring);
-		return std::move( std::string((PSTR)utf8.m_str, utf8.ByteLength()));
+		return std::string((PSTR)utf8.m_str, utf8.ByteLength());
 	}
 	std::wstring __stdcall ToWString() const  noexcept
 	{
 		// null is handled correctly
-		return std::move(std::wstring(m_str, Length()));
+		return std::wstring(m_str, Length());
 	}
 	BSTR __stdcall Copy() const  noexcept
 	{
@@ -509,9 +513,9 @@ public:
 
 			int x = 0;
 			//contains the number of found expression tokens
-			unsigned int found = mLen == 0 ? -1 : 0;
+			int found = mLen == 0 ? -1 : 0;
 			//find until no more...
-			if (expression != NULL && found >= 0)
+			if (found >= 0)
 			{
 				for (;;)
 				{
@@ -532,7 +536,7 @@ public:
 				if (hr == S_OK)
 				{	int prevPos = 0;
 					x = 0;
-					for (unsigned int curEl = 0; curEl <= found; curEl++)
+					for (int curEl = 0; curEl <= found; curEl++)
 					{
 						x = IndexOf(expression, x, caseInsensitive);
 						paBSTR[curEl] = x < 0 ? Substring(prevPos) : Substring(prevPos, x - prevPos);
@@ -579,7 +583,7 @@ public:
 	{
 		BSTR retval = nullptr;
 		HRESULT hr = S_OK;
-		if (psa != nullptr && psa != nullptr)
+		if (psa != nullptr )
 		{
 			VARTYPE vt = VT_EMPTY;
 			unsigned int delLen = ::SysStringByteLen(delimiter);
@@ -735,7 +739,7 @@ public:
 		return result;
 	}
 
-	int __stdcall IndexOf(_In_ const wchar_t src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0) const  noexcept
+	int __stdcall IndexOf(const wchar_t src, const unsigned int startIndex = 0, const bool caseInsensitive = false, unsigned int count = 0) const  noexcept
 	{
 		wchar_t  src2[] = {src, NULL}; //create zero terminated PWSTR
 		return IndexOf(src2, startIndex, caseInsensitive, count);
@@ -744,7 +748,7 @@ public:
 	//
 	// Addded by E.N.
 	//
-	int __stdcall IndexOf(_In_opt_ const PWSTR src, _In_ const unsigned int startIndex = 0, _In_ const bool caseInsensitive = false, unsigned int count = 0) const  noexcept
+	int __stdcall IndexOf(PCWSTR src, const unsigned int startIndex = 0, const bool caseInsensitive = false, unsigned int count = 0) const  noexcept
 	{
 		int result = -1;
 
@@ -1548,7 +1552,7 @@ public:
 
 		if (!pSrc.empty())
 		{
-			if (::SysReAllocStringLen(&m_str, pSrc.c_str(), pSrc.length()) == FALSE)
+			if (::SysReAllocStringLen(&m_str, pSrc.c_str(), (UINT)pSrc.size()) == FALSE)
 				AtlThrow(E_OUTOFMEMORY);
 		}
 		else
@@ -2683,27 +2687,26 @@ public:
 		return hr;
 	}
 
-	HRESULT ChangeType(_In_ VARTYPE vtNew, _In_ const VARIANT* pSrc = nullptr)
+	HRESULT ChangeType(_In_ VARTYPE vtNew, _In_opt_ const VARIANT* pSrc = NULL)
 	{
-		// Convert in place if pSrc is nullptr
-		const VARIANT* pVar = const_cast<VARIANT*>(pSrc);
-		// Convert in place if pSrc is nullptr
-		if (pVar == nullptr)
+		VARIANT* pVar = const_cast<VARIANT*>(pSrc);
+		// Convert in place if pSrc is NULL
+		if (pVar == NULL)
 			pVar = this;
-		// Do nothing if doing in place convert and vts not different change by E.N.
-		return ::VariantChangeTypeEx(this, pVar, ::GetThreadLocale(), 0, vtNew);
-		//return ::VariantChangeTypeEx(this, pVar, 0, vtNew);
+		// Do nothing if doing in place convert and vts not different
+		return ::VariantChangeType(this, pVar, 0, vtNew);
 	}
 
 	template< typename T >
 	void SetByRef(_In_ T* pT) ATLVARIANT_THROW()
 	{
-		ClearThrow()
+		ClearThrow();
 		vt = CVarTypeInfo< T* >::VT;
 		byref = pT;
 	}
+
 #ifdef _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
-	_Check_return_ HRESULT WriteToStream(_Inout_ IStream* pStream) noexcept;
+	_Check_return_ HRESULT WriteToStream(_Inout_ IStream* pStream);
 	_Check_return_ HRESULT WriteToStream(
 		_Inout_ IStream* pStream,
 		_In_ VARTYPE vtWrite)
@@ -2782,7 +2785,7 @@ public:
 #ifdef _ATL_USE_WINAPI_FAMILY_DESKTOP_APP
 #pragma warning(push)
 #pragma warning(disable: 4702)
-_Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStream) noexcept
+_Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStream)
 {
 	if(pStream == nullptr)
 		return E_INVALIDARG;
@@ -2805,7 +2808,10 @@ _Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStre
 				{
 					hr = punkVal->QueryInterface(__uuidof(IPersistStreamInit), (void**)&spStream);
 					if (FAILED(hr))
+					{
+						spStream.Detach();
 						return hr;
+					}
 				}
 			}
 			if (spStream != nullptr)
@@ -2861,6 +2867,7 @@ _Check_return_ inline HRESULT CComVariant2::WriteToStream(_Inout_ IStream* pStre
 	return hr;
 }
 #pragma warning(pop)	// C4702
+
 
 _Check_return_ inline HRESULT CComVariant::ReadFromStream(
 	_Inout_ IStream* pStream,

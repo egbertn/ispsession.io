@@ -7,67 +7,70 @@
 #include "ConfigurationManager.h"
 //#include <sys/stat.h>
 #include <filesystem>
-using namespace std::experimental;
-std::wstring& __stdcall ltrim(std::wstring &s) 
-{
-    s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) {return !std::isspace(c); }));
-	return s;
-}
+#include <locale>
 std::string& __stdcall ltrim(std::string &s) 
 {
     s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int c) {return !std::isspace(c); }));
     return s;
-}
-// trim from end
-std::wstring& __stdcall rtrim(std::wstring &s) 
-{
-    s.erase(std::find_if(s.rbegin(), s.rend(), [](int c) {return !std::isspace(c); }).base(), s.end());
-	return s;
 }
 std::string& __stdcall rtrim(std::string &s) 
 {
     s.erase(std::find_if(s.rbegin(), s.rend(), [](int c) {return !std::isspace(c); }).base(), s.end());
 	return s;
 }
+std::string& __stdcall trim(std::string& s)
+{
+	return ltrim(rtrim(s));
+}
+
+// trim from start
+std::wstring ltrim(const std::wstring& s)
+{
+	auto it = std::find_if_not(s.begin(), s.end(), [](wchar_t c) { return std::isspace(c); });
+	return std::wstring(it, s.end());
+}
+
+// trim from end
+std::wstring rtrim(const std::wstring& s)
+{
+	auto it = std::find_if_not(s.rbegin(), s.rend(), [](wchar_t c) { return std::isspace(c); });
+	return std::wstring(s.begin(), it.base());
+}
 
 // trim from both ends
-std::wstring& __stdcall trim(std::wstring &s) 
+std::wstring trim(const std::wstring& s)
 {
-	return ltrim(rtrim(s));
-}
-std::string& __stdcall trim(std::string &s) 
-{
-	return ltrim(rtrim(s));
+	return rtrim(ltrim(s));
 }
 
-std::string str_toupper(std::string s) 
-{
 
-	std::transform(s.begin(), s.end(), s.begin(),
+std::string str_toupper(const std::string& s) 
+{
+	std::string copy(s);
+	std::transform(copy.begin(), copy.end(), copy.begin(),
 		// [](char c){ return std::toupper(c); }          // wrong
 		[](unsigned char c){ return (unsigned char)std::toupper(c); } // correct
 	);
-	return s;
+	return copy;
 
 }
 bool is_number(const std::wstring& s) {
 	return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
-}
-std::wstring str_tolower(std::wstring s)
-{
-	std::transform(s.begin(), s.end(), s.begin(),
-		// [](char c){ return std::toupper(c); }          // wrong
-		[](wchar_t c) { return (wchar_t)std::tolower(c); } // correct
-	);
-	return s;
 }
 
 bool is_bool(const std::wstring& s) {
 	if (s.empty())
 		return false;
 
-	auto lower = str_tolower(s);
-	return lower.compare(L"true") == 0 || lower.compare(L"false") == 0;
+	std::locale loc;
+	std::wstring lower;
+	lower.reserve(s.length());
+
+	for (wchar_t c : s) {
+		lower.push_back(std::tolower(c, loc));
+	}
+
+	return lower == L"true" || lower == L"false";
 }
 //void split(const std::string &s, char delim, std::vector<std::string> &elems, int maxCount s= 0)
 //{
@@ -100,66 +103,12 @@ void split(const std::wstring &s, wchar_t delim, std::vector<std::wstring> &elem
 	for (int x = 0; x <= n; x++)
 	{
 		auto newPos = s.find(delim, pos);
-		elems.push_back(trim(newPos != std::string::npos && (x < maxCount || maxCount == 0) ? s.substr(pos, newPos - pos) : s.substr(pos)));
+		auto lastEl = trim(newPos != std::wstring::npos && (x < maxCount || maxCount == 0) ? s.substr(pos, newPos - pos) : s.substr(pos));
+		elems.push_back(lastEl);
 		pos = newPos + 1;
 	}
-
 }
 
-bool __stdcall FileExists(const wchar_t * FileName) noexcept
-{
-	CComBSTR bstrFileName(FileName);
-	auto ansi = bstrFileName.ToString();
-	return std::filesystem::exists(ansi);
-}
-//attach to it
-// e.g. searching on web.Config will return .Config
-BSTR __stdcall FileExtension(const CComBSTR& FileName) noexcept
-{
-	int lastPos = FileName.LastIndexOf('.');
-	if (lastPos >= 0)
-		return FileName.Substring(lastPos);
-	return NULL;
-}
-//strips path and extension e.g. 'c:\\dir\\file.ext' becomes 'file'
-// returns null if an error ocurred
-BSTR __stdcall FileStripPath(const wchar_t* pathname) noexcept
-{	
-	wchar_t drive[_MAX_DRIVE];
-	wchar_t dir[_MAX_DIR ];
-	wchar_t fname[_MAX_FNAME];
-	wchar_t ext[_MAX_EXT];
-	errno_t err =
-		_wsplitpath_s(pathname, drive, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, ext, _MAX_EXT);
-	if (err != 0)
-	{
-		return NULL;
-	}
-	CComBSTR fileName(fname);
-	return fileName.Detach();
-}
-//strips file and extension e.g. 'c:\\dir\\file.ext' becomes 'c:\\dir'
-BSTR __stdcall FileStripFile(const wchar_t* pathname) noexcept
-{
-	wchar_t drive[_MAX_DRIVE];
-	wchar_t dir[_MAX_DIR];
-	wchar_t fname[_MAX_FNAME];
-	wchar_t ext[_MAX_EXT];
-	errno_t err =
-		_wsplitpath_s(pathname, drive, _MAX_DRIVE, dir, _MAX_DIR, fname, _MAX_FNAME, ext, _MAX_EXT);
-	if (err != 0)
-	{
-		return NULL;
-	}
-	CComBSTR path(drive);	
-	path.Append(dir);
-	if (path.EndsWith(L"\\"))
-	{
-		path.TrimEnd(L"\\");
-	}
-	//	fileName.Append(ext);
-	return path.Detach();
-}
 BSTR __stdcall GetModulePath() noexcept
 {
 	CComBSTR licenseFile(MAX_PATH);
@@ -171,8 +120,8 @@ BSTR __stdcall GetModulePath() noexcept
 		licenseFile.SetLength(bufLen);
 	if (bufLen > MAX_PATH)
 		::GetModuleFileNameW(hinst, licenseFile, bufLen);
-	CComBSTR bExt;
-	bExt.Attach(FileExtension(licenseFile));
+
+	CComBSTR bExt = std::filesystem::path(licenseFile.m_str).extension().c_str();
 	CComBSTR ext(bExt);
 	//remove eventual 64.dll or 64.exe to .dll or .exe
 	bExt.Insert(0, L"64");
@@ -185,7 +134,7 @@ BSTR __stdcall GetDCDomain() noexcept
 	DSROLE_PRIMARY_DOMAIN_INFO_BASIC* info;
 	DWORD dw;
 
-	dw = DsRoleGetPrimaryDomainInformation(NULL,
+	dw = DsRoleGetPrimaryDomainInformation(nullptr,
 		DsRolePrimaryDomainInfoBasic,
 		(PBYTE*)&info);
 	if (dw == ERROR_SUCCESS)
@@ -209,13 +158,13 @@ BSTR __stdcall GetNetBIOSName(bool GiveDnsName = false) noexcept
 	return nullptr;
 }
 
-void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = NULL, int els = 0) noexcept
+void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = nullptr, int els = 0) noexcept
 {
 	
-	HANDLE report = ::RegisterEventSourceW(NULL, L"ISPSession");	
-	if (report != NULL)
+	HANDLE report = ::RegisterEventSourceW(nullptr, L"ISPSession");	
+	if (report != nullptr)
 	{		
-		if (::ReportEventW(report, EVENTLOG_WARNING_TYPE, 0, messtype, NULL, (WORD)els, 0, msg, NULL) == FALSE)
+		if (::ReportEventW(report, EVENTLOG_WARNING_TYPE, 0, messtype, nullptr, (WORD)els, 0, msg, nullptr) == FALSE)
 		{			
 			logModule.Write(L"ReportEvent failed with: %d", GetLastError());		
 		}		
@@ -229,8 +178,8 @@ void __stdcall LogMessage(const DWORD messtype, PCWSTR msg[] = NULL, int els = 0
 }
 //void __stdcall ReportComError(const DWORD win32err, PCWSTR msg) throw()
 //{	
-//	PWSTR berr = NULL;
-//	DWORD mlen = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, NULL, win32err,0, (LPWSTR)&berr, 0, NULL);
+//	PWSTR berr = nullptr;
+//	DWORD mlen = ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER, nullptr, win32err,0, (LPWSTR)&berr, 0, nullptr);
 //	if (mlen ==0)
 //	{
 //		CComBSTR num; 
@@ -269,29 +218,7 @@ DATE __stdcall Now() noexcept
 	SystemTimeToVariantTime(&st, &nu);	
 	return nu;
 }
-//select convert(varchar(23), getdate(), 126) = ISO8601
-// returns: eg '2009-04-22T13:11:36.377'
-BSTR __stdcall FormatDBTimeStamp(const DATE ts) noexcept
-{
-	if (ts == NULL) return NULL;
-	SYSTEMTIME st = { 0 };
-	::VariantTimeToSystemTime(ts, &st);
-	CComBSTR sTS, fix;
-	fix.Format(L"%.3d", st.wMilliseconds);
-	if (st.wMilliseconds > 999)
-	{
-		fix.SetLength(3);
-	}	
-	sTS.Format(L"'%.4d-%.2d-%.2dT%.2d:%.2d:%.2d.%s'", st.wYear, 
-											st.wMonth, 
-											st.wDay,
-											st.wHour, 
-											st.wMinute, 
-											st.wSecond, 
-											fix);
-	return sTS.Detach();
 
-}
 STDMETHODIMP OleSaveToStream2(IPersistStreamInit *pPersistStmInit, IStream *pStm) noexcept
 {
 	if (pPersistStmInit == nullptr || pStm == nullptr)
@@ -341,7 +268,7 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 //	
 //	key = L"ispsession_io:DataSource";
 //	*strConstruct = config.AppSettings(key);
-//	if (*strConstruct == NULL)
+//	if (*strConstruct == nullptr)
 //	{
 //		OutputDebugStringA("CSession.dll.Config not found, therefore exiting\r\n");
 //		return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
@@ -359,7 +286,7 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 //		if (val.Length() > 0 && val.IsNumeric())
 //			*lTimeOutSetting = val.ToLong();
 //	}
-//	/*if (hashSessionID!= NULL)
+//	/*if (hashSessionID!= nullptr)
 //	{
 //		key = L"HASH_SESSIONID";
 //		val.Attach(config.AppSettings(key, L"false"));
@@ -367,14 +294,14 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 //			*hashSessionID = val.ToBool()  == VARIANT_TRUE ? TRUE : FALSE;
 //	}*/
 //	
-//	/*if (EnableCompression != NULL)
+//	/*if (EnableCompression != nullptr)
 //	{
 //		key = L"UseCompression";
 //		val.Attach(config.AppSettings(key, L"1"));
 //		*EnableCompression = val.ToLong();
 //	}*/
 //
-//	if (enableLogging != NULL)
+//	if (enableLogging != nullptr)
 //	{
 //		key = L"ispsession_io:EnableLogging";
 //		val.Attach(config.AppSettings(key, L"0"));
@@ -384,7 +311,7 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 //		AtlTrace(L"Logging enabled %d\r\n", *enableLogging);
 //#endif
 //	}
-//	if (license != NULL)
+//	if (license != nullptr)
 //	{
 //		key = L"ispsession_io:License";
 //
@@ -394,7 +321,7 @@ STDMETHODIMP OleLoadFromStream2(IStream *pStm, REFIID iidInterface, void** ppvOb
 //			setstring((const PUCHAR)license, val.m_str);
 //		}   
 //	}
-//	if (licenseContents != NULL)
+//	if (licenseContents != nullptr)
 //	{
 //		key = L"ispsession_io:Csession.LIC";
 //		val.Attach(config.AppSettings(key, L""));
@@ -411,32 +338,29 @@ wstring __stdcall s2ws(const std::string& str)
     wstring ret;
     ret.resize(count);
     ::MultiByteToWideChar(CP_UTF8, 0, str.c_str(), static_cast<int>(str.length()), ret.data(), count);
-    return std::move(ret);
-
+    return ret;
 }
 
 string __stdcall ws2s(const std::wstring& wstr)
 {
-
     auto count = ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), nullptr, 0, nullptr, nullptr);
     string ret;
     ret.resize(count);
     ::WideCharToMultiByte(CP_UTF8, 0, wstr.c_str(), static_cast<int>(wstr.length()), ret.data(), count, nullptr, nullptr);
-    return std::move(ret);
-
+    return ret;
 }
 
 //assumes that PBYTE is valid memory! 
-//ensures that a return is given, e.g. NULL bytes will return an empty hexadecimal range of 'len' length
+//ensures that a return is given, e.g. nullptr bytes will return an empty hexadecimal range of 'len' length
 std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) noexcept
 {
-	if (bytes == NULL || len <= 0)
+	if (bytes == nullptr || len <= 0)
 	{
-		return NULL;
+		return nullptr;
 	}
-	if (bytes == NULL)
+	if (bytes == nullptr)
 	{
-		return std::move(std::string((size_t)len * 2, '0'));
+		return std::string((size_t)len * 2, '0');
 	}
 	std::string retVal;
 	retVal.reserve(len * 2);	
@@ -457,7 +381,7 @@ std::string __stdcall HexStringFromMemory(PBYTE bytes, int len) noexcept
 		retVal.push_back((char)btByte);
 		retVal.push_back((char)btByte2);
 	};
-	return std::move(retVal);
+	return retVal;
 }
 wstring sHexFromBt(GUID* psa) noexcept
 {
@@ -484,7 +408,7 @@ wstring sHexFromBt(GUID* psa) noexcept
 		sRet.push_back((char)btByte2);
 
 	}
-	return std::move(sRet);
+	return sRet;
 }
 
 
@@ -495,7 +419,7 @@ bool is_hex_notation(std::wstring const& s)
 		&& s.find_first_not_of(L"0123456789abcdefABCDEF", 0) == std::wstring::npos;
 }
 
-bool setstring(GUID* addrGUID,wstring& strCookiePtr) noexcept
+bool setstring(GUID* addrGUID,const wstring& strCookiePtr) noexcept
 {
 	if (strCookiePtr.empty())
 	{
@@ -504,7 +428,7 @@ bool setstring(GUID* addrGUID,wstring& strCookiePtr) noexcept
 	LONG cx = 0;
 	UCHAR btByte = 0, btByte2 = 0;
 	auto sdata = (PUCHAR)strCookiePtr.c_str();
-	UINT sLen = strCookiePtr.length();
+	UINT sLen = (UINT)strCookiePtr.length();
 	BOOL retval = TRUE;
 	if (sLen == (sizeof(GUID) * 2))
 	{
@@ -644,20 +568,22 @@ HRESULT __stdcall HashData2(const unsigned char* lpSrc, DWORD nSrcLen, unsigned 
 	}
 	return S_OK;
 }
-std::wstring getenv(wstring& envName)
+
+std::wstring get_environment_variable(const std::wstring& envName)
 {
 	std::wstring env_var;
 	size_t required_size;
-	::_wgetenv_s(&required_size, nullptr, 0, envName.c_str());
-	if (required_size == 0) return std::move(std::wstring());
 
+	if (_wgetenv_s(&required_size, nullptr, 0, envName.c_str()) != 0 || required_size == 0)
+		return std::wstring();
 
-	env_var.resize(required_size);
-	::_wgetenv_s(&required_size, (wchar_t*)env_var.data(), required_size, envName.c_str());
+	env_var.resize(required_size - 1); // Resize excluding the null terminator
+	_wgetenv_s(&required_size, env_var.data(), required_size, envName.c_str());
 
-	return std::move(env_var);
+	return env_var;
 }
-unsigned long get_hashcode(std::wstring& s)
+
+unsigned long get_hashcode(const std::wstring& s)
 {
 	unsigned long hash = 0;
 
@@ -665,7 +591,7 @@ unsigned long get_hashcode(std::wstring& s)
 	{
 		//compress unicode before hashing
 		const auto lpza = ws2s(s);
-		HRESULT	hr = HashData2((const unsigned char*)lpza.c_str(), lpza.length(), (LPBYTE)&hash, sizeof(unsigned long));
+		HRESULT	hr = HashData2((const unsigned char*)lpza.c_str(), (DWORD)lpza.length(), (LPBYTE)&hash, sizeof(unsigned long));
 		if (hr != S_OK) hash = 0xFFFFFFFF;
 	}
 

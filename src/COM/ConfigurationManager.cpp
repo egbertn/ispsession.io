@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include "ConfigurationManager.h"
 #include "ADCLogModule.h"
+#include <filesystem>
 
 #pragma comment(lib, "xmllite.lib")
 
@@ -61,7 +62,7 @@ wstring ConfigurationManager::AppSettings(const wstring& key, PCWSTR defaultValu
 	if (FAILED(hr))
 	{
 		logModule.Write(L"Cannot parse config file because of (%x)", hr);
-		return std::move(wstring());
+		return wstring();
 	}
 
 	auto found = _map.find(key);
@@ -70,13 +71,13 @@ wstring ConfigurationManager::AppSettings(const wstring& key, PCWSTR defaultValu
 	//note: GetValueAt returns by reference, and does not Copy()	
 	if (found != _map.end() && found->first == key)
 	{
-		return std::move(std::wstring(found->second.c_str(), found->second.length()));
+		return std::wstring(found->second.c_str(), found->second.length());
 	}
 	else if (defaultValue != nullptr)
 	{
-		return std::move(wstring(defaultValue));
+		return wstring(defaultValue);
 	}
-	return std::move(wstring());
+	return wstring();
 }
 
 ConfigurationManager::~ConfigurationManager() noexcept
@@ -155,9 +156,7 @@ HRESULT ConfigurationManager::CheckTimeOut() noexcept
 							if (::PathIsRelativeW(pwzValue) == TRUE)
 							{
 								//TODO: call back to do a Server.MapPath
-								_szFilePath.Attach(FileStripFile(_szFilePath));								
-								_szFilePath.Append(L'\\');
-								_szFilePath.Append(pwzValue);
+								_szFilePath = std::filesystem::path(_szFilePath.m_str).parent_path() / pwzValue;
 							}
 							else
 							{

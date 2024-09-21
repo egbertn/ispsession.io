@@ -2,7 +2,7 @@
 
 This project has been **archived**, and we encourage customers to upgrade to the new version at [ISP Session Core](https://github.com/egbertn/ispsession.core).
 
-![Archived](https://github.com/egbertn/ispsession.io/archive-image.png)
+![Archived](https://github.com/egbertn/ispsession.io/archive-image.jpeg)
 
 The new product is compatible with **.NET6** (and higher) and is currently designed to work with **Redis** and **Stack Exchange**.
 
